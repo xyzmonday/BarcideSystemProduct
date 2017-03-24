@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@id/root_id"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/parent_node_bg"
+    android:orientation="horizontal">
+
+    <include
+        android:id="@+id/tmp"
+        layout="@layout/item_asy_detail_parent_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/returnDeliveryQuantity"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/return_delivery_quantity" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
+
+    <TextView
+        android:id="@+id/projectText"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/project_text" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
+    <TextView
+        android:id="@+id/moveCauseDesc"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/move_cause_desc" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
+    <TextView
+        android:id="@+id/moveCause"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/move_cause" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
+
+    <TextView
+        android:id="@+id/strategyCode"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/strategy_code" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
+</LinearLayout>

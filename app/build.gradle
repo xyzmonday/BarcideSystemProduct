@@ -1,0 +1,98 @@
+apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
+//apply plugin: 'com.tencent.tinker.patch'
+apply plugin: 'com.antfortune.freeline'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.richfit.barcodesystemproduct"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    //recommend
+    dexOptions {
+        jumboMode = true
+        javaMaxHeapSize "4g"
+        jumboMode  true
+    }
+    packagingOptions {
+        exclude('META-INF/rxjava.properties')
+    }
+//    signingConfigs {
+//        release {
+//            try {
+//                storeFile file("./keystore/release.keystore")
+//                storePassword "yff3445683"
+//                keyAlias "xyzmonday"
+//                keyPassword "yff3445683"
+//            } catch (ex) {
+//                throw new InvalidUserDataException(ex.toString())
+//            }
+//        }
+//
+//        debug {
+//            storeFile file("./keystore/debug.keystore")
+//        }
+//    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled true
+//            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
+//            signingConfig signingConfigs.debug
+        }
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+    testCompile 'junit:junit:4.12'
+    //    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
+    //    provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.jakewharton:butterknife:8.4.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile 'com.google.dagger:dagger:2.5'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.5'
+    compile project(':data')
+    //use to test multiDex
+    //    compile group: 'com.google.guava', name: 'guava', version: '19.0'
+    //    compile "org.scala-lang:scala-library:2.11.7"
+    //use for local maven test
+    //    compile("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
+    //    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
+    //    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
+    //    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
+}
