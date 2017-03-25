@@ -79,19 +79,7 @@ public class ApprovalDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<String> deleteTakedImages(ArrayList<ImageEntity> images, boolean isLocal) {
-        return Flowable.create(emitter -> {
-            if(deleteTakedImagesInternal(images, isLocal)) {
-                emitter.onError(new Throwable("删除图片失败"));
-                return;
-            }
-            emitter.onNext("删除本地缓存图片成功");
-            emitter.onComplete();
-        }, BackpressureStrategy.LATEST);
-
-    }
-
-    private boolean deleteTakedImagesInternal(ArrayList<ImageEntity> images, boolean isLocal) {
+    public boolean deleteTakedImages(ArrayList<ImageEntity> images, boolean isLocal) {
         SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
         int row = -1;
         try {

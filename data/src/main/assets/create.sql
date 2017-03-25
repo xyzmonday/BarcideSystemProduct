@@ -1,5 +1,3 @@
-
-
 create table IF not exists T_LOCAL_DELETE
 (
   delete_id       VARCHAR2(32) PRIMARY KEY NOT NULL,

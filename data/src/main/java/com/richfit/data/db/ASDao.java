@@ -12,12 +12,11 @@ import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
+import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
 
 import javax.inject.Inject;
-
-import io.reactivex.Flowable;
 
 /**
  * 物资入库操作数据库的Dao层。该类包括了有参考和无参考的所有离线出入库操作。
@@ -54,19 +53,17 @@ public class ASDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<ReferenceEntity> getReference(final String refNum, final String refType,
-                                                  final String bizType, final String moveType,
-                                                  final String refLineId, final String userId) {
+    public ReferenceEntity getReference(final String refNum, final String refType,
+                                        final String bizType, final String moveType,
+                                        final String refLineId, final String userId) {
         if (!TextUtils.isEmpty(refType)) {
             switch (refType) {
                 //采购订单
                 case "0":
-                    return Flowable.just(refNum)
-                            .flatMap(num -> Flowable.just(getReferenceInfoInternal(num, bizType, refType)))
-                            .flatMap(refData -> processError(refData,"未获取到单据数据"));
+                    return getReferenceInfoInternal(refNum, bizType, refType);
             }
         }
-        return Flowable.error(new Throwable("未获取到单据数据"));
+        return null;
     }
 
 
@@ -90,36 +87,35 @@ public class ASDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<ReferenceEntity> getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
-                                                           String batchFlag, String location, String refDoc, int refDocItem, String userId) {
+    public ReferenceEntity getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
+                                                 String batchFlag, String location, String refDoc, int refDocItem, String userId) {
 
         if (!TextUtils.isEmpty(refType)) {
             switch (refType) {
                 //采购订单
                 case "0":
-                    return Flowable.just(bizType)
-                            .flatMap(type -> Flowable.just(getTransferInfoSingleInternal(refCodeId, refType,
-                                    type, refLineId, workId, invId, recWorkId, recInvId, materialNum,
-                                    refDoc, refDocItem, userId)))
-                            .flatMap(refData -> processError(refData,"未获取到缓存"));
+                    return getTransferInfoSingleInternal(refCodeId, refType, bizType, refLineId, workId, invId,
+                            recWorkId, recInvId, materialNum, refDoc, refDocItem, userId);
             }
         }
-        return Flowable.error(new Throwable("未获取到缓存"));
+        return null;
     }
-
 
     /**
-     * 统一处理读取单据数据可能发生的错误
+     * 保存单条缓存
      *
-     * @param refData
+     * @param result
      * @return
      */
-    private Flowable<ReferenceEntity> processError(ReferenceEntity refData,final String errorMsg) {
-        if (refData == null || refData.billDetailList == null || refData.billDetailList.size() == 0) {
-            return Flowable.error(new Throwable(errorMsg));
+    @Override
+    public boolean uploadCollectionDataSingle(ResultEntity result) {
+        if (TextUtils.isEmpty(result.businessType)) {
+            return false;
         }
-        return Flowable.just(refData);
+        return false;
     }
+
+
 
     /**
      * 保存103-入库的单据数据
@@ -315,12 +311,12 @@ public class ASDao extends BaseDao {
             //最后确定是否有缓存
             boolean hashCache = false;
             for (RefDetailEntity detail : details) {
-                if(detail.locationList != null && detail.locationList.size() > 0) {
+                if (detail.locationList != null && detail.locationList.size() > 0) {
                     hashCache = true;
                     break;
                 }
             }
-            if(!hashCache)
+            if (!hashCache)
                 return refData;
             refData.billDetailList = details;
         } catch (Exception e) {
@@ -330,5 +326,16 @@ public class ASDao extends BaseDao {
             db.close();
         }
         return refData;
+    }
+
+    /**
+     * 保存单条缓存
+     *
+     * @param result
+     * @return
+     */
+    private boolean uploadCollectionDataSingleInternal(ResultEntity result) {
+        SQLiteDatabase db = getWritableDB();
+        return false;
     }
 }

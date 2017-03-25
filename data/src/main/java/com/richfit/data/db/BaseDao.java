@@ -12,7 +12,6 @@ import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.InventoryEntity;
-import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
@@ -20,7 +19,7 @@ import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
 import com.richfit.domain.bean.UserEntity;
 import com.richfit.domain.bean.WorkEntity;
-import com.richfit.domain.repository.ILocalRepository;
+import com.richfit.domain.repository.ILocalDataDao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +32,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import io.reactivex.Flowable;
-
 /**
  * 从本次缓存的构架来说，可以让BaseDao实现IRepository接口，
  * 但是这样不同业务的Dao层相应的方法将多余很多。权衡利弊这里
@@ -42,7 +39,7 @@ import io.reactivex.Flowable;
  * Created by monday on 2016/11/8.
  */
 
-public class BaseDao implements ILocalRepository {
+public class BaseDao implements ILocalDataDao {
 
     protected final static String PAuthOrgKey = "P_AUTH_ORG";
     protected final static String PAuthOrg2Key = "P_AUTH_ORG2";
@@ -631,6 +628,12 @@ public class BaseDao implements ILocalRepository {
         return sb.toString();
     }
 
+    /**
+     * 封装单条缓存数据明细的sql
+     * @param bizType
+     * @param refType
+     * @return
+     */
     protected String createSqlForReadDetailTransSingle(String bizType, String refType) {
         StringBuffer sb = new StringBuffer();
         sb.append("select ");
@@ -653,6 +656,12 @@ public class BaseDao implements ILocalRepository {
         return sb.toString();
     }
 
+    /**
+     * 封装单条缓存仓位级数据的sql
+     * @param bizType
+     * @param refType
+     * @return
+     */
     protected String createSqlForReadLocTransSingle(String bizType,String refType) {
         StringBuffer sb = new StringBuffer();
         sb.append("select L.id ,L.location,L.batch_num,L.quantity,L.rec_location,L.rec_batch_num ")
@@ -663,74 +672,80 @@ public class BaseDao implements ILocalRepository {
         return sb.toString();
     }
 
+    /**
+     * 保存单条缓存抬头级别的sql
+     * @param bizType
+     * @param refType
+     * @return
+     */
+    protected String createSqlForWriteHeaderTransSingle(String bizType,String refType) {
+        StringBuffer sb = new StringBuffer();
+        return sb.toString();
+    }
+
 
     @Override
-    public Flowable<ReferenceEntity> getReference(@NonNull String refNum, @NonNull String refType, @NonNull String bizType, @NonNull String moveType, @NonNull String refLineId, @NonNull String userId) {
+    public ReferenceEntity getReference(String refNum, String refType, String bizType, String moveType, String refLineId, String userId) {
         return null;
     }
 
     @Override
-    public Flowable<String> deleteCollectionData(String refNum, String transId, String refCodeId, String refType, String bizType, String userId, String companyCode) {
+    public void saveReferenceInfo(ReferenceEntity refData, String bizType, String refType) {
+
+    }
+
+    @Override
+    public boolean deleteCollectionData(String refNum, String transId, String refCodeId, String refType, String bizType, String userId, String companyCode) {
+        return false;
+    }
+
+    @Override
+    public ReferenceEntity getTransferInfo(String recordNum, String refCodeId, String bizType, String refType, String userId, String workId, String invId, String recWorkId, String recInvId) {
         return null;
     }
 
     @Override
-    public Flowable<ReferenceEntity> getTransferInfo(String recordNum, String refCodeId, String bizType, String refType, String userId, String workId, String invId, String recWorkId, String recInvId) {
+    public ReferenceEntity getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum, String batchFlag, String location, String refDoc, int refDocItem, String userId) {
         return null;
     }
 
     @Override
-    public Flowable<ReferenceEntity> getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum, String batchFlag, String location, String refDoc, int refDocItem, String userId) {
+    public String deleteCollectionDataSingle(String lineDeleteFlag, String transId, String transLineId, String locationId, String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
         return null;
     }
 
     @Override
-    public Flowable<String> deleteCollectionDataSingle(String lineDeleteFlag, String transId, String transLineId, String locationId, String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
+    public boolean uploadCollectionDataSingle(ResultEntity result) {
+        return false;
+    }
+
+    @Override
+    public ReferenceEntity getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkNum) {
         return null;
     }
 
     @Override
-    public Flowable<String> uploadCollectionDataSingle(ResultEntity result) {
+    public boolean deleteCheckData(String storageNum, String workId, String invId, String checkId, String userId, String bizType) {
+        return false;
+    }
+
+    @Override
+    public List<InventoryEntity> getCheckTransferInfoSingle(String checkId, String materialId, String materialNum, String location, String bizType) {
         return null;
     }
 
     @Override
-    public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkNum) {
+    public ReferenceEntity getCheckTransferInfo(String checkId, String materialNum, String location, String isPageQuery, int pageNum, int pageSize, String bizType) {
         return null;
     }
 
     @Override
-    public Flowable<String> deleteCheckData(String storageNum, String workId, String invId, String checkId, String userId, String bizType) {
-        return null;
+    public boolean deleteCheckDataSingle(String checkId, String checkLineId, String userId, String bizType) {
+        return false;
     }
 
     @Override
-    public Flowable<List<InventoryEntity>> getCheckTransferInfoSingle(String checkId, String materialId, String materialNum, String location, String bizType) {
-        return null;
-    }
-
-    @Override
-    public Flowable<ReferenceEntity> getCheckTransferInfo(String checkId, String materialNum, String location, String isPageQuery, int pageNum, int pageSize, String bizType) {
-        return null;
-    }
-
-    @Override
-    public Flowable<String> deleteCheckDataSingle(String checkId, String checkLineId, String userId, String bizType) {
-        return null;
-    }
-
-    @Override
-    public Flowable<MaterialEntity> getMaterialInfo(String queryType, String materialNum) {
-        return null;
-    }
-
-    @Override
-    public Flowable<String> transferCheckData(String checkId, String userId, String bizType) {
-        return null;
-    }
-
-    @Override
-    public Flowable<ArrayList<String>> readUserInfo(String userName, String password) {
+    public ArrayList<String> readUserInfo(String userName, String password) {
         return null;
     }
 
@@ -745,12 +760,12 @@ public class BaseDao implements ILocalRepository {
     }
 
     @Override
-    public Flowable<ArrayList<RowConfig>> readExtraConfigInfo(String companyCode, String bizType, String refType, String configType) {
+    public ArrayList<RowConfig> readExtraConfigInfo(String companyCode, String bizType, String refType, String configType) {
         return null;
     }
 
     @Override
-    public Flowable<Map<String, Object>> readExtraDataSourceByDictionary(@NonNull String propertyCode, @NonNull String dictionaryCode) {
+    public Map<String, Object> readExtraDataSourceByDictionary(@NonNull String propertyCode, @NonNull String dictionaryCode) {
         return null;
     }
 
@@ -765,8 +780,8 @@ public class BaseDao implements ILocalRepository {
     }
 
     @Override
-    public Flowable<Integer> saveBasicData(List<Map<String, Object>> maps) {
-        return null;
+    public int saveBasicData(List<Map<String, Object>> maps) {
+        return 0;
     }
 
     @Override
@@ -775,42 +790,42 @@ public class BaseDao implements ILocalRepository {
     }
 
     @Override
-    public Flowable<ArrayList<InvEntity>> getInvsByWorkId(String workId, int flag) {
+    public ArrayList<InvEntity> getInvsByWorkId(String workId, int flag) {
         return null;
     }
 
     @Override
-    public Flowable<ArrayList<WorkEntity>> getWorks(int flag) {
+    public ArrayList<WorkEntity> getWorks(int flag) {
         return null;
     }
 
     @Override
-    public Flowable<Boolean> checkWareHouseNum(String sendWorkId, String sendInvCode, String recWorkId, String recInvCode, int flag) {
+    public boolean checkWareHouseNum(String sendWorkId, String sendInvCode, String recWorkId, String recInvCode, int flag) {
+        return false;
+    }
+
+    @Override
+    public ArrayList<SimpleEntity> getSupplierList(String workCode, String keyWord, int defaultItemNum, int flag) {
         return null;
     }
 
     @Override
-    public Flowable<ArrayList<SimpleEntity>> getSupplierList(String workCode, String keyWord, int defaultItemNum, int flag) {
+    public ArrayList<SimpleEntity> getCostCenterList(String workCode, String keyWord, int defaultItemNum, int flag) {
         return null;
     }
 
     @Override
-    public Flowable<ArrayList<SimpleEntity>> getCostCenterList(String workCode, String keyWord, int defaultItemNum, int flag) {
+    public ArrayList<SimpleEntity> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
         return null;
     }
 
     @Override
-    public Flowable<ArrayList<SimpleEntity>> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
-        return null;
+    public boolean saveBizFragmentConfig(ArrayList<BizFragmentConfig> bizFragmentConfigs) {
+        return false;
     }
 
     @Override
-    public Flowable<Boolean> saveBizFragmentConfig(ArrayList<BizFragmentConfig> bizFragmentConfigs) {
-        return null;
-    }
-
-    @Override
-    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
+    public ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
         return null;
     }
 
@@ -825,8 +840,8 @@ public class BaseDao implements ILocalRepository {
     }
 
     @Override
-    public Flowable<String> deleteTakedImages(ArrayList<ImageEntity> images, boolean isLocal) {
-        return null;
+    public boolean deleteTakedImages(ArrayList<ImageEntity> images, boolean isLocal) {
+        return false;
     }
 
     @Override
@@ -840,12 +855,12 @@ public class BaseDao implements ILocalRepository {
     }
 
     @Override
-    public Flowable<String> getStorageNum(String workId, String workCode, String invId, String invCode) {
+    public String getStorageNum(String workId, String workCode, String invId, String invCode) {
         return null;
     }
 
     @Override
-    public Flowable<ArrayList<String>> getStorageNumList(int flag) {
+    public ArrayList<String> getStorageNumList(int flag) {
         return null;
     }
 
@@ -855,12 +870,9 @@ public class BaseDao implements ILocalRepository {
     }
 
     @Override
-    public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId, int mode) {
+    public ArrayList<MenuNode> readMenuInfo(String loginId, int mode) {
         return null;
     }
 
-    @Override
-    public void saveReferenceInfo(ReferenceEntity refData, String bizType, String refType) {
 
-    }
 }

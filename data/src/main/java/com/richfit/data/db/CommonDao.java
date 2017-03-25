@@ -29,9 +29,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-
 /**
  * 基础数据Dao层。包括了数据采集需要的基础数据，额外字段配置信息，
  * 用户信息等
@@ -123,16 +120,13 @@ public class CommonDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<ArrayList<String>> readUserInfo(String userName, String password) {
-        return Flowable.just(1).map(a -> readUserInfoInternal());
-    }
-
-    private ArrayList<String> readUserInfoInternal() {
-        ArrayList<String> userList = null;
+    public ArrayList<String> readUserInfo(String userName, String password) {
+        //注意这里如果用户没有登录过，那么返回一个空数组
+        ArrayList<String>  userList = new ArrayList<>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
-            userList = new ArrayList<>();
+
             final long endLoginDate = System.currentTimeMillis();
             //计算一个星期之内登陆的用户
             final long startLoginDate = endLoginDate - 7 * 24 * 60 * 60 * 1000;
@@ -145,7 +139,6 @@ public class CommonDao extends BaseDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            //注意这如果发生了错误，不在返回null
             return userList;
         } finally {
             if (cursor != null)
@@ -160,6 +153,7 @@ public class CommonDao extends BaseDao {
      *
      * @param configs：配置信息列表
      */
+    @Override
     public void saveExtraConfigInfo(List<RowConfig> configs) {
         if (configs == null || configs.size() == 0)
             return;
@@ -182,6 +176,7 @@ public class CommonDao extends BaseDao {
         db.close();
     }
 
+
     /**
      * 读取配置文件
      *
@@ -190,27 +185,13 @@ public class CommonDao extends BaseDao {
      * @param configType：配置类型
      * @return
      */
-    public Flowable<ArrayList<RowConfig>> readExtraConfigInfo(String companyId, String bizType, String refType,
-                                                              String configType) {
-        return Flowable.create(emitter -> {
-            try {
-                emitter.onNext(readExtraConfigInfoInternal(companyId, bizType, refType, configType));
-                emitter.onComplete();
-            } catch (Exception e) {
-                emitter.onError(e);
-            }
-        }, BackpressureStrategy.LATEST);
-
-    }
-
-    private ArrayList<RowConfig> readExtraConfigInfoInternal(String companyId, String bizType, String refType,
+    @Override
+    public ArrayList<RowConfig> readExtraConfigInfo(String companyId, String bizType, String refType,
                                                              String configType) {
         ArrayList<RowConfig> configs = new ArrayList<>();
-
         if (TextUtils.isEmpty(bizType)) {
             return configs;
         }
-
         SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
         configs = readExtraConfigInfo(db, refType, companyId, bizType, configType);
         db.close();
@@ -225,12 +206,7 @@ public class CommonDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<Map<String, Object>> readExtraDataSourceByDictionary(String propertyCode, String dictionaryCode) {
-        return Flowable.just(dictionaryCode)
-                .map(code -> readExtraDataSourceByDictionaryInternal("", code));
-    }
-
-    private Map<String, Object> readExtraDataSourceByDictionaryInternal(String propertyCode, String dictionaryCode) {
+    public Map<String, Object> readExtraDataSourceByDictionary(String propertyCode, String dictionaryCode) {
         Map<String, Object> map = new LinkedHashMap<>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -255,18 +231,14 @@ public class CommonDao extends BaseDao {
         return map;
     }
 
-    @Override
-    public Flowable<Boolean> saveBizFragmentConfig(ArrayList<BizFragmentConfig> bizFragmentConfigs) {
-        return Flowable.just(bizFragmentConfigs)
-                .flatMap(configs -> {
-                    if (!saveBizFragmentConfigInternal(configs)) {
-                        return Flowable.error(new Throwable("保存页面配置信息失败"));
-                    }
-                    return Flowable.just(true);
-                });
-    }
 
-    private boolean saveBizFragmentConfigInternal(ArrayList<BizFragmentConfig> bizFragmentConfigs) {
+    /**
+     * 读取页面配置信息
+     * @param bizFragmentConfigs
+     * @return
+     */
+    @Override
+    public boolean saveBizFragmentConfig(ArrayList<BizFragmentConfig> bizFragmentConfigs) {
         if (bizFragmentConfigs == null || bizFragmentConfigs.size() == 0) {
             return false;
         }
@@ -336,17 +308,7 @@ public class CommonDao extends BaseDao {
         db.close();
     }
 
-    @Override
-    public Flowable<Integer> saveBasicData(List<Map<String, Object>> maps) {
-        return Flowable.just(maps)
-                .flatMap(data -> {
-                    int flag = saveBasicDataInternal(data);
-                    if (flag < 0) {
-                        Flowable.error(new Throwable("下载基础数据到本地失败"));
-                    }
-                    return Flowable.just(flag);
-                });
-    }
+
 
     /**
      * 将服务器获取的基础数据保存到本地
@@ -354,7 +316,8 @@ public class CommonDao extends BaseDao {
      * @param maps:服务器获取的基本数据源
      * @return
      */
-    private int saveBasicDataInternal(List<Map<String, Object>> maps) {
+    @Override
+    public int saveBasicData(List<Map<String, Object>> maps) {
 
         //获取基本参数的map
         Map<String, Object> basicParamMap = maps.get(0);
@@ -641,18 +604,7 @@ public class CommonDao extends BaseDao {
      * @param workId:工厂id
      */
     @Override
-    public Flowable<ArrayList<InvEntity>> getInvsByWorkId(String workId, int flag) {
-        return Flowable.just(workId)
-                .flatMap(id -> {
-                    ArrayList<InvEntity> invs = getInvsByWorkIdInternal(id, flag);
-                    if (invs == null || invs.size() == 0) {
-                        return Flowable.error(new Throwable("未获到库存地点"));
-                    }
-                    return Flowable.just(invs);
-                });
-    }
-
-    private ArrayList<InvEntity> getInvsByWorkIdInternal(String workId, int flag) {
+    public ArrayList<InvEntity> getInvsByWorkId(String workId, int flag) {
         ArrayList<InvEntity> datas = new ArrayList<>();
         if (TextUtils.isEmpty(workId)) {
             return datas;
@@ -681,7 +633,7 @@ public class CommonDao extends BaseDao {
             sb.setLength(0);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return datas;
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -695,11 +647,7 @@ public class CommonDao extends BaseDao {
      * 获取工厂列表
      */
     @Override
-    public Flowable<ArrayList<WorkEntity>> getWorks(int flag) {
-        return Flowable.just(flag).map(state -> getWorksInternal(state));
-    }
-
-    private ArrayList<WorkEntity> getWorksInternal(int flag) {
+    public ArrayList<WorkEntity> getWorks(int flag) {
         SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
         ArrayList<WorkEntity> works = new ArrayList<>();
         Cursor cursor = null;
@@ -738,12 +686,12 @@ public class CommonDao extends BaseDao {
             sb.setLength(0);
         } catch (Exception e) {
             e.printStackTrace();
+            return works;
         } finally {
             if (cursor != null)
                 cursor.close();
             db.close();
         }
-
         return works;
     }
 
@@ -758,17 +706,7 @@ public class CommonDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<Boolean> checkWareHouseNum(final String sendWorkId, final String sendInvCode,
-                                               final String recWorkId, final String recInvCode, int flag) {
-        return Flowable.just(sendWorkId).flatMap(id -> {
-            if (!checkWareHouseNumInternal(id, sendInvCode, recWorkId, recInvCode, flag)) {
-                return Flowable.error(new Throwable("您选择的发出库位与接收库位不隶属于同一个ERP系统仓库号"));
-            }
-            return Flowable.just(true);
-        });
-    }
-
-    private boolean checkWareHouseNumInternal(final String sendWorkId, final String sendInvCode,
+    public boolean checkWareHouseNum(final String sendWorkId, final String sendInvCode,
                                               final String recWorkId, final String recInvCode, int flag) {
         SQLiteDatabase db = getReadableDB();
         try {
@@ -815,18 +753,7 @@ public class CommonDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<ArrayList<SimpleEntity>> getSupplierList(String workCode, String keyWord, int defaultItemNum, int flag) {
-        return Flowable.just(workCode)
-                .flatMap(code -> {
-                    ArrayList<SimpleEntity> list = getSupplierListInternal(code, keyWord, defaultItemNum, flag);
-                    if (list == null || list.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到该基础数据,请检查是否您选择的工厂是否正确或者是否在设置界面同步过该基础数据"));
-                    }
-                    return Flowable.just(list);
-                });
-    }
-
-    private ArrayList<SimpleEntity> getSupplierListInternal(String workCode, String keyWord, int defaultItemNum, int flag) {
+    public ArrayList<SimpleEntity> getSupplierList(String workCode, String keyWord, int defaultItemNum, int flag) {
         ArrayList<SimpleEntity> list = new ArrayList<>();
         if (TextUtils.isEmpty(workCode))
             return list;
@@ -857,7 +784,7 @@ public class CommonDao extends BaseDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return list;
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -877,18 +804,7 @@ public class CommonDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<ArrayList<SimpleEntity>> getCostCenterList(String workCode, String keyWord, int defaultItemNum, int flag) {
-        return Flowable.just(workCode)
-                .flatMap(code -> {
-                    ArrayList<SimpleEntity> list = getCostCenterListInternal(code, keyWord, defaultItemNum, flag);
-                    if (list == null || list.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到该基础数据,请检查是否您选择的工厂是否正确或者是否在设置界面同步过该基础数据"));
-                    }
-                    return Flowable.just(list);
-                });
-    }
-
-    private ArrayList<SimpleEntity> getCostCenterListInternal(String workCode, String keyWord, int defaultItemNum, int flag) {
+    public ArrayList<SimpleEntity> getCostCenterList(String workCode, String keyWord, int defaultItemNum, int flag) {
         ArrayList<SimpleEntity> list = new ArrayList<>();
         if (TextUtils.isEmpty(workCode))
             return list;
@@ -919,7 +835,7 @@ public class CommonDao extends BaseDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return list;
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -936,20 +852,7 @@ public class CommonDao extends BaseDao {
      * @param workCode:工厂编码
      */
     @Override
-    public Flowable<ArrayList<SimpleEntity>> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
-
-        return Flowable.just(workCode)
-                .flatMap(code -> {
-                    final ArrayList<SimpleEntity> list = getProjectNumListInternal(code, keyWord, defaultItemNum, flag);
-                    if (list == null || list.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到项目编号数据,请检查工厂是否合适或者是否已经下载了供应基础数据。" +
-                                "如果您还未下载，请到设置界面下载该基础数据"));
-                    }
-                    return Flowable.just(list);
-                });
-    }
-
-    private ArrayList<SimpleEntity> getProjectNumListInternal(String workCode, String keyWord, int defaultItemNum, int flag) {
+    public  ArrayList<SimpleEntity> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
         ArrayList<SimpleEntity> list = new ArrayList<>();
         if (TextUtils.isEmpty(workCode))
             return list;
@@ -979,7 +882,7 @@ public class CommonDao extends BaseDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return list;
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -998,18 +901,7 @@ public class CommonDao extends BaseDao {
      * @return
      */
     @Override
-    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
-        return Flowable.just(bizType)
-                .flatMap(type -> {
-                    ArrayList<BizFragmentConfig> fragmentConfigs = readBizFragmentConfigInternal(type, refType, fragmentType);
-                    if (fragmentConfigs == null || fragmentConfigs.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到配置信息"));
-                    }
-                    return Flowable.just(fragmentConfigs);
-                });
-    }
-
-    private ArrayList<BizFragmentConfig> readBizFragmentConfigInternal(String bizType, String refType, int fragmentType) {
+    public ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
         ArrayList<BizFragmentConfig> bizFragmentConfigs = new ArrayList<>();
         if (TextUtils.isEmpty(bizType)) {
             return bizFragmentConfigs;
@@ -1050,7 +942,7 @@ public class CommonDao extends BaseDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return bizFragmentConfigs;
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -1059,19 +951,9 @@ public class CommonDao extends BaseDao {
         return bizFragmentConfigs;
     }
 
-    @Override
-    public Flowable<String> getStorageNum(String workId, String workCode, String invId, String invCode) {
-       return Flowable.just(workId)
-               .flatMap(id->{
-                   String storageNum = getStorageNumInternal(id, workCode, invId, invCode);
-                   if (TextUtils.isEmpty(storageNum)) {
-                      return Flowable.error(new Throwable("未获取到仓库号"));
-                   }
-                   return Flowable.just(storageNum);
-               });
-    }
 
-    private String getStorageNumInternal(String workId, String workCode, String invId, String invCode) {
+    @Override
+    public String getStorageNum(String workId, String workCode, String invId, String invCode) {
         SQLiteDatabase db = getReadableDB();
         Cursor cursor = null;
         String storageNum = null;
@@ -1109,18 +991,7 @@ public class CommonDao extends BaseDao {
     }
 
     @Override
-    public Flowable<ArrayList<String>> getStorageNumList(int flag) {
-      return Flowable.just(flag)
-              .flatMap(state -> {
-                  final ArrayList<String> list = getStorageNumListInternal(flag);
-                  if (list == null || list.size() <= 1) {
-                      return  Flowable.error(new Throwable("未查询到仓库列表"));
-                  }
-                  return Flowable.just(list);
-              });
-    }
-
-    private ArrayList<String> getStorageNumListInternal(int flag) {
+    public ArrayList<String> getStorageNumList(int flag) {
         SQLiteDatabase db = getReadableDB();
         ArrayList<String> list = new ArrayList<>();
         ArrayList<String> authOrgs = new ArrayList<>();
@@ -1151,6 +1022,7 @@ public class CommonDao extends BaseDao {
             sb.setLength(0);
         } catch (Exception e) {
             e.printStackTrace();
+            return list;
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -1188,18 +1060,7 @@ public class CommonDao extends BaseDao {
     }
 
     @Override
-    public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId, int mode) {
-        return Flowable.just(loginId)
-                .flatMap(id->{
-                    ArrayList<MenuNode> menuNodes = readMenuInfoInteral(loginId, mode);
-                    if (menuNodes == null || menuNodes.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到菜单信息"));
-                    }
-                    return Flowable.just(menuNodes);
-                });
-    }
-
-    private ArrayList<MenuNode> readMenuInfoInteral(String loginId, int mode) {
+    public ArrayList<MenuNode> readMenuInfo(String loginId, int mode) {
         ArrayList<MenuNode> list = new ArrayList<>();
         if (TextUtils.isEmpty(loginId) || mode < 0 || mode > 1) {
             return list;
@@ -1218,7 +1079,7 @@ public class CommonDao extends BaseDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return list;
         } finally {
             if (cursor != null) {
                 cursor.close();
