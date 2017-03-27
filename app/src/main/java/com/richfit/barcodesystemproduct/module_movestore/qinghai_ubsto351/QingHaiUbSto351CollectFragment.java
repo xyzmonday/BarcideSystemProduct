@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_movestore.basecollect.BaseMSCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_collect.BaseMSCollectFragment;
 
 /**
  * 注意351发出没有接收仓位和接收批次,同时不需要显示发出工厂。

@@ -46,7 +46,7 @@ import static com.richfit.common_lib.utils.Global.USER_ID;
 
 /**
  * 青海无参考明盘抬头界面。仓库级选择工厂和库存地点;
- * 仓位级选择库存号。checkLevel表示盘点的级别，01表示仓位级；02表示库存级
+ * 仓位级选择库存号。checkLevel表示盘点的级别，01表示仓位级;02表示库存级
  * <p>
  * Created by monday on 2017/3/3.
  */

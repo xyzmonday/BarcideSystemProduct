@@ -37,3 +37,4 @@ dependencies {
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile files('src/libs/lite-orm-1.9.2.jar')
 }
+

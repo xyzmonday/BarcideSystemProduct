@@ -91,22 +91,6 @@
     <View style="@style/ItemSeperatorLayout"/>
 
     <TextView
-        android:id="@+id/setZero"
-        style="@style/TableHeaderStyle"
-        android:layout_width="120dp"
-        android:text="@string/set_zero" />
-
-    <View style="@style/ItemSeperatorLayout"/>
-
-    <TextView
-        android:id="@+id/newFlag"
-        style="@style/TableHeaderStyle"
-        android:layout_width="120dp"
-        android:text="@string/new_flag" />
-
-    <View style="@style/ItemSeperatorLayout"/>
-
-    <TextView
         android:id="@+id/checkState"
         style="@style/TableHeaderStyle"
         android:layout_width="120dp"

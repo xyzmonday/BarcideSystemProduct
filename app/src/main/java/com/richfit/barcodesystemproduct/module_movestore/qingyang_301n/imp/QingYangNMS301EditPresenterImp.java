@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.imp;
 import android.content.Context;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module_movestore.baseedit_n.imp.NMSEditPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp.NMSEditPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;

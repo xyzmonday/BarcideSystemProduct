@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_delivery.qingyang_dsy;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_delivery.baseedit.BaseDSEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.BaseDSEditFragment;
 
 /**
  * Created by monday on 2017/1/17.

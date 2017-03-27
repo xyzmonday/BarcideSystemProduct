@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_delivery.basecollect.BaseDSCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.BaseDSCollectFragment;
 import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww.imp.QingHaiDSWWCollectPresenterImp;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;

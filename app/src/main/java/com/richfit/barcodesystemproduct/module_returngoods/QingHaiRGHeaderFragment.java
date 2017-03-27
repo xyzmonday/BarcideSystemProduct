@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_returngoods;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_delivery.baseheader.BaseDSHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_header.BaseDSHeaderFragment;
 
 /**
  * Created by monday on 2017/2/23.

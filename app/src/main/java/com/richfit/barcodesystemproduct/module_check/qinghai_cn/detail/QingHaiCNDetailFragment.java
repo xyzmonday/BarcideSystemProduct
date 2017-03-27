@@ -22,6 +22,7 @@ import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.detail.imp.CNDetailPresenterImp;
 import com.richfit.common_lib.IInterface.OnItemMove;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.AdvancedEditText;
 import com.richfit.common_lib.widget.AutoSwipeRefreshLayout;
@@ -73,12 +74,20 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
     public void handleBarCodeScanResult(String type, String[] list) {
         if (list != null && list.length >= 12) {
             final String materialNum = list[Global.MATERIAL_POS];
-            if (mMaterialCondition.isFocused()) {
+            L.e("物料条件 = " + materialNum);
+//            if (mMaterialCondition.isFocused()) {
+                if (!TextUtils.isEmpty(materialNum) && materialNum.equals(getString(mMaterialCondition))) {
+                    //如果两次输入的条件一致那么直接返回
+                    return;
+                }
                 mMaterialCondition.setText(materialNum);
                 startLoadInventory(mCurrentPageNum + 1);
-            }
+//            }
         } else if (list != null && list.length == 1) {
-            final String location = list[0];
+            final String location = list[Global.LOCATION_POS];
+            if (!TextUtils.isEmpty(location) && location.equals(getString(mLocationCondition))) {
+                return;
+            }
             mLocationCondition.setText(location);
             startLoadInventory(mCurrentPageNum + 1);
         }

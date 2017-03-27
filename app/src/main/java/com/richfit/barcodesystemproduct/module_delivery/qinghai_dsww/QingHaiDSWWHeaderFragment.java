@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_delivery.baseheader.BaseDSHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_header.BaseDSHeaderFragment;
 
 /**
  * 青海委外出库抬头界面

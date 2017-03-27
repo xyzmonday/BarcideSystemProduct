@@ -1,14 +1,17 @@
 package com.richfit.data.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.richfit.common_lib.exception.Exception;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.JsonUtil;
 import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -53,8 +56,7 @@ public class ASDao extends BaseDao {
      * @return
      */
     @Override
-    public ReferenceEntity getReference(final String refNum, final String refType,
-                                        final String bizType, final String moveType,
+    public ReferenceEntity getReference(final String refNum, final String refType, final String bizType, final String moveType,
                                         final String refLineId, final String userId) {
         if (!TextUtils.isEmpty(refType)) {
             switch (refType) {
@@ -87,8 +89,11 @@ public class ASDao extends BaseDao {
      * @return
      */
     @Override
-    public ReferenceEntity getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
-                                                 String batchFlag, String location, String refDoc, int refDocItem, String userId) {
+    public ReferenceEntity getTransferInfoSingle(String refCodeId, String refType, String bizType,
+                                                 String refLineId, String workId, String invId,
+                                                 String recWorkId, String recInvId, String materialNum,
+                                                 String batchFlag, String location, String refDoc,
+                                                 int refDocItem, String userId) {
 
         if (!TextUtils.isEmpty(refType)) {
             switch (refType) {
@@ -114,7 +119,6 @@ public class ASDao extends BaseDao {
         }
         return false;
     }
-
 
 
     /**
@@ -336,6 +340,34 @@ public class ASDao extends BaseDao {
      */
     private boolean uploadCollectionDataSingleInternal(ResultEntity result) {
         SQLiteDatabase db = getWritableDB();
+        //第一步保存抬头(由于保存的数据没有缓存头的主键Id,所以需要先查询是否存在)
+        try {
+            if(TextUtils.isEmpty(result.refCodeId))
+                return false;
+            Cursor headerCursor = db.rawQuery("select id from mtl_transaction_headers where ref_code_id = ?",new String[]{result.refCodeId});
+            String transId = null;
+            while (headerCursor.moveToNext()) {
+                transId = headerCursor.getString(0);
+            }
+            headerCursor.close();
+
+            //如果不存在，那么直接插入一条数据
+            if(TextUtils.isEmpty(transId)) {
+                ContentValues cv = new ContentValues();
+                //随机生成一个主键
+                cv.put("id", UiUtil.getUUID());
+                cv.put("ref_code_id",result.refCodeId);
+                cv.put("ref_type",result.refType);
+                cv.put("voucher_date",result.voucherDate);
+                db.insert("mtl_transaction_headers",null,cv);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            db.close();
+        }
         return false;
     }
 }

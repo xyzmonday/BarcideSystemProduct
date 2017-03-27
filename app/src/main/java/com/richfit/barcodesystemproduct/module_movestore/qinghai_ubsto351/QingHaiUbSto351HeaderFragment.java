@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_movestore.baseheader.BaseMSHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_header.BaseMSHeaderFragment;
 
 /**
  * 青海UB-Sto351移库抬头界面(采购订单)。

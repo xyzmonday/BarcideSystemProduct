@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351;
 import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_movestore.basedetail.BaseMSDetailFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.BaseMSDetailFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.imp.QingHaiUnSto351DetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;

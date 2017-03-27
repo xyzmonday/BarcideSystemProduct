@@ -4,7 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module_movestore.basedetail.imp.BaseMSDetailPresenter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.imp.BaseMSDetailPresenter;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;

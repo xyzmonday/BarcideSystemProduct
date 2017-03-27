@@ -4,7 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module_delivery.basedetail.imp.DSDetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.imp.DSDetailPresenterImp;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;

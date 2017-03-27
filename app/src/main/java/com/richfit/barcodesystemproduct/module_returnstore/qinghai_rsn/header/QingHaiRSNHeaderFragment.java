@@ -82,19 +82,21 @@ public class QingHaiRSNHeaderFragment extends BaseFragment<QingHaiRSNPresenterIm
      */
     @Override
     public void initEvent() {
-        /*选择日期*/
+        //过账日期
         etTransferDate.setOnRichEditTouchListener((view, text) ->
                 DateChooseHelper.chooseDateForEditText(mActivity, etTransferDate, Global.GLOBAL_DATE_PATTERN_TYPE1));
 
-        /*选择工厂，初始化供应商或者项目编号*/
+        //选择工厂，初始化供应商或者项目编号
         RxAdapterView.itemSelections(spWork)
                 .filter(position -> position.intValue() > 0)
                 .subscribe(position -> mPresenter.getAutoCompleteList(mWorks.get(position).workCode,
                         getString(etAutoComp), 100, ORG_FLAG, mBizType));
 
+        //点击自动提示控件，显示默认列表
         RxCilck.clicks(etAutoComp)
                 .subscribe(a -> showAutoCompleteConfig(etAutoComp));
 
+        //修改自动提示控件，说明用户需要锁乳关键字进行搜索，如果默认的列表中存在，那么不在向数据库进行查询
         RxTextView.textChanges(etAutoComp)
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .filter(str -> !TextUtils.isEmpty(str) && mCostCenters != null &&
@@ -102,9 +104,11 @@ public class QingHaiRSNHeaderFragment extends BaseFragment<QingHaiRSNPresenterIm
                 .subscribe(a -> mPresenter.getAutoCompleteList(mWorks.get(spWork.getSelectedItemPosition()).workCode,
                         getString(etAutoComp), 100, ORG_FLAG, mBizType));
 
+        //用户选择自动提示控件的某一条数据，隐藏输入法
         RxAutoCompleteTextView.itemClickEvents(etAutoComp)
                 .subscribe(a -> hideKeyboard(etAutoComp));
 
+        //删除历史数据
         mPresenter.deleteCollectionData("", mBizType, Global.USER_ID, mCompanyCode);
     }
 

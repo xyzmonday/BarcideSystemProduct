@@ -18,6 +18,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.collect.imp.CNCollectPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
@@ -249,7 +250,8 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
         if (mCurrentInventoryList != null) {
             ArrayList<String> list = new ArrayList<>();
             for (InventoryEntity item : mCurrentInventoryList) {
-                list.add(item.lineNum);
+                if (!TextUtils.isEmpty(item.lineNum))
+                    list.add(item.lineNum);
             }
             setupRefLineAdapter(list);
         }
@@ -264,7 +266,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
 
         //如果未查询到提示用户
         if (mRefLines.size() == 1) {
-            showMessage("该单据中未查询到该物料,请检查物资编码或者批次是否正确");
+            showMessage("该单据中未查询到该物料,请检查物资编码或者盘点仓位是否正确");
             spRefLine.setSelection(0);
             return;
         }
@@ -383,7 +385,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
             result.checkLineId = data.checkLineId;
             result.specialInvFlag = getString(etSpecialInvFlag);
             result.specialInvNum = getString(etSpecialInvNum);
-            result.location = getString(etCheckLocation);
+            result.location = CommonUtil.toUpperCase(getString(etCheckLocation));
             result.workId = mRefData.workId;
             result.invId = mRefData.invId;
             result.voucherDate = mRefData.voucherDate;
@@ -432,7 +434,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
     @Override
     public void _onPause() {
         clearAllUI();
-        clearCommonUI(etMaterialNum,etCheckLocation);
+        clearCommonUI(etMaterialNum, etCheckLocation);
     }
 
     @Override

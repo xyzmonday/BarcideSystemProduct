@@ -1,6 +1,6 @@
 package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseedit.BaseASEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.BaseASEditFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp.QingHaiRSYEditPresenterImp;
 
 /**

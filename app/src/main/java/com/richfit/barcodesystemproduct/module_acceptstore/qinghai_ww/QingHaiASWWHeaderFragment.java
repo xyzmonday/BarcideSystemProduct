@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_ww;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseheader.BaseASHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.BaseASHeaderFragment;
 
 /**
  * Created by monday on 2017/2/28.

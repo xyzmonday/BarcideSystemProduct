@@ -1,14 +1,14 @@
 package com.richfit.barcodesystemproduct.module_returngoods;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_delivery.basecollect.BaseDSCollectFragment;
-import com.richfit.barcodesystemproduct.module_delivery.basecollect.imp.DSCollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.BaseDSCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.imp.DSCollectPresenterImp;
 
 /**
  * Created by monday on 2017/2/23.
  */
 
-public class QingHaiRGCollectFragment extends BaseDSCollectFragment<DSCollectPresenterImp> {
+public class   QingHaiRGCollectFragment extends BaseDSCollectFragment<DSCollectPresenterImp> {
 
     @Override
     public void initInjector() {

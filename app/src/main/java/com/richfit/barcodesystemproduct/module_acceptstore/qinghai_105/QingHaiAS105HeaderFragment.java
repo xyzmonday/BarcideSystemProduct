@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseheader.BaseASHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.BaseASHeaderFragment;
 
 /**
  * 青海物资入库105必检抬头界面(bizType为110)

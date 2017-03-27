@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsxs;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_delivery.baseheader.BaseDSHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_header.BaseDSHeaderFragment;
 
 /**
  * Created by monday on 2017/1/20.

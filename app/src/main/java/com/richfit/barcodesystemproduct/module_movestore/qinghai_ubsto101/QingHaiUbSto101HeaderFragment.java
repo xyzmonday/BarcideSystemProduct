@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseheader.BaseASHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.BaseASHeaderFragment;
 
 /**
  * 青海移库转储101抬头界面(采购订单)。相当于UbSto101转储接收，业务与有参考入库，注意显示字段

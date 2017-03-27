@@ -113,18 +113,14 @@ public class QingHaiCNEditFragment extends BaseFragment<CNEditPresenterImp>
             return false;
         }
 
-        if (TextUtils.isEmpty(mCheckLineId)) {
-            showMessage("该行的盘点Id为空");
-            return false;
-        }
-
-        if ("01".equals(checkLevel) && TextUtils.isEmpty(mWorkId)) {
+        //如果是库存级需要检查工厂和库存地点
+        if ("02".equals(checkLevel) && TextUtils.isEmpty(mWorkId)) {
             showMessage("盘点工厂Id为空");
             return false;
         }
 
 
-        if ("01".equals(checkLevel) && TextUtils.isEmpty(mInvId)) {
+        if ("02".equals(checkLevel) && TextUtils.isEmpty(mInvId)) {
             showMessage("盘点库存地点Id为空");
             return false;
         }
@@ -160,12 +156,10 @@ public class QingHaiCNEditFragment extends BaseFragment<CNEditPresenterImp>
             result.specialInvFlag = getString(tvSpecialInvFlag);
             result.specialInvNum = getString(tvSpecialInvNum);
             result.location = getString(etCheckLocation);
-            result.workId = mRefData.workId;
-            result.invId = mRefData.invId;
             result.voucherDate = mRefData.voucherDate;
             result.userId = Global.USER_ID;
-            result.workId = mWorkId;
-            result.invId = mInvId;
+            result.workId = mRefData.workId;
+            result.invId = mRefData.invId;
             result.materialId = CommonUtil.Obj2String(tvMaterialNum.getTag());
             result.quantity = getString(etCheckQuantity);
             result.modifyFlag = "Y";

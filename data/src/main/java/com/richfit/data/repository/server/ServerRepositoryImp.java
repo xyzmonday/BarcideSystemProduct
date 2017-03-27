@@ -307,7 +307,7 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.clear();
         mRequestParam.put("checkId", checkId);
         mRequestParam.put("materialNum", materialNum);
-        mRequestParam.put("location", location);
+        mRequestParam.put("location", CommonUtil.toUpperCase(location));
         mRequestParam.put("queryPage", queryPage);
         mRequestParam.put("pageNum", pageNum);
         mRequestParam.put("pageSize", pageSize);

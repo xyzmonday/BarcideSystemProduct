@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsxs;
 
 import com.richfit.barcodesystemproduct.adapter.DSYDetailAdapter;
-import com.richfit.barcodesystemproduct.module_delivery.basedetail.BaseDSDetailFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.BaseDSDetailFragment;
 import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsxs.imp.QingHaiDSXSDetailPresenterImp;
 import com.richfit.domain.bean.BottomMenuEntity;
 

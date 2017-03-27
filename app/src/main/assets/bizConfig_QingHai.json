@@ -132,7 +132,7 @@
         "bizType": "34",
         "refType": "0",
         "fragmentType": 0,
-        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiNMS311HeaderFragment"
+        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311HeaderFragment"
     },
     {
         "id": "16",
@@ -141,7 +141,7 @@
         "bizType": "34",
         "refType": "0",
         "fragmentType": 1,
-        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiNMS311DetailFragment"
+        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311DetailFragment"
     },
     {
         "id": "17",
@@ -150,7 +150,7 @@
         "bizType": "34",
         "refType": "0",
         "fragmentType": 2,
-        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiNMS311CollectFragment"
+        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311CollectFragment"
     },
     {
         "id": "18",
@@ -159,7 +159,7 @@
         "bizType": "34",
         "refType": "0",
         "fragmentType": -1,
-        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiNMS311EditFragment"
+        "className": "com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311EditFragment"
     },
     {
         "id": "19",

@@ -104,7 +104,7 @@ public class QingHaiBlindEditFragment extends BaseFragment<BlindEditPresenterImp
             return false;
         }
 
-
+        //如果是库存级需要检查工厂和库存地点
         if ("02".equals(checkLevel) && TextUtils.isEmpty(mRefData.workId)) {
             showMessage("盘点工厂Id为空");
             return false;

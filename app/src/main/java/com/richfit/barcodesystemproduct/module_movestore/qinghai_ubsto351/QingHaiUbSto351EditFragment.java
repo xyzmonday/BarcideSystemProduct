@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_movestore.baseedit.BaseMSEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit.BaseMSEditFragment;
 
 /**
  * Created by monday on 2017/2/13.

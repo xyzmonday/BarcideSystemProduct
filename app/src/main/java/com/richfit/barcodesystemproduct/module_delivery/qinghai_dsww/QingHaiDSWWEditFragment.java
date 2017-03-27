@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_delivery.baseedit.BaseDSEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.BaseDSEditFragment;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
 

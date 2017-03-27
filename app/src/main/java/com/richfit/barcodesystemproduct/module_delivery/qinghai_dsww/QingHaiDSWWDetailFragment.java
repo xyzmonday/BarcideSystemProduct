@@ -1,6 +1,6 @@
 package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww;
 
-import com.richfit.barcodesystemproduct.module_delivery.basedetail.BaseDSDetailFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.BaseDSDetailFragment;
 import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww.imp.QingHaiDSWWDetailPresenterImp;
 import com.richfit.domain.bean.BottomMenuEntity;
 

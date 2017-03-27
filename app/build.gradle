@@ -34,34 +34,15 @@ android {
     packagingOptions {
         exclude('META-INF/rxjava.properties')
     }
-//    signingConfigs {
-//        release {
-//            try {
-//                storeFile file("./keystore/release.keystore")
-//                storePassword "yff3445683"
-//                keyAlias "xyzmonday"
-//                keyPassword "yff3445683"
-//            } catch (ex) {
-//                throw new InvalidUserDataException(ex.toString())
-//            }
-//        }
-//
-//        debug {
-//            storeFile file("./keystore/debug.keystore")
-//        }
-//    }
-
 
     buildTypes {
         release {
             minifyEnabled true
-//            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             debuggable true
             minifyEnabled false
-//            signingConfig signingConfigs.debug
         }
     }
     sourceSets {
@@ -95,4 +76,9 @@ dependencies {
     //    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
     //    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
     //    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
+}
+tasks.whenTaskAdded {task ->
+    if(task.name.contains("AndroidTest")) {
+        task.enabled = false
+    }
 }

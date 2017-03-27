@@ -216,10 +216,6 @@ public class CrashLogUtil {
         pw.print("Model: ");
         pw.println(Build.MODEL);
 
-        //cpu架构
-        pw.print("CPU ABI: ");
-        pw.println(Build.CPU_ABI);
-
     }
 
     public static void closeIO(Closeable close) {

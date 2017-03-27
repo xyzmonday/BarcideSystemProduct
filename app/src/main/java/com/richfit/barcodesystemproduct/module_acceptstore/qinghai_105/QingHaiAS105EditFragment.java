@@ -8,7 +8,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_acceptstore.baseedit.BaseASEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.BaseASEditFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105.imp.QingHaiAS105EditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;

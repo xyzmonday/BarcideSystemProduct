@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n;
 
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseedit.BaseASEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.BaseASEditFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n.imp.QingHaiAS105NEditPresenterImp;
 
 /**

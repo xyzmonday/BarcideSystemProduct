@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseheader.BaseASHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.BaseASHeaderFragment;
 
 /**
  * 青海转储退库抬头界面

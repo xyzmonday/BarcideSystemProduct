@@ -289,7 +289,7 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
             result.checkId = mRefData.checkId;
             result.workId = mRefData.workId;
             result.invId = mRefData.invId;
-            result.location = getString(etCheckLocation);
+            result.location =  CommonUtil.toUpperCase(getString(etCheckLocation));
             result.voucherDate = mRefData.voucherDate;
             result.userId = Global.USER_ID;
             result.workId = mRefData.workId;

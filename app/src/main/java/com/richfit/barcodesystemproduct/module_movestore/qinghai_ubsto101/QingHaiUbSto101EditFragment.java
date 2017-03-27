@@ -1,6 +1,6 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.baseedit.BaseASEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.BaseASEditFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101.imp.QingHaiUbSto101EditPresenterImp;
 
 /**
