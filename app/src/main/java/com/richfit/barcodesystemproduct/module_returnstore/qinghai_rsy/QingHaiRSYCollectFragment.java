@@ -1,6 +1,6 @@
 package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.basecollect.BaseASCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp.QingHaiRSYCollectPresenterImp;
 
 /**

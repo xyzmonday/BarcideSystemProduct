@@ -68,7 +68,7 @@ public abstract class BaseMSDetailPresenter extends BaseDetailPresenterImp<IMSDe
                             @Override
                             public void onComplete() {
                                 if (mView != null) {
-                                    mView.setRefreshing(true, "获取明细缓存成功");
+                                   mView.refreshComplete();
                                 }
                             }
                         });

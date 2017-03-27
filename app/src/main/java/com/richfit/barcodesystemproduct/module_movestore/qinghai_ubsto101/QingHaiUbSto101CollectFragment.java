@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101;
 
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.module_acceptstore.basecollect.BaseASCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101.imp.QingHaiUBSto101CollectPresenterImp;
 import com.richfit.domain.bean.RefDetailEntity;
 

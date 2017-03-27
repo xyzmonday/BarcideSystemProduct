@@ -965,6 +965,7 @@ public class CommonDao extends BaseDao {
             } else if (!TextUtils.isEmpty(workCode)) {
                 StringBuffer sb = new StringBuffer();
                 sb.append("select distinct  storage_code from ").append(" p_auth_org ").append(" where org_level = ? ")
+                        .append("and storage_code != ").append("''")
                         .append(" and parent_id IN ( select org_id from ").append(" p_auth_org ");
                 sb.append(" where org_code IN (");
                 sb.append("'").append(workCode).append("'");
@@ -987,6 +988,7 @@ public class CommonDao extends BaseDao {
                 cursor.close();
             db.close();
         }
+        L.e("查询到的storageNum = " + storageNum);
         return storageNum;
     }
 

@@ -3,10 +3,10 @@ package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module_acceptstore.basedetail.imp.ASDetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.imp.ASDetailPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
 
@@ -20,7 +20,7 @@ import io.reactivex.Flowable;
  * Created by monday on 2017/2/27.
  */
 
-public class QingHaiRSYDetailPresenterImp extends ASDetailPresenterImp{
+public class QingHaiRSYDetailPresenterImp extends ASDetailPresenterImp {
 
     @Inject
     public QingHaiRSYDetailPresenterImp(@ContextLife("Activity") Context context) {

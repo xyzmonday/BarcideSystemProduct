@@ -3,9 +3,9 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module_acceptstore.basecollect.imp.ASCollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 
 import javax.inject.Inject;
 
@@ -15,7 +15,7 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2017/2/20.
  */
 
-public class QingHaiAS105NCollectPresenterImp extends ASCollectPresenterImp{
+public class QingHaiAS105NCollectPresenterImp extends ASCollectPresenterImp {
 
     @Inject
     public QingHaiAS105NCollectPresenterImp(@ContextLife("Activity") Context context) {

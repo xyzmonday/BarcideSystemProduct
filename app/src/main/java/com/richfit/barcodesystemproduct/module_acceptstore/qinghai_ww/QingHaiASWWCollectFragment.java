@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.BottomMenuAdapter;
-import com.richfit.barcodesystemproduct.module_acceptstore.basecollect.BaseASCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_ww.imp.QingHaiASWWCollectPresenterImp;
 import com.richfit.barcodesystemproduct.module_acceptstore.ww_component.WWComponentActivity;
 import com.richfit.common_lib.utils.Global;

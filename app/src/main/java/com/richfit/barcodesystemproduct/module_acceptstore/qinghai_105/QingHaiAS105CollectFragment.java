@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_acceptstore.basecollect.BaseASCollectFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105.imp.QingHaiAS105CollectPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;

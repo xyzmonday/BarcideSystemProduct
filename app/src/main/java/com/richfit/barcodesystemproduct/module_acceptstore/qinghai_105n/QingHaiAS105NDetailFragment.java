@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n;
 import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_acceptstore.basedetail.BaseASDetailFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.BaseASDetailFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n.imp.QingHaiAS105NDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;

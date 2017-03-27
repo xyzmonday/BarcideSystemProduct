@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.header.imp.LQHeaderPresenterImp;
+import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -64,7 +65,7 @@ public class LQHeaderFragment extends BaseFragment<LQHeaderPresenterImp>
             location = list[2];
             materialGroup = list[3];
             materialNum = list[4];
-            materialUnit = list[5];
+            materialUnit = CommonUtil.toStringHex(list[5]);
             batchFlag = list[6];
             loadMaterialInfo(materialNum);
         }

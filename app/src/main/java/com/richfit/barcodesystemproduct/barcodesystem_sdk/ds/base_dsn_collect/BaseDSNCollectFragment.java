@@ -500,6 +500,11 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
             result.quantity = getString(etQuantity);
             result.costCenter = mRefData.costCenter;
             result.projectNum = mRefData.projectNum;
+            //库存相关的字段回传
+            int locationPos = spLocation.getSelectedItemPosition();
+            result.location = mInventoryDatas.get(locationPos).location;
+            result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
+            result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.invType = "1";
             result.modifyFlag = "N";
             result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mCachedExtraLineMap, mCachedExtraLocationMap);

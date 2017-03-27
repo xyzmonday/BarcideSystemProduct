@@ -114,8 +114,14 @@ public class ASDao extends BaseDao {
      */
     @Override
     public boolean uploadCollectionDataSingle(ResultEntity result) {
-        if (TextUtils.isEmpty(result.businessType)) {
+        final String bizType = result.businessType;
+        if (TextUtils.isEmpty(bizType)) {
             return false;
+        }
+        switch (bizType) {
+            case "12":
+                return uploadCollectionDataSingleInternal(result);
+
         }
         return false;
     }
@@ -250,9 +256,11 @@ public class ASDao extends BaseDao {
         try {
             Cursor headerCursor;
             if (!TextUtils.isEmpty(refType)) {
-                headerCursor = db.rawQuery(createSqlForReadHeaderTransSingle(bizType, refType), new String[]{refCodeId});
+                headerCursor = db.rawQuery(createSqlForReadHeaderTransSingle(bizType, refType),
+                        new String[]{refCodeId});
             } else {
-                headerCursor = db.rawQuery(createSqlForReadDetail(bizType, refType), new String[]{refCodeId, userId});
+                headerCursor = db.rawQuery(createSqlForReadDetail(bizType, refType),
+                        new String[]{refCodeId, userId});
             }
             int index = -1;
             while (headerCursor.moveToNext()) {
@@ -279,13 +287,10 @@ public class ASDao extends BaseDao {
                 item.invCode = lineCursor.getString(++index);
                 item.invName = lineCursor.getString(++index);
                 item.transLineId = lineCursor.getString(++index);
+                item.transId = lineCursor.getString(++index);
                 item.refLineId = lineCursor.getString(++index);
                 item.lineNum = lineCursor.getString(++index);
                 item.materialId = lineCursor.getString(++index);
-                item.materialNum = lineCursor.getString(++index);
-                item.materialGroup = lineCursor.getString(++index);
-                item.materialDesc = lineCursor.getString(++index);
-                item.unit = lineCursor.getString(++index);
                 item.totalQuantity = lineCursor.getString(++index);
                 details.add(item);
             }
@@ -340,34 +345,116 @@ public class ASDao extends BaseDao {
      */
     private boolean uploadCollectionDataSingleInternal(ResultEntity result) {
         SQLiteDatabase db = getWritableDB();
-        //第一步保存抬头(由于保存的数据没有缓存头的主键Id,所以需要先查询是否存在)
+        //检查必要的字段
+        final String bizType = result.businessType;
+        final String refType = result.refType;
+        final String refCodeId = result.refCodeId;
+        final String materialId = result.materialId;
+        if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(refCodeId) || TextUtils.isEmpty(materialId)) {
+            return false;
+        }
+        //1. 保存抬头(由于保存的数据没有缓存头的主键Id,所以需要先查询是否存在)
         try {
-            if(TextUtils.isEmpty(result.refCodeId))
-                return false;
-            Cursor headerCursor = db.rawQuery("select id from mtl_transaction_headers where ref_code_id = ?",new String[]{result.refCodeId});
+            L.e("refCodeId = " + refCodeId);
+            Cursor headerCursor = db.rawQuery(createSqlForWriteHeaderTransSingle(bizType, refType),
+                    new String[]{refCodeId});
             String transId = null;
+            long row = -1;
             while (headerCursor.moveToNext()) {
                 transId = headerCursor.getString(0);
             }
             headerCursor.close();
 
             //如果不存在，那么直接插入一条数据
-            if(TextUtils.isEmpty(transId)) {
-                ContentValues cv = new ContentValues();
+            ContentValues cv;
+            if (TextUtils.isEmpty(transId)) {
+                cv = new ContentValues();
                 //随机生成一个主键
-                cv.put("id", UiUtil.getUUID());
-                cv.put("ref_code_id",result.refCodeId);
-                cv.put("ref_type",result.refType);
-                cv.put("voucher_date",result.voucherDate);
-                db.insert("mtl_transaction_headers",null,cv);
+                transId = UiUtil.getUUID();
+                cv.put("id",transId);
+                cv.put("ref_code_id", refCodeId);
+                cv.put("biz_type", bizType);
+                cv.put("ref_type", refType);
+                cv.put("voucher_date", result.voucherDate);
+                cv.put("created_by", result.userId);
+                row = db.insert("mtl_transaction_headers", null, cv);
+            } else {
+                //如果存在那么更新该行数据
+                cv = new ContentValues();
+                cv.put("voucher_date", result.voucherDate);
+                cv.put("created_by", result.userId);
+                row = db.update("mtl_transaction_headers", cv, "id = ?", new String[]{transId});
+            }
+            if (row <= 0)
+                return false;
+
+            //2. 保存明细行
+            if (cv == null) {
+                cv = new ContentValues();
+            }
+            cv.clear();
+
+            final String refLineId = result.refLineId;
+            String transLineId = "";
+            if (TextUtils.isEmpty(refLineId)) {
+                //注意无参考没有行id，此时要用work_id ,inv_id, material_id来查找行id
+            } else {
+                Cursor detailCursor = db.rawQuery(createSqlForWriteDetailTransSingle(bizType, refType),
+                        new String[]{transId, refLineId});
+                while (detailCursor.moveToNext()) {
+                    transLineId = detailCursor.getString(0);
+                }
+                detailCursor.close();
+                if (TextUtils.isEmpty(transLineId)) {
+                    //如果还没有缓存行
+                    transLineId = UiUtil.getUUID();
+                    cv.put("id", transLineId);
+                    cv.put("trans_id", transId);
+                    cv.put("ref_line_id", refLineId);
+                    cv.put("line_num", result.refLineNum);
+                    cv.put("work_id", result.workId);
+                    cv.put("inv_id", result.invId);
+                    cv.put("material_id", result.materialId);
+                    cv.put("ref_doc", result.refDoc);
+                    cv.put("ref_doc_item", result.refDocItem);
+                    cv.put("created_by", result.userId);
+                    cv.put("quantity", result.quantity);
+                    db.insert("MTL_TRANSACTION_LINES", null, cv);
+                } else {
+                    //如果有那么更新即可
+                    db.execSQL("update MTL_TRANSACTION_LINES set quantity = quantity +  ? where id = ?",
+                            new Object[]{refLineId});
+                }
             }
 
+            //3. 插入仓位级的缓存
+            Cursor locCursor = db.rawQuery(createSqlForWriteLocTransSingle(bizType, refType), new String[]{transId, transLineId});
+            String locationId = "";
+            cv.clear();
+            while (locCursor.moveToNext()) {
+                locationId = locCursor.getString(0);
+            }
+            if (TextUtils.isEmpty(locationId)) {
+                cv.put("id", UiUtil.getUUID());
+                cv.put("trans_id",transId);
+                cv.put("trans_line_id",transLineId);
+                cv.put("location", result.location);
+                cv.put("batch_num", result.batchFlag);
+                cv.put("quantity", result.quantity);
+                cv.put("rec_location", result.recLocation);
+                cv.put("rec_batch_num", result.recBatchFlag);
+                db.insert("MTL_TRANSACTION_LINES_LOCATION", null, cv);
+            } else {
+                db.execSQL("update MTL_TRANSACTION_LINES_LOCATION set quantity = quantity + " + result.quantity +
+                        " where trans_id = ? and trans_line_id = ?", new Object[]{transId, transLineId});
+            }
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            L.e("保存缓存出错 = " + e.getMessage());
             return false;
         } finally {
             db.close();
         }
-        return false;
     }
 }

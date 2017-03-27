@@ -4,8 +4,8 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.QingHaiAS103DetailAdapter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.BaseASDetailFragment;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
-import com.richfit.barcodesystemproduct.module_acceptstore.basedetail.BaseASDetailFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_103.imp.QingHaiAS103DetailPresenterImp;
 import com.richfit.domain.bean.BottomMenuEntity;
 import com.richfit.domain.bean.RefDetailEntity;

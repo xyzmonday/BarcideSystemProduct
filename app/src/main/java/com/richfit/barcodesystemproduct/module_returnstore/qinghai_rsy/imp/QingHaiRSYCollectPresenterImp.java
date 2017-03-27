@@ -3,8 +3,8 @@ package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module_acceptstore.basecollect.imp.ASCollectPresenterImp;
 
 import javax.inject.Inject;
 

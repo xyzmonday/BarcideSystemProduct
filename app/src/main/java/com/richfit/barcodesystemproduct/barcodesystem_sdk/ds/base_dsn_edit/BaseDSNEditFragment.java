@@ -12,7 +12,6 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_edit.imp.DSNEditPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
-import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsn.edit.IQingHaiDSNEditView;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -37,7 +36,7 @@ import io.reactivex.FlowableOnSubscribe;
  */
 
 public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterImp>
-        implements IQingHaiDSNEditView {
+        implements IDSNEditView {
 
     @BindView(R.id.tv_material_num)
     TextView tvMaterialNum;

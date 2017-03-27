@@ -19,6 +19,8 @@ import butterknife.BindView;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
+ * 注意对于无参考的明细界面，默认给出的PARENT_ITEM_NODE类型的节点。
+ * 但是节点中并不存在节点类型信息。
  * Created by monday on 2016/11/20.
  */
 
@@ -88,7 +90,8 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
      */
     @Override
     public void refreshComplete() {
-        if (!isNeedTurn && isTurnSuccess) {
+        setRefreshing(true,"获取明细成功");
+        if(!isNeedTurn && isTurnSuccess) {
             //如果寄售转自有成功后，系统自动去过账。
             submit2BarcodeSystem(mBottomMenus.get(0).transToSapFlag);
         }
@@ -109,11 +112,9 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
      * @param nodes
      */
     private void saveTurnFlag(final List<RefDetailEntity> nodes) {
-        //仅仅检查父节点
+        //注意无参考不需要检查
         for (RefDetailEntity node : nodes) {
-            if (Global.PARENT_NODE_ITEM_TYPE == node.getViewType() &&
-                    "K".equalsIgnoreCase(node.specialInvFlag) &&
-                    !isEmpty(node.specialInvNum)) {
+            if ("K".equalsIgnoreCase(node.specialInvFlag) && !isEmpty(node.specialInvNum)) {
                 isNeedTurn = true;
                 break;
             }

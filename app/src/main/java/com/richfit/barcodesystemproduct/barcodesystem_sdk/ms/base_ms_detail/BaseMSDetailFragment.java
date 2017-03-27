@@ -99,6 +99,15 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter> extends
         }
     }
 
+    @Override
+    public void refreshComplete() {
+        setRefreshing(true,"获取明细成功");
+        if(!isNeedTurn && isTurnSuccess) {
+            //如果寄售转自有成功后，系统自动去过账。
+            submit2BarcodeSystem(mBottomMenus.get(0).transToSapFlag);
+        }
+    }
+
     /**
      * 保存明细节点的TransId
      */

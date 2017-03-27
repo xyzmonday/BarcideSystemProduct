@@ -82,3 +82,54 @@ tasks.whenTaskAdded {task ->
         task.enabled = false
     }
 }
+
+public class BuildTimeListener implements TaskExecutionListener,BuildListener {
+
+    private Clock mClock;
+    private mTimes = [];
+
+    @Override
+    void buildStarted(Gradle gradle) {
+
+    }
+
+    @Override
+    void settingsEvaluated(Settings settings) {
+
+    }
+
+    @Override
+    void projectsLoaded(Gradle gradle) {
+
+    }
+
+    @Override
+    void projectsEvaluated(Gradle gradle) {
+
+    }
+
+    @Override
+    void buildFinished(BuildResult result) {
+        println "Task spend time"
+        mTimes.each {time->
+            if(time[0] >= 50 ) {
+                printf "%7sms  %s\n", time
+            }
+        }
+    }
+
+    @Override
+    void beforeExecute(Task task) {
+            //初始化时钟
+        mClock = new Clock();
+    }
+
+    @Override
+    void afterExecute(Task task, TaskState state) {
+        def time = mClock.timeInMs;
+        mTimes.add([time,task.path])
+    }
+}
+
+
+project.gradle.addListener(new BuildTimeListener())

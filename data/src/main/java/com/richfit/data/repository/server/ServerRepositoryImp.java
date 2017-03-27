@@ -172,7 +172,7 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("userId", userId);
         mRequestParam.put("workId", workId);
         mRequestParam.put("invId", invId);
-        mRequestParam.put("recordNum", recordNum);
+        mRequestParam.put("recordNum", CommonUtil.toUpperCase(recordNum));
         mRequestParam.put("recWorkId", recWorkId);
         mRequestParam.put("recInvId", recInvId);
 
@@ -184,10 +184,10 @@ public class ServerRepositoryImp implements IServerRepository {
     /**
      * 数据采集界面获取缓存
      *
-     * @param refCodeId：单据id
-     * @param refType：单据类型
-     * @param bizType：业务类型
-     * @param refLineId：单据行id
+     * @param refCodeId        : 单据id
+     * @param refType          : 单据类型
+     * @param bizType          : 业务类型
+     * @param refLineId        : 单据行id
      * @param workId:工厂id
      * @param invId:库存地点id
      * @param materialNum:物资编码
@@ -213,7 +213,7 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("recInvId", recInvId);
         mRequestParam.put("materialNum", materialNum);
         mRequestParam.put("batchFlag", batchFlag);
-        mRequestParam.put("location", location);
+        mRequestParam.put("location", CommonUtil.toUpperCase(location));
         mRequestParam.put("userId", userId);
         mRequestParam.put("refDoc", refDoc);
         mRequestParam.put("refDocItem", refDocItem);
@@ -284,7 +284,7 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("checkId", checkId);
         mRequestParam.put("materialNum", materialNum);
         mRequestParam.put("materialId", materialId);
-        mRequestParam.put("location", location);
+        mRequestParam.put("location", CommonUtil.toUpperCase(location));
         mRequestParam.put("businessType", bizType);
         return mRequestApi.getCheckTransferInfoSingle(JsonUtil.map2Json(mRequestParam))
                 .compose(TransformerHelper.handleResponse());

@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.module_acceptstore.basedetail.BaseASDetailFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.BaseASDetailFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp.QingHaiRSYDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;

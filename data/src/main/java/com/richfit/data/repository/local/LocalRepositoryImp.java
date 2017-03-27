@@ -50,7 +50,7 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<String> deleteCollectionData(String refNum, String transId, String refCodeId, String refType, String bizType, String userId, String companyCode) {
-        return null;
+        return Flowable.just("删除成功");
     }
 
 
@@ -396,7 +396,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<String> uploadCollectionDataSingle(ResultEntity result) {
         if (TextUtils.isEmpty(result.businessType)) {
-            return Flowable.error(new Throwable("保存出错，未获取到业务类型"));
+            return Flowable.error(new Throwable("保存出错,未获取到业务类型"));
         }
         return Flowable.just(result)
                 .flatMap(res -> Flowable.just(createDaoProxyFactory(res.businessType).uploadCollectionDataSingle(res)))

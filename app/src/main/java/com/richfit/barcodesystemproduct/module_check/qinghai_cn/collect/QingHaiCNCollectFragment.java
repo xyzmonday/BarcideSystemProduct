@@ -250,8 +250,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
         if (mCurrentInventoryList != null) {
             ArrayList<String> list = new ArrayList<>();
             for (InventoryEntity item : mCurrentInventoryList) {
-                if (!TextUtils.isEmpty(item.lineNum))
-                    list.add(item.lineNum);
+                list.add(!TextUtils.isEmpty(item.lineNum) ? item.lineNum : "");
             }
             setupRefLineAdapter(list);
         }
@@ -266,7 +265,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
 
         //如果未查询到提示用户
         if (mRefLines.size() == 1) {
-            showMessage("该单据中未查询到该物料,请检查物资编码或者盘点仓位是否正确");
+            showMessage("该未查询到该物料,请检查物资编码或者盘点仓位是否正确");
             spRefLine.setSelection(0);
             return;
         }

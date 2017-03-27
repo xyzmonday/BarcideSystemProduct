@@ -384,7 +384,7 @@ public class BaseDao implements ILocalDataDao {
     }
 
     /**
-     * 封装保存单抬头的sql
+     * 保存单抬头的sql
      *
      * @param bizType
      * @param refType
@@ -426,7 +426,7 @@ public class BaseDao implements ILocalDataDao {
     }
 
     /**
-     * 封装读取单据抬头的sql
+     * 读取单据抬头的sql
      *
      * @param bizType
      * @param refType
@@ -452,7 +452,7 @@ public class BaseDao implements ILocalDataDao {
     }
 
     /**
-     * 封装读取明单据细数据的sql
+     * 读取明单据细数据的sql
      *
      * @return
      */
@@ -604,7 +604,7 @@ public class BaseDao implements ILocalDataDao {
 
 
     /**
-     * 封装读取单条缓存数据抬头的sql
+     * 读取单条缓存数据抬头的sql
      *
      * @param bizType
      * @param refType
@@ -621,6 +621,7 @@ public class BaseDao implements ILocalDataDao {
         sb.append(" from MTL_TRANSACTION_HEADERS H ");
         sb.append("where H.ref_code_id = ? ");
 
+        //如果是无参考的需要给出userId
         if (TextUtils.isEmpty(refType)) {
             sb.append(" and H.created_by = ?");
         }
@@ -629,7 +630,7 @@ public class BaseDao implements ILocalDataDao {
     }
 
     /**
-     * 封装单条缓存数据明细的sql
+     * 读取单条缓存数据明细的sql
      * @param bizType
      * @param refType
      * @return
@@ -641,8 +642,7 @@ public class BaseDao implements ILocalDataDao {
             case "12":
                 sb.append(" WORG.org_id as work_id , WORG.org_code as work_code ,WORG.org_name as work_name, ")
                         .append(" IORG.org_id as inv_id , IORG.org_code as inv_code ,IORG.org_name as inv_name,")
-                        .append(" L.id,L.ref_line_id ,L.line_num,L.material_id,L.material_num,L.material_group,")
-                        .append(" L.material_desc,L.unit,L.total_quantity ");
+                        .append(" L.id,L.trans_id,L.ref_line_id ,L.line_num,L.material_id,L.quantity ");
                 break;
         }
         sb.append(" from MTL_TRANSACTION_LINES L left join p_auth_org WORG ")
@@ -680,9 +680,59 @@ public class BaseDao implements ILocalDataDao {
      */
     protected String createSqlForWriteHeaderTransSingle(String bizType,String refType) {
         StringBuffer sb = new StringBuffer();
+        sb.append("select id from ");
+        switch (bizType) {
+            case "12":
+               sb.append("mtl_transaction_headers ");
+                break;
+        }
+        sb.append(" where ref_code_id = ? ");
+        L.e("保存缓存抬头sql = " + sb.toString());
         return sb.toString();
     }
 
+    /**
+     * 保存单条缓存明细sql
+     * @param bizType
+     * @param refType
+     * @return
+     */
+    protected String createSqlForWriteDetailTransSingle(String bizType,String refType) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("select id from ");
+        switch (bizType) {
+            case "12":
+                sb.append(" mtl_transaction_lines ");
+
+                break;
+        }
+        switch (bizType) {
+            case "12":
+                sb.append(" where trans_id = ? and ref_line_id = ?");
+                break;
+        }
+        L.e("保存缓存明细sql = " + sb.toString());
+        return sb.toString();
+    }
+
+    /**
+     * 保存单条缓存仓位级sql
+     * @param bizType
+     * @param refType
+     * @return
+     */
+    protected String createSqlForWriteLocTransSingle(String bizType,String refType) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("select id from ");
+        switch (bizType) {
+            case "12":
+                sb.append(" mtl_transaction_lines_location ");
+                break;
+        }
+        sb.append(" where trans_id = ? and trans_line_id = ?");
+        L.e("保存缓存仓位sql = " + sb.toString());
+        return sb.toString();
+    }
 
     @Override
     public ReferenceEntity getReference(String refNum, String refType, String bizType, String moveType, String refLineId, String userId) {

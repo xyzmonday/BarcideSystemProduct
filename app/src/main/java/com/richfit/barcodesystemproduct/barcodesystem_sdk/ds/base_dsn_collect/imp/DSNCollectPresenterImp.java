@@ -5,7 +5,6 @@ import android.content.Context;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_collect.IDSNCollectPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_collect.IDSNCollectView;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsn.collect.IQingHaiDSNCollectView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;

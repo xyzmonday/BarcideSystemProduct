@@ -8,7 +8,6 @@ import com.richfit.barcodesystemproduct.adapter.DSNDetailAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_detail.imp.DSNDetailPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
-import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsn.detail.IQingHaiDSNDetailView;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.domain.bean.BottomMenuEntity;
@@ -24,7 +23,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
  */
 
 public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetailPresenterImp, RefDetailEntity>
-        implements IQingHaiDSNDetailView<RefDetailEntity> {
+        implements IDSNDetailView<RefDetailEntity> {
 
 
     /*处理寄售转自有业务。主要的逻辑是用户点击过账按钮之后系统自动检查该缓存(子节点)中是否有特殊库存标识是否
@@ -83,6 +82,7 @@ public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetail
      */
     @Override
     public void refreshComplete() {
+        setRefreshing(true, "获取明细缓存成功");
         if (!isNeedTurn && isTurnSuccess) {
             //如果寄售转自有成功后，系统自动去过账。
             submit2BarcodeSystem(mBottomMenus.get(0).transToSapFlag);
@@ -109,11 +109,8 @@ public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetail
      * @param nodes
      */
     private void saveTurnFlag(final List<RefDetailEntity> nodes) {
-        //仅仅检查子节点
         for (RefDetailEntity node : nodes) {
-            if (Global.PARENT_NODE_ITEM_TYPE == node.getViewType() &&
-                    "K".equalsIgnoreCase(node.specialInvFlag) &&
-                    !isEmpty(node.specialInvNum)) {
+            if ("K".equalsIgnoreCase(node.specialInvFlag) && !isEmpty(node.specialInvNum)) {
                 isNeedTurn = true;
                 break;
             }

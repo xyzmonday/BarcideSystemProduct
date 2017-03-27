@@ -83,7 +83,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                             @Override
                             public void onComplete() {
                                 if (mView != null) {
-                                    mView.setRefreshing(true, "获取明细缓存成功");
+                                   mView.refreshComplete();
                                 }
                             }
                         });
@@ -281,7 +281,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
         mView = getView();
         RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
                     @Override
                     public void _onNext(String s) {
 
