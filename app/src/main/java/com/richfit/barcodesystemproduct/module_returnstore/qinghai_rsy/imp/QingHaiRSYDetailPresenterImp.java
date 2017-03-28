@@ -29,10 +29,10 @@ public class QingHaiRSYDetailPresenterImp extends ASDetailPresenterImp {
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
-                                         Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                        String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         RxSubscriber<String> subscriber = Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
-                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, flagMap, extraHeaderMap))
+                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSapFlag, extraHeaderMap))
                 .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
                 .compose(TransformerHelper.io2main())
@@ -77,9 +77,10 @@ public class QingHaiRSYDetailPresenterImp extends ASDetailPresenterImp {
 
     @Override
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
-                               String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                               String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,userId, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
+                userId, voucherDate, transToSapFlag, extraHeaderMap)
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {

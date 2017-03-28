@@ -165,7 +165,7 @@ public class NMSCollectPresenterImp extends BasePresenter<INMSCollectView>
         mView = getView();
         //注意这里需要检查接收仓位是否存在
         ResourceSubscriber<String> subscriber =
-                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, result.location),
+                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId,"", result.location),
                         mRepository.uploadCollectionDataSingle(result))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {

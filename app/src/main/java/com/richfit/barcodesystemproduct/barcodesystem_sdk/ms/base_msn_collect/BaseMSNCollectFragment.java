@@ -165,26 +165,24 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
 
     @Override
     public void initEvent() {
-        /*扫描后者手动输入物资条码*/
+        //扫描后者手动输入物资条码
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> {
             //请求接口获取获取物料
             hideKeyboard(view);
             loadMaterialInfo(materialNum, getString(etSendBatchFlag));
         });
 
-        /*监测批次修改，如果修改了批次那么需要重新刷新库存信息和用户已经输入的信息*/
-        /**
-         * debounce(400, TimeUnit.MILLISECONDS) 当没有数据传入达到400ms之后,才去发送数据
-         * throttleFirst(400, TimeUnit.MILLISECONDS) 在每一个400ms内,如果有数据传入就发送.且每个400ms内只发送一次或零次数据.
-         * 但是这是使用debonce，resetCommonUIPartly将延迟执行到发出库位显示默认位置之后，导致抬头界面的默认发出库位选择失效
-         */
+        //监测批次修改，如果修改了批次那么需要重新刷新库存信息和用户已经输入的信息
+        //debounce(400, TimeUnit.MILLISECONDS) 当没有数据传入达到400ms之后,才去发送数据
+        // throttleFirst(400, TimeUnit.MILLISECONDS) 在每一个400ms内,如果有数据传入就发送.且每个400ms内只发送一次或零次数据.
+        //但是这是使用debonce，resetCommonUIPartly将延迟执行到发出库位显示默认位置之后，导致抬头界面的默认发出库位选择失效
         RxTextView.textChanges(etSendBatchFlag)
                 .filter(str -> !TextUtils.isEmpty(str))
 //                .throttleFirst(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 .subscribe(batch -> resetCommonUIPartly());
 
 
-        /*用户输入或者修改发出批次，同时默认接收批次与发出批次一致*/
+        //用户输入或者修改发出批次，同时默认接收批次与发出批次一致
         if (etSendBatchFlag.isEnabled() && etRecBatchFlag.isEnabled() &&
                 TextUtils.isEmpty(getString(etRecBatchFlag))) {
             RxTextView.textChanges(etSendBatchFlag)
@@ -193,7 +191,7 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
                     .subscribe(str -> etRecBatchFlag.setText(str));
         }
 
-       /*库存地点。选择库存地点获取库存*/
+        //库存地点。选择库存地点获取库存
         RxAdapterView.itemSelections(spSendInv)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(position -> {
@@ -203,14 +201,14 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
                     checkWareHouseNum(position);
                 });
 
-        /*选择发货仓位，查询历史仓位数量以及历史接收仓位*/
+        //选择发出仓位，查询历史仓位数量以及历史接收仓位
         RxAdapterView
                 .itemSelections(spSendLoc)
                 .filter(position -> (mInventoryDatas != null && mInventoryDatas.size() > 0 &&
                         position.intValue() < mInventoryDatas.size()))
                 .subscribe(position -> loadLocationQuantity(position));
 
-       /*单品(注意单品仅仅控制实收数量，累计数量是由行信息里面控制)*/
+        //单品(注意单品仅仅控制实收数量，累计数量是由行信息里面控制)
         cbSingle.setOnCheckedChangeListener((buttonView, isChecked) -> {
             etQuantity.setText(isChecked ? "1" : "");
             etQuantity.setEnabled(!isChecked);
@@ -438,6 +436,7 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
         }
         //这里修改成功locationCombine去批次仓位级缓存
         final String locationCombine = mInventoryDatas.get(position).locationCombine;
+        final String sendLocation = mInventoryDatas.get(position).location;
         final String invQuantity = mInventoryDatas.get(position).invQuantity;
         final String batchFlag = getString(etSendBatchFlag);
 
@@ -457,7 +456,9 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
             resetSendLocation();
             return;
         }
+
         tvInvQuantity.setText(invQuantity);
+
         String locQuantity = "0";
         String recLocation = "";
         String recBatchFlag = getString(etRecBatchFlag);
@@ -465,9 +466,11 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
             List<LocationInfoEntity> locationList = detail.locationList;
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
+
                     final boolean isMatched = mIsOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                             && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);
+
                     if (isMatched) {
                         locQuantity = locationInfo.quantity;
                         recLocation = locationInfo.recLocation;
@@ -483,8 +486,10 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
         bindExtraUI(mSubFunEntity.locationConfigs, mCachedExtraLocationMap);
         bindExtraUI(mSubFunEntity.collectionConfigs, mCachedExtraLineMap);
         tvLocQuantity.setText(locQuantity);
+        //默认给接收仓位为发出仓位
+        etRecLoc.setText(sendLocation);
         //注意如果缓存中没有接收批次或者接收仓位，或者已经手动赋值,那么不用缓存更新它们
-        if (!TextUtils.isEmpty(recLocation) && !TextUtils.isEmpty(getString(etRecLoc)))
+        if (!TextUtils.isEmpty(recLocation))
             etRecLoc.setText(recLocation);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(etRecBatchFlag)))
             etRecBatchFlag.setText(recBatchFlag);
@@ -492,6 +497,7 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
 
     private void resetSendLocation() {
         spSendLoc.setSelection(0, true);
+        etRecLoc.setText("");
         tvInvQuantity.setText("");
         tvLocQuantity.setText("");
     }
@@ -641,7 +647,6 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
             result.recInvId = mRefData.recInvId;
             result.materialId = etMaterialNum.getTag().toString();
             result.batchFlag = CommonUtil.toUpperCase(getString(etSendBatchFlag));
-            result.location = CommonUtil.toUpperCase(mInventoryDatas.get(spSendLoc.getSelectedItemPosition()).location);
             result.recBatchFlag = CommonUtil.toUpperCase(getString(etRecBatchFlag));
             result.recLocation = CommonUtil.toUpperCase(getString(etRecLoc));
             result.quantity = getString(etQuantity);

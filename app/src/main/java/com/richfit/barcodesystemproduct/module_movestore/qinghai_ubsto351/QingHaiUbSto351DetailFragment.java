@@ -36,10 +36,17 @@ public class QingHaiUbSto351DetailFragment extends BaseMSDetailFragment<QingHaiU
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int viewType) {
-        if (Global.CHILD_NODE_HEADER_TYPE == viewType) {
-            //子节点仅仅显示发出库位和发出批次
-            viewHolder.setVisible(R.id.recLocation, false)
-                    .setVisible(R.id.recBatchFlag, false);
+        switch (viewType) {
+            case Global.PARENT_NODE_ITEM_TYPE:
+                //隐藏父节点的发出工厂
+                viewHolder.setVisible(R.id.sendWork,false);
+                break;
+               //隐藏子节点的发出批次和发出仓位
+            case Global.CHILD_NODE_HEADER_TYPE:
+            case Global.CHILD_NODE_ITEM_TYPE:
+                viewHolder.setVisible(R.id.recLocation, false)
+                        .setVisible(R.id.recBatchFlag, false);
+                break;
         }
     }
 
@@ -70,10 +77,5 @@ public class QingHaiUbSto351DetailFragment extends BaseMSDetailFragment<QingHaiU
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void refreshComplete() {
-
     }
 }

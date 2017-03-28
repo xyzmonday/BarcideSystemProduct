@@ -205,8 +205,8 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<String> transferCollectionData(String transId, String bizType, String refType, String userId, String voucherDate,
-                                                   Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
-        return mServerRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, flagMap, extraHeaderMap);
+                                                   String transToSAPFlag, Map<String, Object> extraHeaderMap) {
+        return mServerRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSAPFlag, extraHeaderMap);
     }
 
     @Override
@@ -236,8 +236,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String location) {
-        return mServerRepository.getLocationInfo(queryType, workId, invId, location);
+    public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
+        return mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, location);
     }
 
     @Override

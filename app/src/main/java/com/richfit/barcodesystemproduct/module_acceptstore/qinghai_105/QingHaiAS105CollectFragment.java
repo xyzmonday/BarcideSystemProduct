@@ -12,6 +12,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105.imp.QingHaiAS105CollectPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -244,8 +245,8 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS
             result.workId = lineData.workId;
             result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;
             result.materialId = lineData.materialId;
-            result.location = isNLocation ? "barcode" : getString(etLocation);
-            result.batchFlag = getString(etBatchFlag);
+            result.location = CommonUtil.toUpperCase(isNLocation ? "barcode" : getString(etLocation));
+            result.batchFlag = CommonUtil.toUpperCase(getString(etBatchFlag));
             result.quantity = getString(etQuantity);
             result.modifyFlag = "N";
             //物料凭证

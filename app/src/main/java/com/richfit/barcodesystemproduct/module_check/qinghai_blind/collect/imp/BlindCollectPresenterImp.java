@@ -15,6 +15,8 @@ import com.richfit.domain.bean.ResultEntity;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
+
 /**
  * Created by monday on 2017/3/3.
  */
@@ -78,8 +80,17 @@ public class BlindCollectPresenterImp extends BasePresenter<IBlindCollectView>
     @Override
     public void uploadCheckDataSingle(ResultEntity result) {
         mView = getView();
-        mRepository.uploadCheckDataSingle(result)
-                .compose(TransformerHelper.io2main())
+        //如果是01仓位级别，需要检查仓位是否存在
+        final String checkLevel = result.checkLevel;
+        Flowable<String> flowable;
+        if ("01".equals(checkLevel)) {
+            flowable = Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, result.storageNum, result.location),
+                    mRepository.uploadCheckDataSingle(result));
+        } else {
+            flowable = mRepository.uploadCheckDataSingle(result);
+        }
+
+        RxSubscriber<String> subscriber = flowable.compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在保存本次盘点数量...") {
                     @Override
                     public void _onNext(String s) {
@@ -114,5 +125,6 @@ public class BlindCollectPresenterImp extends BasePresenter<IBlindCollectView>
                         }
                     }
                 });
+        addSubscriber(subscriber);
     }
 }

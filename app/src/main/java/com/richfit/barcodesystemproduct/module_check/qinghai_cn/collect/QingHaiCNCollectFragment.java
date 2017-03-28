@@ -331,6 +331,15 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
             return false;
         }
 
+        if (TextUtils.isEmpty(mRefData.checkLevel)) {
+            showMessage("未获取到盘点级别");
+            return false;
+        }
+
+        if ("01".equals(mRefData.checkLevel) && TextUtils.isEmpty(mRefData.storageNum)) {
+            showMessage("未获取到仓库号");
+            return false;
+        }
 
         if (spRefLine.getSelectedItemPosition() == 0) {
             showMessage("请选择单据行");
@@ -387,6 +396,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
             result.location = CommonUtil.toUpperCase(getString(etCheckLocation));
             result.workId = mRefData.workId;
             result.invId = mRefData.invId;
+            result.storageNum = mRefData.storageNum;
             result.voucherDate = mRefData.voucherDate;
             result.userId = Global.USER_ID;
             result.workId = mRefData.workId;

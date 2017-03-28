@@ -27,7 +27,6 @@ import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.TreeNode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -63,8 +62,6 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
     protected String mInspectionNum;
     /*底部提示菜单数据源*/
     protected List<BottomMenuEntity> mBottomMenus;
-    /*上传数据需要的而外字段集合。*/
-    protected HashMap<String, Object> mFlagMap = new HashMap<>();
 
     /**
      * 初始化公共的组件，这里统一设置RecyclerView的基本配置；自动下拉刷新接口
@@ -154,6 +151,10 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
         //不论成功或者失败都应该关闭下拉加载动画
         mSwipeRefreshLayout.setRefreshing(false);
         showMessage(message);
+        if(mAdapter != null && !isSuccess) {
+            //清空历史明细数据
+            mAdapter.removeAllVisibleNodes();
+        }
     }
 
     /**

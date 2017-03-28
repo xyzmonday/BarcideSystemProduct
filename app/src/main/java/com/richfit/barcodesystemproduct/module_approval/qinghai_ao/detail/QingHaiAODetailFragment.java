@@ -195,17 +195,15 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
 
 
     @Override
-    protected void submit2BarcodeSystem(String tranToSapFlag) {
+    protected void submit2BarcodeSystem(String transToSapFlag) {
         if (TextUtils.isEmpty(mTransId)) {
             showMessage("请先采集数据");
             return;
         }
         mTransNum = "";
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", "Z01");
         mPresenter.transferCollectionData(mRefData.recordNum, mRefData.refCodeId, mTransId, mBizType,
                 mRefType, mRefData.inspectionType, Global.USER_ID, false,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     @Override

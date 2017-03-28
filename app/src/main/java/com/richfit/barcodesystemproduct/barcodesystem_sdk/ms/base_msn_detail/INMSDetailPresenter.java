@@ -20,10 +20,10 @@ public interface INMSDetailPresenter extends IBaseDetailPresenter<INMSDetailView
      * @param refType
      * @param userId
      * @param voucherDate
-     * @param flagMap
+     * @param transToSapFlag
      * @param extraHeaderMap
      * @param submitFlag
      */
     void turnOwnSupplies(String transId, String bizType, String refType, String userId, String voucherDate,
-                         Map<String, Object> flagMap, Map<String, Object> extraHeaderMap, int submitFlag);
+                         String transToSapFlag, Map<String, Object> extraHeaderMap, int submitFlag);
 }

@@ -5,10 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
-import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.IMSDetailPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.IMSDetailView;
+import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
+import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
@@ -193,12 +193,16 @@ public abstract class BaseMSDetailPresenter extends BaseDetailPresenterImp<IMSDe
 
     @Override
     public void turnOwnSupplies(String transId, String bizType, String refType, String userId,
-                                String voucherDate, Map<String, Object> flagMap,
+                                String voucherDate, String transToSapFlag,
                                 Map<String, Object> extraHeaderMap, int submitFlag) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber =
+                Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType,
+                        Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap),
+                        mRepository.transferCollectionData(transId, bizType, refType,
+                                Global.USER_ID, voucherDate, "08", extraHeaderMap))
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有数据...") {
                     @Override
                     public void _onNext(String s) {
 
@@ -234,8 +238,6 @@ public abstract class BaseMSDetailPresenter extends BaseDetailPresenterImp<IMSDe
                 });
         addSubscriber(subscriber);
     }
-
-
 
     /**
      * 通过抬头获取的单据数据和缓存数据生成新的单据数据。

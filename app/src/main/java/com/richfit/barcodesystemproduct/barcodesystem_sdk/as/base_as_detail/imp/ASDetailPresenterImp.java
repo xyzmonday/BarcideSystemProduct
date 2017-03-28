@@ -217,7 +217,7 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId,
-                                         String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                         String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         RxSubscriber<String> subscriber = mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
@@ -263,9 +263,10 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
 
     @Override
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
-                               String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                               String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
+                userId, voucherDate, transToSapFlag, extraHeaderMap)
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
@@ -306,7 +307,7 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
     }
 
     @Override
-    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap, int submitFlag) {
+    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap, int submitFlag) {
 
     }
 

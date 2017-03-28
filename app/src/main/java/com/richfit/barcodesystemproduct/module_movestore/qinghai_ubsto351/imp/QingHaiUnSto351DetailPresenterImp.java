@@ -29,57 +29,59 @@ public class QingHaiUnSto351DetailPresenterImp extends BaseMSDetailPresenter {
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
-                                         Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                         String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
-                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, flagMap, extraHeaderMap))
-                .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
-                .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在过账...") {
-                    @Override
-                    public void _onNext(String message) {
-                        if (mView != null) {
-                            mView.showTransferedVisa(message);
-                        }
-                    }
+        RxSubscriber<String> subscriber =
+                Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
+                        mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSapFlag, extraHeaderMap))
+                        .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
+                        .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<String>(mContext, "正在过账...") {
+                            @Override
+                            public void _onNext(String message) {
+                                if (mView != null) {
+                                    mView.showTransferedVisa(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onNetWorkConnectError(String message) {
-                        if (mView != null) {
-                            mView.networkConnectError(Global.RETRY_TRANSFER_DATA_ACTION);
-                        }
-                    }
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_TRANSFER_DATA_ACTION);
+                                }
+                            }
 
-                    @Override
-                    public void _onCommonError(String message) {
-                        if (mView != null) {
-                            mView.submitBarcodeSystemFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.submitBarcodeSystemFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onServerError(String code, String message) {
-                        if (mView != null) {
-                            mView.submitBarcodeSystemFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.submitBarcodeSystemFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onComplete() {
-                        if (mView != null) {
-                            mView.submitBarcodeSystemSuccess();
-                        }
-                    }
-                });
+                            @Override
+                            public void _onComplete() {
+                                if (mView != null) {
+                                    mView.submitBarcodeSystemSuccess();
+                                }
+                            }
+                        });
         addSubscriber(subscriber);
     }
 
     @Override
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
-                               String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                               String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
+                Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap)
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
@@ -122,7 +124,7 @@ public class QingHaiUnSto351DetailPresenterImp extends BaseMSDetailPresenter {
     }
 
     @Override
-    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap, int submitFlag) {
+    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap, int submitFlag) {
 
     }
 }

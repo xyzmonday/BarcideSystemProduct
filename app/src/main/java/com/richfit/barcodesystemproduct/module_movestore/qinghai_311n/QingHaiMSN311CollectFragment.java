@@ -8,7 +8,7 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.Ba
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.imp.QingHaiMSN311CollectPresenterImp;
 
 /**
- *  工厂内311移库，不需要接收批次。
+ *  工厂内311移库，不需要接收批次。接收仓位默认与发出仓位一致，而且不允许修改
  * Created by monday on 2017/2/16.
  */
 
@@ -23,6 +23,7 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<QingHai
     protected void initView() {
         //工厂内移库不需要接收批次
         setVisibility(View.GONE,llRecBatch);
+        setVisibility(View.GONE,llRecLocation);
         super.initView();
     }
 
@@ -56,6 +57,7 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<QingHai
             showMessage("接收库位为空");
             return;
         }
+
         mPresenter.checkWareHouseNum(isOpenWM, workId, invCode, workId, recInvCode, getOrgFlag());
     }
 
@@ -85,23 +87,12 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<QingHai
             showMessage("请先选择工厂");
             return false;
         }
-        //检查批次
+        //检查发出批次
         if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
             showMessage("批次为空");
             return false;
         }
 
-        //检查接收
-        final String recLocation = getString(etRecLoc);
-        if (TextUtils.isEmpty(recLocation) || recLocation.length() > 10) {
-            showMessage("接收仓位有误");
-            return false;
-        }
-
-        if (isWareHouseSame && TextUtils.isEmpty(getString(etRecLoc))) {
-            showMessage("请输入接收仓位");
-            return false;
-        }
         return super.checkCollectedDataBeforeSave();
     }
 

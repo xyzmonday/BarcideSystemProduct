@@ -151,16 +151,14 @@ public class QingHaiRSNDetailFragment extends BaseDetailFragment<QingHaiRSNDetai
     /**
      * 1.过账
      */
-    protected void submit2BarcodeSystem(String tranToSapFlag) {
+    protected void submit2BarcodeSystem(String transToSapFlag) {
         String transferFlag = (String) SPrefUtil.getData(mBizType, "0");
         if ("1".equals(transferFlag)) {
             showMessage(getString(R.string.detail_off_location));
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", tranToSapFlag);
         mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     @Override
@@ -177,15 +175,13 @@ public class QingHaiRSNDetailFragment extends BaseDetailFragment<QingHaiRSNDetai
     /**
      * 2.数据上传
      */
-    protected void submit2SAP(String tranToSapFlag) {
+    protected void submit2SAP(String transToSapFlag) {
         if (TextUtils.isEmpty(mTransNum)) {
             showMessage("请先过账");
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", tranToSapFlag);
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
 

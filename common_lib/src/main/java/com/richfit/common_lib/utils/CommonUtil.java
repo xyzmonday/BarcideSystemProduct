@@ -218,4 +218,7 @@ public class CommonUtil {
         return str.toString();
     }
 
+    public static String valueOf(Object obj) {
+        return (obj == null) ? "" : obj.toString();
+    }
 }

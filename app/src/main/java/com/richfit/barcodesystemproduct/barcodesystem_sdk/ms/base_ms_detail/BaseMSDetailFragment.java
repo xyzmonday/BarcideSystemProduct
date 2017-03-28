@@ -24,7 +24,8 @@ import static com.richfit.common_lib.utils.SPrefUtil.getData;
  * Created by monday on 2017/2/10.
  */
 
-public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter> extends BaseDetailFragment<P, RefDetailEntity>
+public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
+        extends BaseDetailFragment<P, RefDetailEntity>
         implements IMSDetailView<RefDetailEntity> {
 
     /*移库有参考的公共组件*/
@@ -229,10 +230,8 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter> extends
             return;
         }
         mTransNum = "";
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mPresenter.submitData2BarcodeSystem(mTransId, mBizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     /**
@@ -265,11 +264,9 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter> extends
             showMessage("请先过账");
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mInspectionNum = "";
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     @Override
@@ -333,12 +330,9 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter> extends
             showMessage("未获取到缓存,请先获取采集数据");
             return;
         }
-
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mInspectionNum = "";
         mPresenter.turnOwnSupplies(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap(), -1);
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap(), -1);
     }
 
     /**

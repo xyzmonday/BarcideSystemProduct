@@ -199,7 +199,7 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
-                                         Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                         String transToSAPFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
@@ -247,10 +247,10 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
 
     @Override
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
-                               String voucherDate, Map<String, Object> flagMap,
+                               String voucherDate, String transToSAPFlag,
                                Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, transToSAPFlag, extraHeaderMap)
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
@@ -293,45 +293,49 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
 
     @Override
     public void turnOwnSupplies(String transId, String bizType, String refType, String userId,
-                                String voucherDate, Map<String, Object> flagMap,
+                                String voucherDate, String transToSAPFlag,
                                 Map<String, Object> extraHeaderMap, int submitFlag) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
-                    @Override
-                    public void _onNext(String s) {
+        RxSubscriber<String> subscriber =
+                Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate,
+                        transToSAPFlag, extraHeaderMap),
+                        mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate,
+                                "08", extraHeaderMap))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
+                            @Override
+                            public void _onNext(String s) {
 
-                    }
+                            }
 
-                    @Override
-                    public void _onNetWorkConnectError(String message) {
-                        if (mView != null) {
-                            mView.turnOwnSuppliesFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.turnOwnSuppliesFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onCommonError(String message) {
-                        if (mView != null) {
-                            mView.turnOwnSuppliesFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.turnOwnSuppliesFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onServerError(String code, String message) {
-                        if (mView != null) {
-                            mView.turnOwnSuppliesFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.turnOwnSuppliesFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onComplete() {
-                        if (mView != null) {
-                            mView.turnOwnSuppliesSuccess();
-                        }
-                    }
-                });
+                            @Override
+                            public void _onComplete() {
+                                if (mView != null) {
+                                    mView.turnOwnSuppliesSuccess();
+                                }
+                            }
+                        });
         addSubscriber(subscriber);
     }
 

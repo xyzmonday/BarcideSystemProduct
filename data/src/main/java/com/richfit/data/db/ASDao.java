@@ -1,6 +1,5 @@
 package com.richfit.data.db;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -11,7 +10,6 @@ import com.richfit.common_lib.exception.Exception;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.JsonUtil;
 import com.richfit.common_lib.utils.L;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -126,6 +124,27 @@ public class ASDao extends BaseDao {
         return false;
     }
 
+    /**
+     * 获取整单缓存
+     *
+     * @param recordNum
+     * @param refCodeId
+     * @param bizType
+     * @param refType
+     * @param userId
+     * @param workId
+     * @param invId
+     * @param recWorkId
+     * @param recInvId
+     * @return
+     */
+    @Override
+    public ReferenceEntity getTransferInfo(String recordNum, String refCodeId, String bizType,
+                                           String refType, String userId, String workId, String invId,
+                                           String recWorkId, String recInvId) {
+
+        return null;
+    }
 
     /**
      * 保存103-入库的单据数据
@@ -156,7 +175,7 @@ public class ASDao extends BaseDao {
     }
 
     /**
-     * 读取103-出库单据数据
+     * 读取出库单据数据
      *
      * @param refNum
      * @param bizType
@@ -344,117 +363,87 @@ public class ASDao extends BaseDao {
      * @return
      */
     private boolean uploadCollectionDataSingleInternal(ResultEntity result) {
+      return false;
+    }
+
+    /**
+     * 获取整单缓存
+     *
+     * @param recordNum
+     * @param refCodeId
+     * @param bizType
+     * @param refType
+     * @param userId
+     * @param workId
+     * @param invId
+     * @param recWorkId
+     * @param recInvId
+     * @return
+     */
+    private ReferenceEntity getTransferInfoInternal(String recordNum, String refCodeId, String bizType,
+                                                    String refType, String userId, String workId, String invId,
+                                                    String recWorkId, String recInvId) {
+        ReferenceEntity refData = new ReferenceEntity();
         SQLiteDatabase db = getWritableDB();
-        //检查必要的字段
-        final String bizType = result.businessType;
-        final String refType = result.refType;
-        final String refCodeId = result.refCodeId;
-        final String materialId = result.materialId;
-        if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(refCodeId) || TextUtils.isEmpty(materialId)) {
-            return false;
-        }
-        //1. 保存抬头(由于保存的数据没有缓存头的主键Id,所以需要先查询是否存在)
+        int index = -1;
         try {
-            L.e("refCodeId = " + refCodeId);
-            Cursor headerCursor = db.rawQuery(createSqlForWriteHeaderTransSingle(bizType, refType),
-                    new String[]{refCodeId});
-            String transId = null;
-            long row = -1;
-            while (headerCursor.moveToNext()) {
-                transId = headerCursor.getString(0);
-            }
-            headerCursor.close();
+            //读取抬头，注意对于无参考的情况需要用工厂，库位，和用户名进行查询
+            Cursor cursor = null;
+            if (TextUtils.isEmpty(refCodeId)) {
 
-            //如果不存在，那么直接插入一条数据
-            ContentValues cv;
-            if (TextUtils.isEmpty(transId)) {
-                cv = new ContentValues();
-                //随机生成一个主键
-                transId = UiUtil.getUUID();
-                cv.put("id",transId);
-                cv.put("ref_code_id", refCodeId);
-                cv.put("biz_type", bizType);
-                cv.put("ref_type", refType);
-                cv.put("voucher_date", result.voucherDate);
-                cv.put("created_by", result.userId);
-                row = db.insert("mtl_transaction_headers", null, cv);
             } else {
-                //如果存在那么更新该行数据
-                cv = new ContentValues();
-                cv.put("voucher_date", result.voucherDate);
-                cv.put("created_by", result.userId);
-                row = db.update("mtl_transaction_headers", cv, "id = ?", new String[]{transId});
+                cursor = db.rawQuery(createSqlForReadHeaderTrans(bizType, refType), new String[]{refCodeId});
             }
-            if (row <= 0)
-                return false;
-
-            //2. 保存明细行
-            if (cv == null) {
-                cv = new ContentValues();
+            while (cursor.moveToNext()) {
+                refData.transId = cursor.getString(++index);
+                refData.refCodeId = cursor.getString(++index);
+                refData.voucherDate = cursor.getString(++index);
             }
-            cv.clear();
+            cursor.close();
 
-            final String refLineId = result.refLineId;
-            String transLineId = "";
-            if (TextUtils.isEmpty(refLineId)) {
-                //注意无参考没有行id，此时要用work_id ,inv_id, material_id来查找行id
-            } else {
-                Cursor detailCursor = db.rawQuery(createSqlForWriteDetailTransSingle(bizType, refType),
-                        new String[]{transId, refLineId});
-                while (detailCursor.moveToNext()) {
-                    transLineId = detailCursor.getString(0);
-                }
-                detailCursor.close();
-                if (TextUtils.isEmpty(transLineId)) {
-                    //如果还没有缓存行
-                    transLineId = UiUtil.getUUID();
-                    cv.put("id", transLineId);
-                    cv.put("trans_id", transId);
-                    cv.put("ref_line_id", refLineId);
-                    cv.put("line_num", result.refLineNum);
-                    cv.put("work_id", result.workId);
-                    cv.put("inv_id", result.invId);
-                    cv.put("material_id", result.materialId);
-                    cv.put("ref_doc", result.refDoc);
-                    cv.put("ref_doc_item", result.refDocItem);
-                    cv.put("created_by", result.userId);
-                    cv.put("quantity", result.quantity);
-                    db.insert("MTL_TRANSACTION_LINES", null, cv);
-                } else {
-                    //如果有那么更新即可
-                    db.execSQL("update MTL_TRANSACTION_LINES set quantity = quantity +  ? where id = ?",
-                            new Object[]{refLineId});
-                }
+            //读取明细行
+            if (TextUtils.isEmpty(refData.transId)) {
+                return refData;
             }
 
-            //3. 插入仓位级的缓存
-            Cursor locCursor = db.rawQuery(createSqlForWriteLocTransSingle(bizType, refType), new String[]{transId, transLineId});
-            String locationId = "";
-            cv.clear();
-            while (locCursor.moveToNext()) {
-                locationId = locCursor.getString(0);
+            cursor = db.rawQuery(createSqlForReadDetailTrans(bizType, refType),
+                    new String[]{refData.transId});
+            index = -1;
+            ArrayList<RefDetailEntity> billDetailList = new ArrayList<>();
+            RefDetailEntity item;
+            while (cursor.moveToNext()) {
+                item = new RefDetailEntity();
+                item.workId = cursor.getString(++index);
+                item.workCode = cursor.getString(++index);
+                item.workName = cursor.getString(++index);
+                item.invId = cursor.getString(++index);
+                item.invCode = cursor.getString(++index);
+                item.invName = cursor.getString(++index);
+                item.transLineId = cursor.getString(++index);
+                item.transId = cursor.getString(++index);
+                item.materialId = cursor.getString(++index);
+                item.materialGroup = cursor.getString(++index);
+                item.materialDesc = cursor.getString(++index);
+                item.unit = cursor.getString(++index);
+                item.totalQuantity = cursor.getString(++index);
+                billDetailList.add(item);
             }
-            if (TextUtils.isEmpty(locationId)) {
-                cv.put("id", UiUtil.getUUID());
-                cv.put("trans_id",transId);
-                cv.put("trans_line_id",transLineId);
-                cv.put("location", result.location);
-                cv.put("batch_num", result.batchFlag);
-                cv.put("quantity", result.quantity);
-                cv.put("rec_location", result.recLocation);
-                cv.put("rec_batch_num", result.recBatchFlag);
-                db.insert("MTL_TRANSACTION_LINES_LOCATION", null, cv);
-            } else {
-                db.execSQL("update MTL_TRANSACTION_LINES_LOCATION set quantity = quantity + " + result.quantity +
-                        " where trans_id = ? and trans_line_id = ?", new Object[]{transId, transLineId});
+            cursor.close();
+
+            //读取仓位级别缓存
+            ArrayList<LocationInfoEntity> locList = new ArrayList<>();
+            LocationInfoEntity locData;
+            for (RefDetailEntity detail : billDetailList) {
+                locData = new LocationInfoEntity();
+
             }
-            return true;
+
         } catch (Exception e) {
-            e.printStackTrace();
-            L.e("保存缓存出错 = " + e.getMessage());
-            return false;
+            L.e("获取整单缓存出错 = " + e.getMessage());
         } finally {
             db.close();
         }
+
+        return refData;
     }
 }

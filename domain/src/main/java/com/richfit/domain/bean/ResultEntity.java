@@ -75,6 +75,8 @@ public class ResultEntity {
     //盘点id
     public String checkId;
 
+    public String checkLevel;
+
     public String invType;
     //接收工厂
     public String recWorkId;
@@ -127,4 +129,8 @@ public class ResultEntity {
     public String supplierNum;
     public String decisionCode;
     public String moveCause;
+    public String storageNum;
+    public String transId;
+    public String companyCode;
+    public String transLineId;
 }

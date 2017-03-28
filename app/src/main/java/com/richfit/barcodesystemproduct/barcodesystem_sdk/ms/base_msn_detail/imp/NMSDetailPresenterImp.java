@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
@@ -70,7 +71,7 @@ public class NMSDetailPresenterImp extends BaseDetailPresenterImp<INMSDetailView
                             @Override
                             public void onComplete() {
                                 if (mView != null) {
-                                    mView.setRefreshing(true, "获取明细缓存成功");
+                                    mView.refreshComplete();
                                 }
                             }
                         });
@@ -175,7 +176,7 @@ public class NMSDetailPresenterImp extends BaseDetailPresenterImp<INMSDetailView
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
-                                         Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                         String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         RxSubscriber<String> subscriber =
                 mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
@@ -224,9 +225,10 @@ public class NMSDetailPresenterImp extends BaseDetailPresenterImp<INMSDetailView
 
     @Override
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
-                               String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                               String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
+                Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap)
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType, "0"))
                 .compose(TransformerHelper.io2main())
@@ -269,12 +271,15 @@ public class NMSDetailPresenterImp extends BaseDetailPresenterImp<INMSDetailView
 
     @Override
     public void turnOwnSupplies(String transId, String bizType, String refType, String userId,
-                                String voucherDate, Map<String, Object> flagMap,
+                                String voucherDate, String transToSapFlag,
                                 Map<String, Object> extraHeaderMap, int submitFlag) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, flagMap, extraHeaderMap)
+        RxSubscriber<String> subscriber = Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType,
+                Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap),
+                mRepository.transferCollectionData(transId, bizType, refType,
+                        Global.USER_ID, voucherDate, "08", extraHeaderMap))
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有数据...") {
                     @Override
                     public void _onNext(String s) {
 

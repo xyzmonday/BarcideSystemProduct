@@ -211,10 +211,8 @@ public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetail
             showMessage(getString(R.string.detail_off_location));
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", tranToSapFlag);
         mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, tranToSapFlag, createExtraHeaderMap());
     }
 
     /**
@@ -245,10 +243,8 @@ public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetail
             showMessage("请先过账");
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", tranToSapFlag);
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, tranToSapFlag, createExtraHeaderMap());
     }
 
     /**
@@ -299,12 +295,9 @@ public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetail
             showMessage("未获取到缓存,请先获取采集数据");
             return;
         }
-
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mInspectionNum = "";
         mPresenter.turnOwnSupplies(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap(), -1);
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap(), -1);
     }
 
     /**

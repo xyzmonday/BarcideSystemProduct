@@ -60,10 +60,10 @@ public interface IQingHaiAODetailPresenter extends IBaseDetailPresenter<IQingHai
      * @param userId
      * @param isLocal
      * @param voucherDate
-     * @param flagMap
+     * @param transToSapFlag
      */
     void transferCollectionData(String refNum, String refCodeId, String transId, String bizType, String refType,
                                 int inspectionType, String userId, boolean isLocal, String voucherDate,
-                                Map<String, Object> flagMap, Map<String, Object> extraHeaderMap);
+                                String transToSapFlag, Map<String, Object> extraHeaderMap);
 
 }

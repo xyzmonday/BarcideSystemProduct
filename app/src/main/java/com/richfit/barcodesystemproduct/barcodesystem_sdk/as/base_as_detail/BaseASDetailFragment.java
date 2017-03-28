@@ -217,10 +217,8 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
             return;
         }
         mTransNum = "";
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mPresenter.submitData2BarcodeSystem(mTransId, mBizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     /**
@@ -250,11 +248,9 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
             showMessage("请先过账");
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mInspectionNum = "";
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     /**

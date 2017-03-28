@@ -59,7 +59,7 @@ public interface IBaseDetailPresenter<V extends IBaseDetailView> extends IPresen
      * @param voucherDate:过账日期
      */
     void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
-                                  Map<String, Object> flagMap, Map<String, Object> extraHeaderMap);
+                                  String transToSAPFlag, Map<String, Object> extraHeaderMap);
 
     /**
      * 提交数据到sap
@@ -70,7 +70,7 @@ public interface IBaseDetailPresenter<V extends IBaseDetailView> extends IPresen
      * @param userId：用户id
      */
     void submitData2SAP(String transId, String bizType, String refType, String userId, String voucherDate,
-                        Map<String, Object> flagMap, Map<String, Object> extraHeaderMap);
+                        String transToSAPFlag, Map<String, Object> extraHeaderMap);
 
     /**
      * sap上下架处理
@@ -80,12 +80,12 @@ public interface IBaseDetailPresenter<V extends IBaseDetailView> extends IPresen
      * @param refType
      * @param userId
      * @param voucherDate
-     * @param flagMap
+     * @param transToSAPFlag
      * @param extraHeaderMap
      * @param submitFlag
      */
     void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate,
-                              Map<String, Object> flagMap, Map<String, Object> extraHeaderMap, int submitFlag);
+                              String transToSAPFlag, Map<String, Object> extraHeaderMap, int submitFlag);
 
     /**
      * 数据提交到sap后，从数据明细界面跳转到抬头界面

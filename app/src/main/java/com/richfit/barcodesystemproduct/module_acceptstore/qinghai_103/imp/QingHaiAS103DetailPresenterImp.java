@@ -88,11 +88,11 @@ public class QingHaiAS103DetailPresenterImp extends ASDetailPresenterImp {
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId,
-                                         String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                         String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         RxSubscriber<String> subscriber =
                 Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", ""),
-                        mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, flagMap, extraHeaderMap))
+                        mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSapFlag, extraHeaderMap))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext, "正在过账数据...") {
                             @Override

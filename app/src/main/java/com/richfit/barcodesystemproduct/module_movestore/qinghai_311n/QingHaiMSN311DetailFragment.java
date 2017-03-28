@@ -1,5 +1,6 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_311n;
 
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -13,8 +14,6 @@ import com.richfit.domain.bean.BottomMenuEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
  * 没有接收批次
@@ -30,14 +29,14 @@ public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<QingHaiMS
 
     @Override
     protected void initView() {
-        setVisibility(View.GONE,recBatchFlag);
+        setVisibility(View.GONE, recBatchFlag);
         super.initView();
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int viewType) {
-        if(Global.PARENT_NODE_ITEM_TYPE == viewType) {
-            holder.setVisible(R.id.recBatchFlag,false);
+        if (Global.PARENT_NODE_ITEM_TYPE == viewType) {
+            holder.setVisible(R.id.recBatchFlag, false);
         }
     }
 
@@ -63,25 +62,37 @@ public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<QingHaiMS
             showMessage("请先在抬头界面输入必要的信息");
             return;
         }
+        //注意这必须调用父类的方法将寄售转自有的相关标识清空
         super.initDataLazily();
     }
 
-    @Override
-    public void showTurnConfirmDialog() {
+    /**
+     * 1.过账
+     */
+    protected void submit2BarcodeSystem(String transToSapFlag) {
+        //如果需要寄售转自有但是没有成功过，都需要用户需要再次寄售转自有
         if (isNeedTurn && !isTurnSuccess) {
-            new SweetAlertDialog(mActivity).setTitleText("温馨提示")
-                    .setContentText("您需要先寄售转自有，请点击确定;您也可以点击直接过账，不进行寄售转自有。").setConfirmText("确定")
-                    .setConfirmClickListener(sweetAlertDialog -> {
-                        sweetAlertDialog.dismiss();
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("温馨提示")
+                    .setMessage("您需要先寄售转自有，请点击确定;您也可以点击直接过账，不进行寄售转自有。")
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        dialog.dismiss();
                         startTurnOwnSupplies("07");
-                    }).setCancelText("直接过账")
-                    .setConfirmClickListener(sweetAlertDialog -> {
-                        //直接调用过账方法。
-                        submit2BarcodeSystem(mBottomMenus.get(0).transToSapFlag);
                     })
-                    .show();
+                    .setNegativeButton("直接过账", (dialog, which) -> {
+                        dialog.dismiss();
+                        isNeedTurn = false;
+                        submit2BarcodeSystem(mBottomMenus.get(0).transToSapFlag);
+                    }).show();
             return;
         }
+        String transferFlag = (String) SPrefUtil.getData(mBizType, "0");
+        if ("1".equals(transferFlag)) {
+            showMessage("本次采集已经过账,请先进行其他转储操作");
+            return;
+        }
+        mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.richfit.barcodesystemproduct.adapter.MSNDetailAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.domain.bean.RefDetailEntity;
 
@@ -53,7 +54,6 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
     /*转自有是否成功*/
     protected boolean isTurnSuccess = false;
 
-
     @Override
     protected int getContentId() {
         return R.layout.fragment_msn_detail;
@@ -89,7 +89,7 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
      * 刷新界面结束。注意如果用户切换界面(修改仓位等),那么系统不再自动过账
      */
     @Override
-    public void refreshComplete() {
+    final public void refreshComplete() {
         setRefreshing(true,"获取明细成功");
         if(!isNeedTurn && isTurnSuccess) {
             //如果寄售转自有成功后，系统自动去过账。
@@ -210,23 +210,6 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
      */
     protected void submit2BarcodeSystem(String transToSapFlag) {
         //如果需要寄售转自有但是没有成功过，都需要用户需要再次寄售转自有
-
-        String transferFlag = (String) SPrefUtil.getData(mBizType, "0");
-        if ("1".equals(transferFlag)) {
-            showMessage("本次采集已经过账,请先进行其他转储操作");
-            return;
-        }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
-        mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
-    }
-
-    /**
-     * 这里由于311移库需要增加是否寄售转自有的取消功能，所以
-     * 将该功能交给子类根据具体的业务重写
-     */
-    protected void showTurnConfirmDialog() {
         if (isNeedTurn && !isTurnSuccess) {
             new SweetAlertDialog(mActivity).setTitleText("温馨提示")
                     .setContentText("您需要先寄售转自有，请点击确定。").setConfirmText("确定")
@@ -236,7 +219,15 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
                     }).show();
             return;
         }
+        String transferFlag = (String) SPrefUtil.getData(mBizType, "0");
+        if ("1".equals(transferFlag)) {
+            showMessage("本次采集已经过账,请先进行其他转储操作");
+            return;
+        }
+        mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
+
 
     /**
      * 第一步过账成功后显示物料凭证
@@ -265,10 +256,8 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
             showMessage("请先过账");
             return;
         }
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
     }
 
 
@@ -320,11 +309,9 @@ public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> exten
             return;
         }
 
-        mFlagMap.clear();
-        mFlagMap.put("transToSapFlag", transToSapFlag);
         mInspectionNum = "";
         mPresenter.turnOwnSupplies(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, mFlagMap, createExtraHeaderMap(), -1);
+                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap(), -1);
     }
 
     /**

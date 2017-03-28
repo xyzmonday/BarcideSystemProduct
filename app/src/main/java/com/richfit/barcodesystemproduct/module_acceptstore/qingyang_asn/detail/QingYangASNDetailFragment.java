@@ -150,14 +150,14 @@ public class QingYangASNDetailFragment extends BaseDetailFragment<ASNDetailPrese
      * 1.过账
      */
     @Override
-    protected void submit2BarcodeSystem(String tranToSapFlag) {
+    protected void submit2BarcodeSystem(String transToSapFlag) {
         String transferFlag = (String) getData(mBizType, "0");
         if ("1".equals(transferFlag)) {
             showMessage(getString(R.string.detail_on_location));
             return;
         }
         mPresenter.submitData2BarcodeSystem(mTransId, mBizType, mRefType, mRefData.voucherDate,
-                mRefData.voucherDate,mFlagMap,createExtraHeaderMap());
+                mRefData.voucherDate,transToSapFlag,createExtraHeaderMap());
     }
 
     /**

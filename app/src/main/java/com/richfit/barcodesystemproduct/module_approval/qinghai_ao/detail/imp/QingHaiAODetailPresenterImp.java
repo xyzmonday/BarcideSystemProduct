@@ -194,19 +194,19 @@ public class QingHaiAODetailPresenterImp extends BaseDetailPresenterImp<IQingHai
      * @param userId
      * @param isLocal
      * @param voucherDate
-     * @param flagMap
+     * @param transToSapFlag
      * @param extraHeaderMap
      */
     @Override
     public void transferCollectionData(String refNum, String refCodeId, String transId,
                                        String bizType, String refType, int inspectionType, String userId,
                                        boolean isLocal, String voucherDate,
-                                       Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+                                       String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
 
         addSubscriber(Flowable.concat(uploadInspectedImages(refNum, refCodeId, transId, userId, "01", isLocal),
                 uploadInspectedImages(refNum, refCodeId, transId, userId, "02", isLocal),
-                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, flagMap, extraHeaderMap))
+                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSapFlag, extraHeaderMap))
                 .doOnComplete(() -> mRepository.deleteInspectionImages(refNum, refCodeId, isLocal))
                 .doOnComplete(() -> FileUtil.deleteDir(FileUtil.getImageCacheDir(mContext.getApplicationContext(), refNum, false)))
                 .compose(TransformerHelper.io2main())

@@ -99,11 +99,11 @@ public interface IServerRepository extends IRepository {
      * @param userId:登陆的用户ID
      * @param transId:缓存抬头id
      * @param extraHeaderMap:抬头界面的额外字段
-     * @param flagMap:不同的公司根据需求添加的标志位集合
+     * @param transToSAPFlag:不同的公司根据需求添加的标志位集合
      * @return
      */
     Flowable<String> transferCollectionData(String transId, String bizType, String refType, String userId, String voucherDate,
-                                            Map<String, Object> flagMap, Map<String, Object> extraHeaderMap);
+                                            String transToSAPFlag, Map<String, Object> extraHeaderMap);
 
     /**
      * 获取预留单据号列表
@@ -157,7 +157,7 @@ public interface IServerRepository extends IRepository {
                                                      String location, String specialInvFlag, String specialInvNum,
                                                      String invType,String deviceId);
 
-    Flowable<String> getLocationInfo(String queryType, String workId, String invId, String location);
+    Flowable<String> getLocationInfo(String queryType, String workId, String invId,String storageNum, String location);
 
     /**
      * 获取最新的App的版本信息，用于更新

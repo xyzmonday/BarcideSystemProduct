@@ -125,14 +125,12 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
     public void onBindViewHolder(ViewHolder holder, int position) {
         //绑定额外字段信息
         bindExtraUI(holder, position, mVisibleNodes.get(position).getViewType());
-        convert(holder, mVisibleNodes.get(position));
         onViewHolderBindInternal(holder, getItemViewType(position));
+        convert(holder, mVisibleNodes.get(position));
     }
 
     protected void onViewHolderBindInternal(ViewHolder holder, int viewType) {
         //不能修改子节点的数据明细，只能修改父节点和子节点的抬头
-        if (viewType == Global.CHILD_NODE_ITEM_TYPE)
-            return;
         if (mAdapterState != null) {
             mAdapterState.onBindViewHolder(holder, viewType);
         }

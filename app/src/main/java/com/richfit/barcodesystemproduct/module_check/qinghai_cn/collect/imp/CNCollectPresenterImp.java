@@ -4,11 +4,11 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.collect.ICNCollectPresenter;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.collect.ICNCollectView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.ResultEntity;
@@ -16,6 +16,8 @@ import com.richfit.domain.bean.ResultEntity;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import io.reactivex.Flowable;
 
 /**
  * Created by monday on 2017/3/3.
@@ -84,7 +86,16 @@ public class CNCollectPresenterImp extends BasePresenter<ICNCollectView>
     @Override
     public void uploadCheckDataSingle(ResultEntity result) {
         mView = getView();
-        mRepository.uploadCheckDataSingle(result)
+        Flowable<String> flowable;
+        final String checkLevel = result.checkLevel;
+        if ("01".equals(checkLevel)) {
+            flowable = Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, result.storageNum, result.location),
+                    mRepository.uploadCheckDataSingle(result));
+        } else {
+            flowable = mRepository.uploadCheckDataSingle(result);
+        }
+
+        RxSubscriber<String> subscriber = flowable
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在保存本次盘点数量...") {
                     @Override
@@ -120,5 +131,6 @@ public class CNCollectPresenterImp extends BasePresenter<ICNCollectView>
                         }
                     }
                 });
+        addSubscriber(subscriber);
     }
 }

@@ -44,17 +44,17 @@ public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePrese
     }
 
     @Override
-    public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+    public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
 
     }
 
     @Override
-    public void submitData2SAP(String transId, String bizType, String refType, String userId, String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap) {
+    public void submitData2SAP(String transId, String bizType, String refType, String userId, String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
 
     }
 
     @Override
-    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate, Map<String, Object> flagMap, Map<String, Object> extraHeaderMap, int submitFlag) {
+    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap, int submitFlag) {
 
     }
 

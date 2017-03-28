@@ -242,8 +242,15 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
             showMessage("您输入的盘点数量不合理");
             return false;
         }
+
+
         if (mRefData == null) {
             showMessage("请现在抬头页面初始化本次盘点");
+            return false;
+        }
+
+        if(TextUtils.isEmpty(mRefData.checkLevel)) {
+            showMessage("未获取到盘点级别");
             return false;
         }
 
@@ -251,6 +258,11 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
             showMessage("请先在抬头界面初始化本次盘点");
             return false;
         }
+        if("01".equals(mRefData.checkLevel) && TextUtils.isEmpty(mRefData.storageNum)) {
+            showMessage("未获取到仓库号");
+            return false;
+        }
+
 
         if (etCheckLocation.isEnabled() && isEmpty(getString(etCheckLocation))) {
             showMessage("请输入盘点仓位");
@@ -289,12 +301,13 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
             result.checkId = mRefData.checkId;
             result.workId = mRefData.workId;
             result.invId = mRefData.invId;
+            result.storageNum = mRefData.storageNum;
             result.location =  CommonUtil.toUpperCase(getString(etCheckLocation));
             result.voucherDate = mRefData.voucherDate;
             result.userId = Global.USER_ID;
             result.workId = mRefData.workId;
             result.invId = mRefData.invId;
-
+            result.checkLevel = mRefData.checkLevel;
             result.materialId = CommonUtil.Obj2String(etMaterialNum.getTag());
             result.quantity = getString(etQuantity);
             result.modifyFlag = "N";

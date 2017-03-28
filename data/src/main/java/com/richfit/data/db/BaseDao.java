@@ -1,13 +1,17 @@
 package com.richfit.data.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.InvEntity;
@@ -631,6 +635,7 @@ public class BaseDao implements ILocalDataDao {
 
     /**
      * 读取单条缓存数据明细的sql
+     *
      * @param bizType
      * @param refType
      * @return
@@ -658,11 +663,12 @@ public class BaseDao implements ILocalDataDao {
 
     /**
      * 封装单条缓存仓位级数据的sql
+     *
      * @param bizType
      * @param refType
      * @return
      */
-    protected String createSqlForReadLocTransSingle(String bizType,String refType) {
+    protected String createSqlForReadLocTransSingle(String bizType, String refType) {
         StringBuffer sb = new StringBuffer();
         sb.append("select L.id ,L.location,L.batch_num,L.quantity,L.rec_location,L.rec_batch_num ")
                 .append(" from MTL_TRANSACTION_LINES_LOCATION L ")
@@ -674,16 +680,17 @@ public class BaseDao implements ILocalDataDao {
 
     /**
      * 保存单条缓存抬头级别的sql
+     *
      * @param bizType
      * @param refType
      * @return
      */
-    protected String createSqlForWriteHeaderTransSingle(String bizType,String refType) {
+    protected String createSqlForWriteHeaderTransSingle(String bizType, String refType) {
         StringBuffer sb = new StringBuffer();
         sb.append("select id from ");
         switch (bizType) {
             case "12":
-               sb.append("mtl_transaction_headers ");
+                sb.append("mtl_transaction_headers ");
                 break;
         }
         sb.append(" where ref_code_id = ? ");
@@ -693,11 +700,12 @@ public class BaseDao implements ILocalDataDao {
 
     /**
      * 保存单条缓存明细sql
+     *
      * @param bizType
      * @param refType
      * @return
      */
-    protected String createSqlForWriteDetailTransSingle(String bizType,String refType) {
+    protected String createSqlForWriteDetailTransSingle(String bizType, String refType) {
         StringBuffer sb = new StringBuffer();
         sb.append("select id from ");
         switch (bizType) {
@@ -717,11 +725,12 @@ public class BaseDao implements ILocalDataDao {
 
     /**
      * 保存单条缓存仓位级sql
+     *
      * @param bizType
      * @param refType
      * @return
      */
-    protected String createSqlForWriteLocTransSingle(String bizType,String refType) {
+    protected String createSqlForWriteLocTransSingle(String bizType, String refType) {
         StringBuffer sb = new StringBuffer();
         sb.append("select id from ");
         switch (bizType) {
@@ -731,6 +740,51 @@ public class BaseDao implements ILocalDataDao {
         }
         sb.append(" where trans_id = ? and trans_line_id = ?");
         L.e("保存缓存仓位sql = " + sb.toString());
+        return sb.toString();
+    }
+
+    /**
+     * 读取整单缓存的抬头
+     *
+     * @param bizType
+     * @param refType
+     * @return
+     */
+    protected String createSqlForReadHeaderTrans(String bizType, String refType) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("select H.id as trans_id ,H.ref_code_id,H.voucher_date ")
+                .append(" from mtl_transaction_headers H ");
+
+        switch (bizType) {
+            case "12":
+                sb.append(" where  H.ref_code_id = ? ");
+                break;
+        }
+        //对于无参考的需要用工厂，库存地点，用户名进行查询
+        L.e("读取整单缓存抬头sql = " + sb.toString());
+        return sb.toString();
+    }
+
+    protected String createSqlForReadDetailTrans(String bizType, String refType) {
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("select  WORG.org_id as work_id ,WORG.org_code as work_code,WORG.org_name as work_name, ")
+                .append("  IORG.org_id as inv_id ,IORG.org_code as inv_code ,IORG.org_name as inv_name,")
+                .append("  L.id,L.trans_id,L.ref_line_id,L.material_id ,")
+                .append("  L.material_group,L.material_desc,L.unit,L.quantity as total_quantity")
+                .append("  from mtl_transaction_lines L left join p_auth_org WORG on L.work_id = WORG.org_id ")
+                .append("  left joint p_auth_org IORG on L.inv_id = IORG.org_id ")
+                .append("  where L.trans_id = ? ");
+
+        L.e("读取整单缓存明细行sql = " + sb.toString());
+        return sb.toString();
+    }
+
+    protected String createSqlForReadLocTrans(String bizType, String refType) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("select L.id ,L.trans_id,L.trans_line_id,L.quantity");
+
+        Log.e("yff", "读取整单缓存sql = " + sb.toString());
         return sb.toString();
     }
 
@@ -764,10 +818,233 @@ public class BaseDao implements ILocalDataDao {
         return null;
     }
 
+    /**
+     * 保存单条数据
+     *
+     * @param result
+     * @return
+     */
     @Override
     public boolean uploadCollectionDataSingle(ResultEntity result) {
-        return false;
+        boolean yk = false;// 标识是否是移库:移库的话 查询条件增加 recWorkId & recInvId
+        boolean custom = false;// 标识是否需要扩展表赋值:201成本中心 221WBS
+        boolean subGroup = false;// 标识组件类型->543用到:需要匹配预留和预留行
+        boolean refDoc = false;// 标识是否需要匹配参考物料凭证和行号读取缓存
+        boolean prodGroup = false;// 标识产成品类型：需要增加refDoc is null的条件
+        boolean device = false;// 庆阳公司的库存需要设备字段
+
+        switch (result.businessType) {
+            case "13":// 采购入库-105(非必检)
+                refDoc = true;
+                break;
+            case "19":
+                prodGroup = true;
+                break;
+            case "19_ZJ":
+                subGroup = true;
+                // 针对委外的组件进行单独处理：把组件信息和成品信息合并到一张单据中
+                result.businessType = "19";
+                break;
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+                custom = true;
+                break;
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "74":// 代管料移库
+            case "94":// 代管料调拨-HRM
+                yk = true;
+                if ("8200".equals(result.companyCode)) {
+                    device = true;
+                }
+                break;
+            default:
+                break;
+        }
+        //1.抬头
+        final String transId = saveBusinessHeader(result);
+        if (TextUtils.isEmpty(transId)) {
+            return false;
+        }
+        result.transId = transId;
+        // 2.行表
+        String transLineId = saveBusinessLine(result, yk, subGroup, refDoc, prodGroup);
+        if (TextUtils.isEmpty(transLineId)) {
+            return false;
+        }
+        result.transLineId = transLineId;
+
+
+
+
+        return true;
     }
+
+    /**
+     * 保存单条缓存数据的抬头部分
+     *
+     * @param param
+     * @return
+     */
+    private String saveBusinessHeader(ResultEntity param) {
+        // 1.查头是否存在
+        // 条件
+        // 无参考：bizType、createdBy、
+        // 有参考：bizType、refType、refCodeId
+        StringBuffer sb = new StringBuffer();
+        SQLiteDatabase db = getWritableDB();
+        String transId = "";
+
+        //定义一个匹配条件的容器
+        List<String> selectionsList = new ArrayList<>();
+        String[] selections;
+
+        //1.获取抬头id是否存在，如果存在则跟新，否者新增一条
+        sb.append("select id from mtl_transaction_headers H where H.biz_type = ? ");
+        selectionsList.add(param.businessType);
+        switch (param.businessType) {
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "94":// 代管料调拨-HRM
+                sb.append(" and H.created_by = ?");
+                selectionsList.add(param.createdBy);
+                break;
+            default:
+                sb.append(" and H.ref_type = ? and H.ref_code_id = ? ");
+                selectionsList.add(param.refType);
+                selectionsList.add(param.refCodeId);
+                break;
+        }
+        //注意这里不能使用list.toArray直接转，因为Object[]不能直接转String[]
+        selections = new String[selectionsList.size()];
+        selectionsList.toArray(selections);
+        Cursor cursor = db.rawQuery(sb.toString(), selections);
+        while (cursor.moveToNext()) {
+            transId = cursor.getString(0);
+        }
+        sb.setLength(0);
+        cursor.close();
+        ContentValues cv;
+        if (TextUtils.isEmpty(transId)) {
+            //如果不存在，那么直接插入一条数据
+            cv = new ContentValues();
+            //随机生成一个主键
+            transId = UiUtil.getUUID();
+            cv.put("id", transId);
+            cv.put("ref_code_id", param.refCodeId);
+            cv.put("biz_type", param.businessType);
+            cv.put("ref_type", param.refType);
+            cv.put("ref_code", param.refCode);
+            cv.put("voucher_date", param.voucherDate);
+            cv.put("created_by", param.userId);
+            cv.put("move_type", param.moveType);
+            cv.put("supplier_id", param.supplierId);
+            cv.put("supplier_code", param.supplierNum);
+            cv.put("created_by", param.createdBy);
+            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            long iResult = db.insert("mtl_transaction_headers", null, cv);
+            if (iResult < 1) {
+                return "";
+            }
+        } else {
+            //修改
+            cv = new ContentValues();
+            cv.put("id", transId);
+            cv.put("created_by", param.createdBy);
+            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            int iResult = db.update("mtl_transaction_headers", cv, "id = ?", new String[]{transId});
+            if (iResult < 1) {
+                return "";
+            }
+        }
+        return transId;
+
+    }
+
+    /**
+     * 保存单条数据的明细部分
+     * @param param
+     * @param yk
+     * @param subGroup
+     * @param refDoc
+     * @param prodGroup
+     * @return
+     */
+    private String saveBusinessLine(ResultEntity param, boolean yk, boolean subGroup,
+                                    boolean refDoc, boolean prodGroup) {
+        String transLineId = null;
+        String transId = param.transId;
+        // 2.行 查询行是否存在
+        // 条件
+        // 无参考：workId、invId、materialId 移库增加 recWorkId、recInvId
+        // 有参考：refLineId
+        StringBuffer sb = new StringBuffer();
+        SQLiteDatabase db = getWritableDB();
+        String[] selections ;
+        List<String> selectionList = new ArrayList<>();
+        sb.append("select L.id from mtl_transaction_lines L where L.trans_id = ?");
+        selectionList.add(transId);
+        switch (param.businessType) {
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "94":// 代管料调拨-HRM
+                if (yk) {
+                    sb.append(" and L.rec_inv_id = ? and L.rec_work_id = ? ");
+                    selectionList.add(param.recInvId);
+                    selectionList.add(param.recWorkId);
+                }
+                break;
+            default:
+                sb.append(" and L.ref_line_id = ?");
+                selectionList.add(param.refLineId);
+                break;
+        }
+
+        if (subGroup || refDoc) {
+            // 组件和有参考物料凭证的业务还需要加上对应的单号和行号
+            sb.append(" and L.ref_doc = ? and L.ref_doc_item = ?");
+            selectionList.add(param.refDoc);
+            selectionList.add(CommonUtil.valueOf(param.refDocItem));
+        }
+        if (prodGroup) {
+            // 产成品需要去除参考单据号
+            sb.append(" and L.ref_doc is null");
+        }
+
+        selections = new String[selectionList.size()];
+        selectionList.toArray(selections);
+
+        Cursor cursor = db.rawQuery(sb.toString(), selections);
+        while (cursor.moveToNext()){
+            transLineId = cursor.getString(0);
+        }
+        sb.setLength(0);
+        cursor.close();
+
+
+
+
+
+        db.close();
+        return transLineId;
+    }
+
 
     @Override
     public ReferenceEntity getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkNum) {
