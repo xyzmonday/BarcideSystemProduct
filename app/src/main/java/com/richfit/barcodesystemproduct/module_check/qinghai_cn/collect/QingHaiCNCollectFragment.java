@@ -72,6 +72,8 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
     ArrayList<String> mRefLines;
     /*单据行适配器*/
     ArrayAdapter<String> mRefLineAdapter;
+    /*是否新增标识*/
+    boolean isNewFlag = false;
 
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
@@ -252,6 +254,12 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
             for (InventoryEntity item : mCurrentInventoryList) {
                 list.add(!TextUtils.isEmpty(item.lineNum) ? item.lineNum : "");
             }
+            for (InventoryEntity item : mCurrentInventoryList) {
+                if("X".equalsIgnoreCase(item.newFlag)) {
+                    isNewFlag = true;
+                    break;
+                }
+            }
             setupRefLineAdapter(list);
         }
     }
@@ -340,8 +348,8 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
             showMessage("未获取到仓库号");
             return false;
         }
-
-        if (spRefLine.getSelectedItemPosition() == 0) {
+        //如果是新增那么不需要检查单据行
+        if (!isNewFlag && spRefLine.getSelectedItemPosition() == 0) {
             showMessage("请选择单据行");
             return false;
         }
@@ -361,7 +369,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
             return false;
         }
 
-        if (mCurrentInventoryList == null && mCurrentInventoryList.size() == 0) {
+        if (mCurrentInventoryList == null && mCurrentInventoryList.size() < 1) {
             showMessage("请先获取需要盘点的库存明细");
             return false;
         }

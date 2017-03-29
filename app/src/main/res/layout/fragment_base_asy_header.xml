@@ -78,6 +78,14 @@
 
     </LinearLayout>
 
+    <!--对于庆阳退库需要增加的控件-->
+    <ViewStub
+        android:id="@+id/viewstub_qingyang_rsy_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout="@layout/viewstub_qingyang_rsy_header" />
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -10,58 +10,38 @@ import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.ImageEntity;
+import com.richfit.domain.repository.IInspectionServiceDao;
 
 import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-
-
 /**
- * 验收模块的Dao层
- * Created by monday on 2016/12/13.
+ * Created by monday on 2017/3/29.
  */
 
-public class ApprovalDao extends BaseDao {
+public class InspectionServiceDao extends BaseDao implements IInspectionServiceDao {
 
     @Inject
-    public ApprovalDao(@ContextLife("Application") Context context) {
+    public InspectionServiceDao(@ContextLife("Application") Context context) {
         super(context);
     }
 
-    /**
-     * 删除验收整单的缓存图片
-     *
-     * @param refNum
-     * @param isLocal
-     * @return
-     */
     @Override
     public void deleteInspectionImages(String refNum, String refCodeId, boolean isLocal) {
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         db.delete("MTL_IMAGES", "ref_num = ? and local_flag = ?", new String[]{refNum, isLocal ? "Y" : "N"});
         db.close();
     }
 
-    /**
-     * 删除整行图片
-     *
-     * @param refNum：参考单据
-     * @param refLineId：明细行id
-     * @param refLineNum：行号
-     * @param isLocal：是否是离线模式
-     * @return
-     */
+    @Override
     public void deleteInspectionImagesSingle(String refNum, String refLineNum, String refLineId, boolean isLocal) {
-
         if (TextUtils.isEmpty(refLineId)) {
             return;
         }
         SQLiteDatabase db = null;
         try {
-            db = mSqliteHelper.getReadableDatabase();
+            db = getWritableDB();
             db.delete("MTL_IMAGES", "ref_line_id = ? and local_flag = ?", new String[]{refLineId, isLocal ? "Y" : "N"});
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,15 +52,9 @@ public class ApprovalDao extends BaseDao {
         }
     }
 
-    /**
-     * 在拍照界面，用户选择需要删除的图片集合，然后进行删除。
-     *
-     * @param images：需要删除的图片集合
-     * @return
-     */
     @Override
     public boolean deleteTakedImages(ArrayList<ImageEntity> images, boolean isLocal) {
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         int row = -1;
         try {
             for (ImageEntity image : images) {
@@ -99,20 +73,9 @@ public class ApprovalDao extends BaseDao {
         return row > 0 ? true : false;
     }
 
-
-    /**
-     * 保存拍照获取的照片信息
-     *
-     * @param images：照片数据源
-     * @param refNum：单据号
-     * @param refLineId：行id
-     * @param takePhotoType：拍照类型
-     * @param imageDir：sd卡缓存的照片目录
-     * @param isLocal：离线或者在线模式
-     */
-    public void saveTakedImages(ArrayList<ImageEntity> images, String refNum, String refLineId,
-                                int takePhotoType, String imageDir, boolean isLocal) {
-        SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
+    @Override
+    public void saveTakedImages(ArrayList<ImageEntity> images, String refNum, String refLineId, int takePhotoType, String imageDir, boolean isLocal) {
+        SQLiteDatabase db = getWritableDB();
         for (ImageEntity image : images) {
             db.delete("MTL_IMAGES", "ref_num = ? and local_flag = ? and image_name = ?",
                     new String[]{refNum, isLocal ? "Y" : "N", image.imageName});
@@ -135,15 +98,10 @@ public class ApprovalDao extends BaseDao {
         db.close();
     }
 
-    /**
-     * 读取整单缓存图片
-     *
-     * @param refNum
-     * @param isLocal
-     */
+    @Override
     public ArrayList<ImageEntity> readImagesByRefNum(String refNum, boolean isLocal) {
         ArrayList<ImageEntity> images = new ArrayList<>();
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         Cursor cursor;
         cursor = db.rawQuery("select ref_line_id,image_dir,image_name,created_by,creation_date,take_photo_type,biz_type,ref_type from MTL_IMAGES where ref_num = ? and local_flag = ?",
                 new String[]{refNum, isLocal ? "Y" : "N"});

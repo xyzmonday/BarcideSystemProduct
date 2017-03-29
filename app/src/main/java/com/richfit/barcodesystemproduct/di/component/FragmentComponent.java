@@ -93,6 +93,10 @@ import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.QingHaiRS
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.QingHaiRSYDetailFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.QingHaiRSYEditFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.QingHaiRSYHeaderFragment;
+import com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYCollectFragment;
+import com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYDetailFragment;
+import com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYEditFragment;
+import com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYHeaderFragment;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.scope.FragmentScope;
 
@@ -285,5 +289,10 @@ public interface FragmentComponent {
     void inject(MaterialInfoQueryFragment fragment);
     void inject(LQHeaderFragment fragment);
     void inject(LQDetailFragment fragment);
+
+    void inject(QingYangRSYHeaderFragment fragment);
+    void inject(QingYangRSYDetailFragment fragment);
+    void inject(QingYangRSYCollectFragment fragment);
+    void inject(QingYangRSYEditFragment framgent);
 
 }

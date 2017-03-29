@@ -54,14 +54,14 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.ONLINE_MODE;
-                    mPresenter.loadFragmentConfig(Global.companyId, QINGHAI_FRAGMENT_CONFIG);
+                    mPresenter.loadFragmentConfig(Global.companyId, QINGYANG_FRAGMENT_CONFIG);
                 });
 
         RxView.clicks(btnOfflineMode)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.OFFLINE_MODE;
-                    mPresenter.loadFragmentConfig(Global.companyId, QINGHAI_FRAGMENT_CONFIG);
+                    mPresenter.loadFragmentConfig(Global.companyId, QINGYANG_FRAGMENT_CONFIG);
                 });
     }
 

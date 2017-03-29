@@ -1,4 +1,4 @@
-package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp;
+package com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.imp;
 
 import android.content.Context;
 
@@ -18,10 +18,10 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2017/2/27.
  */
 
-public class QingHaiRSYEditPresenterImp extends ASEditPresenterImp {
+public class QingYangRSYEditPresenterImp extends ASEditPresenterImp {
 
     @Inject
-    public QingHaiRSYEditPresenterImp(@ContextLife("Activity") Context context) {
+    public QingYangRSYEditPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
 
@@ -29,8 +29,7 @@ public class QingHaiRSYEditPresenterImp extends ASEditPresenterImp {
     public void uploadCollectionDataSingle(ResultEntity result) {
         mView = getView();
         ResourceSubscriber<String> subscriber =
-                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, "", result.location),
-                        mRepository.uploadCollectionDataSingle(result))
+                mRepository.uploadCollectionDataSingle(result)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {
                             @Override

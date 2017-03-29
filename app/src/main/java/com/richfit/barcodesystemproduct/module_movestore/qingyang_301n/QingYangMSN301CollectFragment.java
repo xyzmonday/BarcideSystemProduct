@@ -9,6 +9,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.BaseMSNCollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.imp.QingYangNMS301CollectPresenterImp;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ResultEntity;
 
 import butterknife.BindView;
@@ -52,7 +53,9 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYa
             }
             final String materialNum = list[Global.MATERIAL_POS];
             final String batchFlag = list[Global.BATCHFALG_POS];
-            mDeviceId = list[list.length - 1];
+            mDeviceId = list[list.length - 2];
+//            mDeviceId = "5DEA6C98E1865F172D6604B702F779F3";
+            L.e("扫描到的设备Id = " + mDeviceId);
             //如果设备Id为空那么不允许在操作.isContinue为true表示设备Id不为空可以继续该业务
             final boolean isContinue = !isEmpty(mDeviceId);
             //这里通过设备Id禁用掉获取物料信息
@@ -61,6 +64,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYa
                 showMessage("未获取到设备Id,请检查您的条码内容是否正确");
                 return;
             }
+
             if (cbSingle.isChecked() && materialNum.equalsIgnoreCase(getString(etMaterialNum))) {
                 //如果已经选中单品，那么说明已经扫描过一次。必须保证每一次的物料都一样
                 saveCollectedData();
@@ -141,12 +145,16 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYa
     }
 
     /**
-     * 不论设备信息是否获取成功都需要继续进行其他的业务。
+     * 如果设备信息失败不允许做其他的业务
      */
     @Override
     public void getDeviceInfoFail(String message) {
         showMessage(message);
-        mPresenter.getSendInvsByWorks(mRefData.workId, getOrgFlag());
+        //禁用掉发出库位，以便禁止业务继续
+        mSendInvs.clear();
+        if(mSendInvAdapter != null) {
+            mSendInvAdapter.notifyDataSetChanged();
+        }
     }
 
 

@@ -44,7 +44,8 @@ import butterknife.BindView;
  *
  * Created by monday on 2016/11/7.
  */
-public class HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View,
+public class
+HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View,
         OnItemClickListener{
 
     @BindView(R.id.modular_list)

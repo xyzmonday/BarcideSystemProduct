@@ -251,7 +251,7 @@
 
         <!--对于青海必检105入库需要增加的控件-->
         <ViewStub
-            android:id="@+id/viewstub_as_collect"
+            android:id="@+id/viewstub_qinghai_as_105_collect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout="@layout/viewstub_qinghai_as_105_collect" />

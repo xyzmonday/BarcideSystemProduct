@@ -49,7 +49,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS
     @Override
     protected void initView() {
         llInsLostQuantity.setVisibility(View.VISIBLE);
-        ViewStub stub = (ViewStub) mActivity.findViewById(R.id.viewstub_as_collect);
+        ViewStub stub = (ViewStub) mActivity.findViewById(R.id.viewstub_qinghai_as_105_collect);
         stub.inflate();
         //退货交货数量
         etReturnQuantity = (EditText) mActivity.findViewById(R.id.et_return_quantity);

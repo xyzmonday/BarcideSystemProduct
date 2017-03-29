@@ -1,0 +1,201 @@
+package com.richfit.domain.repository;
+
+import android.support.annotation.NonNull;
+
+import com.richfit.domain.bean.BizFragmentConfig;
+import com.richfit.domain.bean.ImageEntity;
+import com.richfit.domain.bean.InvEntity;
+import com.richfit.domain.bean.MenuNode;
+import com.richfit.domain.bean.RowConfig;
+import com.richfit.domain.bean.SimpleEntity;
+import com.richfit.domain.bean.UserEntity;
+import com.richfit.domain.bean.WorkEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * 本地数据Dao需要实现的接口。该接口描述的是基础数据，用户登陆，
+ * 模块菜单，页面配置等与本地数据库操作的协议
+ * Created by monday on 2017/3/25.
+ */
+
+public interface IBasicServiceDao {
+
+    /**
+     * 读取用户登陆信息
+     * @param userName
+     * @param password
+     * @return
+     */
+    ArrayList<String> readUserInfo(String userName, String password);
+
+    /**
+     * 保存用户登陆信息
+     * @param userEntity
+     */
+    void saveUserInfo(UserEntity userEntity);
+
+    /**
+     * 保存扩展字段配置信息
+     * @param configs
+     */
+    void saveExtraConfigInfo(List<RowConfig> configs);
+
+    /**
+     * 读取扩展字段配置信息
+     * @param companyCode
+     * @param bizType
+     * @param refType
+     * @param configType
+     * @return
+     */
+    ArrayList<RowConfig> readExtraConfigInfo(String companyCode, String bizType, String refType,
+                                             String configType);
+
+    /**
+     * 读取扩展字段字典数据
+     * @param propertyCode
+     * @param dictionaryCode
+     * @return
+     */
+    Map<String, Object> readExtraDataSourceByDictionary(@NonNull String propertyCode, @NonNull String dictionaryCode);
+
+    /**
+     * 获取该类基础数据上一次下载的日期
+     * @param queryType
+     * @return
+     */
+    String getLoadBasicDataTaskDate(String queryType);
+
+    /**
+     * 保存该类基础数据本次下载的日期
+     * @param queryType
+     * @param queryDate
+     */
+    void saveLoadBasicDataTaskDate(String queryType, String queryDate);
+
+    /**
+     * 保存基础数据
+     * @param maps
+     * @return
+     */
+    int saveBasicData(List<Map<String, Object>> maps);
+
+    /**
+     * 跟新扩展字段基础数据表字段
+     * @param map
+     */
+    void updateExtraConfigTable(Map<String, Set<String>> map);
+
+    /**
+     * 获取该工厂下的所有库存地点
+     * @param workId
+     * @param flag
+     * @return
+     */
+    ArrayList<InvEntity> getInvsByWorkId(String workId, int flag);
+
+    /**
+     * 获取工厂列表
+     * @param flag
+     * @return
+     */
+    ArrayList<WorkEntity> getWorks(int flag);
+
+
+    /**
+     * 检查接收库位和发出库位实发在同一个仓库
+     * @param sendWorkId
+     * @param sendInvCode
+     * @param recWorkId
+     * @param recInvCode
+     * @param flag
+     * @return
+     */
+    boolean checkWareHouseNum(String sendWorkId, String sendInvCode, String recWorkId, String recInvCode, int flag);
+
+    /**
+     * 获取供应商列表
+     * @param workCode
+     * @param keyWord
+     * @param defaultItemNum
+     * @param flag
+     * @return
+     */
+    ArrayList<SimpleEntity> getSupplierList(String workCode, String keyWord, int defaultItemNum, int flag);
+
+    /**
+     * 获取成本中心列表
+     * @param workCode
+     * @param keyWord
+     * @param defaultItemNum
+     * @param flag
+     * @return
+     */
+    ArrayList<SimpleEntity> getCostCenterList(String workCode, String keyWord, int defaultItemNum, int flag);
+
+    /**
+     * 获取项目好列表
+     * @param workCode
+     * @param keyWord
+     * @param defaultItemNum
+     * @param flag
+     * @return
+     */
+    ArrayList<SimpleEntity> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag);
+
+    /**
+     * 保存页面配置信息
+     * @param bizFragmentConfigs
+     * @return
+     */
+    boolean saveBizFragmentConfig(ArrayList<BizFragmentConfig> bizFragmentConfigs);
+
+    /**
+     * 读取页面配置信息
+     * @param bizType
+     * @param refType
+     * @param fragmentType
+     * @return
+     */
+    ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType);
+
+
+    /**
+     * 获取该库位下的仓库号
+     * @param workId
+     * @param workCode
+     * @param invId
+     * @param invCode
+     * @return
+     */
+    String getStorageNum(String workId, String workCode, String invId, String invCode);
+
+    /**
+     * 获取仓库号列表
+     * @param flag
+     * @return
+     */
+    ArrayList<String> getStorageNumList(int flag);
+
+    /**
+     * 保存菜单信息
+     * @param menus
+     * @param loginId
+     * @param mode
+     */
+    void saveMenuInfo(List<MenuNode> menus, String loginId, int mode);
+
+    /**
+     * 读取菜单信息
+     * @param loginId
+     * @param mode
+     * @return
+     */
+    ArrayList<MenuNode> readMenuInfo(String loginId, int mode);
+
+
+}

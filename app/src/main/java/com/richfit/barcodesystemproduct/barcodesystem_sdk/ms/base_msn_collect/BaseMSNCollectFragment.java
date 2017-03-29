@@ -95,7 +95,7 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
     protected boolean isWareHouseSame;
 
     /*发出库位*/
-    private InvAdapter mSendInvAdapter;
+    protected InvAdapter mSendInvAdapter;
     protected List<InvEntity> mSendInvs;
     /*发出仓位*/
     protected List<InventoryEntity> mInventoryDatas;

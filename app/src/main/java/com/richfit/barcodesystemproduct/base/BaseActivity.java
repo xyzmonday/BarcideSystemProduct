@@ -406,14 +406,15 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
             return;
 
         //仓位和单据不加密
+        L.e("扫描得到的原始数据 barcodeInfo " + info);
         int length = info.split("\\|", -1).length;
         String barcodeInfo;
         if (length > 1) {
-            barcodeInfo = CharTrans(info);
+//            barcodeInfo = CharTrans(info);
+            barcodeInfo = info;
         } else {
             barcodeInfo = info;
         }
-        L.e("扫描得到的原始数据 barcodeInfo " + barcodeInfo);
         String a[] = barcodeInfo.split("\\|", -1);
         handleBarCodeScanResult(mType, a);
     }

@@ -3,7 +3,6 @@ package com.richfit.data.repository.local;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.richfit.common_lib.scope.Type;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.ImageEntity;
@@ -17,8 +16,13 @@ import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
 import com.richfit.domain.bean.UserEntity;
 import com.richfit.domain.bean.WorkEntity;
-import com.richfit.domain.repository.ILocalDataDao;
+import com.richfit.domain.repository.IBasicServiceDao;
+import com.richfit.domain.repository.IBusinessService;
+import com.richfit.domain.repository.ICheckServiceDao;
+import com.richfit.domain.repository.IInspectionServiceDao;
 import com.richfit.domain.repository.ILocalRepository;
+import com.richfit.domain.repository.IReferenceServiceDao;
+import com.richfit.domain.repository.ITransferServiceDao;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,17 +39,28 @@ import io.reactivex.Flowable;
  */
 
 public class LocalRepositoryImp implements ILocalRepository {
-    private ILocalDataDao mCommonDao;
-    private ILocalDataDao mApprovalDao;
-    private ILocalDataDao mASDao;
+
+    private IBasicServiceDao mBasicServiceDao;
+    private IInspectionServiceDao mInspectionServiceDao;
+    private IBusinessService mBusinessServiceDao;
+    private IReferenceServiceDao mReferenceServiceDao;
+    private ITransferServiceDao mTransferServiceDao;
+    private ICheckServiceDao mCheckServiceDao;
 
     @Inject
-    public LocalRepositoryImp(@Type("CommonDao") ILocalDataDao commonDao,
-                              @Type("ApprovalDao") ILocalDataDao approvalDao,
-                              @Type("ASDao") ILocalDataDao asDao) {
-        this.mCommonDao = commonDao;
-        this.mApprovalDao = approvalDao;
-        this.mASDao = asDao;
+    public LocalRepositoryImp(IBasicServiceDao basicServiceDao,
+                              IInspectionServiceDao inspectionServiceDao,
+                              IBusinessService businessServiceDao,
+                              IReferenceServiceDao referenceServiceDao,
+                              ITransferServiceDao transferServiceDao,
+                              ICheckServiceDao checkServiceDao) {
+
+        this.mBasicServiceDao = basicServiceDao;
+        this.mInspectionServiceDao = inspectionServiceDao;
+        this.mBusinessServiceDao = businessServiceDao;
+        this.mReferenceServiceDao = referenceServiceDao;
+        this.mTransferServiceDao = transferServiceDao;
+        this.mCheckServiceDao = checkServiceDao;
     }
 
     @Override
@@ -96,17 +111,17 @@ public class LocalRepositoryImp implements ILocalRepository {
         userEntity.userName = userName;
         userEntity.password = password;
         return Flowable.just(userEntity)
-                .flatMap(data -> Flowable.just(mCommonDao.readUserInfo(data.userName, data.password)));
+                .flatMap(data -> Flowable.just(mBasicServiceDao.readUserInfo(data.userName, data.password)));
     }
 
     @Override
     public void saveUserInfo(UserEntity userEntity) {
-        mCommonDao.saveUserInfo(userEntity);
+        mBasicServiceDao.saveUserInfo(userEntity);
     }
 
     @Override
     public void saveExtraConfigInfo(List<RowConfig> configs) {
-        mCommonDao.saveExtraConfigInfo(configs);
+        mBasicServiceDao.saveExtraConfigInfo(configs);
     }
 
     @Override
@@ -118,14 +133,14 @@ public class LocalRepositoryImp implements ILocalRepository {
         config.refType = refType;
         config.configType = configType;
         return Flowable.just(config).flatMap(data ->
-                Flowable.just(mCommonDao.readExtraConfigInfo(data.companyId,
+                Flowable.just(mBasicServiceDao.readExtraConfigInfo(data.companyId,
                         data.businessType, data.refType, data.configType)));
     }
 
     @Override
     public Flowable<Map<String, Object>> readExtraDataSourceByDictionary(String propertyCode, String dictionaryCode) {
         return Flowable.just(dictionaryCode).flatMap(code -> {
-            Map<String, Object> source = mCommonDao.readExtraDataSourceByDictionary(propertyCode, code);
+            Map<String, Object> source = mBasicServiceDao.readExtraDataSourceByDictionary(propertyCode, code);
             Map<String, Object> map = new HashMap<>();
             map.put(UiUtil.MD5(propertyCode), source);
             return Flowable.just(map);
@@ -134,30 +149,30 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public String getLoadBasicDataTaskDate(@NonNull String queryType) {
-        return mCommonDao.getLoadBasicDataTaskDate(queryType);
+        return mBasicServiceDao.getLoadBasicDataTaskDate(queryType);
     }
 
     @Override
     public void saveLoadBasicDataTaskDate(@NonNull String queryType, @NonNull String queryDate) {
-        mCommonDao.saveLoadBasicDataTaskDate(queryType, queryDate);
+        mBasicServiceDao.saveLoadBasicDataTaskDate(queryType, queryDate);
     }
 
     @Override
     public Flowable<Integer> saveBasicData(List<Map<String, Object>> maps) {
         return Flowable.just(maps).flatMap(data ->
-                Flowable.just(mCommonDao.saveBasicData(data)));
+                Flowable.just(mBasicServiceDao.saveBasicData(data)));
     }
 
     @Override
     public void updateExtraConfigTable(Map<String, Set<String>> map) {
-        mCommonDao.updateExtraConfigTable(map);
+        mBasicServiceDao.updateExtraConfigTable(map);
     }
 
     @Override
     public Flowable<ArrayList<InvEntity>> getInvsByWorkId(String workId, int flag) {
         return Flowable.just(workId)
                 .flatMap(id -> {
-                    ArrayList<InvEntity> invs = mCommonDao.getInvsByWorkId(id, flag);
+                    ArrayList<InvEntity> invs = mBasicServiceDao.getInvsByWorkId(id, flag);
                     if (invs == null || invs.size() == 0) {
                         return Flowable.error(new Throwable("未获到库存地点"));
                     }
@@ -167,14 +182,14 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<ArrayList<WorkEntity>> getWorks(int flag) {
-        return Flowable.just(flag).flatMap(type -> Flowable.just(mCommonDao.getWorks(type)));
+        return Flowable.just(flag).flatMap(type -> Flowable.just(mBasicServiceDao.getWorks(type)));
     }
 
     @Override
     public Flowable<Boolean> checkWareHouseNum(String sendWorkId, String sendInvCode, String recWorkId,
                                                String recInvCode, int flag) {
         return Flowable.just(sendWorkId).flatMap(id -> {
-            if (!mCommonDao.checkWareHouseNum(id, sendInvCode, recWorkId, recInvCode, flag)) {
+            if (!mBasicServiceDao.checkWareHouseNum(id, sendInvCode, recWorkId, recInvCode, flag)) {
                 return Flowable.error(new Throwable("您选择的发出库位与接收库位不隶属于同一个ERP系统仓库号"));
             }
             return Flowable.just(true);
@@ -185,7 +200,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     public Flowable<ArrayList<SimpleEntity>> getSupplierList(String workCode, String keyWord, int defaultItemNum, int flag) {
         return Flowable.just(keyWord)
                 .flatMap(code -> {
-                    ArrayList<SimpleEntity> list = mCommonDao.getSupplierList(workCode, code, defaultItemNum, flag);
+                    ArrayList<SimpleEntity> list = mBasicServiceDao.getSupplierList(workCode, code, defaultItemNum, flag);
                     if (list == null || list.size() == 0) {
                         return Flowable.error(new Throwable("未获取到供应商,请检查是否您选择的工厂是否正确或者是否在设置界面同步过供应商"));
                     }
@@ -196,7 +211,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<ArrayList<SimpleEntity>> getCostCenterList(String workCode, String keyWord, int defaultItemNum, int flag) {
         return Flowable.just(keyWord).flatMap(key -> {
-            ArrayList<SimpleEntity> list = mCommonDao.getCostCenterList(workCode, key, defaultItemNum, flag);
+            ArrayList<SimpleEntity> list = mBasicServiceDao.getCostCenterList(workCode, key, defaultItemNum, flag);
             if (list == null || list.size() == 0) {
                 return Flowable.error(new Throwable("未获取到成本中心,请检查是否您选择的工厂是否正确或者是否在设置界面同步过成本中心"));
             }
@@ -207,7 +222,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<ArrayList<SimpleEntity>> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
         return Flowable.just(keyWord).flatMap(key -> {
-            ArrayList<SimpleEntity> list = mCommonDao.getProjectNumList(workCode, key, defaultItemNum, flag);
+            ArrayList<SimpleEntity> list = mBasicServiceDao.getProjectNumList(workCode, key, defaultItemNum, flag);
             if (list == null || list.size() == 0) {
                 return Flowable.error(new Throwable("未获取到项目编号,请检查是否您选择的工厂是否正确或者是否在设置界面同步过项目编号"));
             }
@@ -218,14 +233,14 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<Boolean> saveBizFragmentConfig(ArrayList<BizFragmentConfig> bizFragmentConfigs) {
         return Flowable.just(bizFragmentConfigs)
-                .flatMap(configs -> Flowable.just(mCommonDao.saveBizFragmentConfig(configs)));
+                .flatMap(configs -> Flowable.just(mBasicServiceDao.saveBizFragmentConfig(configs)));
     }
 
     @Override
     public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
         return Flowable.just(bizType)
                 .flatMap(type -> {
-                    ArrayList<BizFragmentConfig> fragmentConfigs = mCommonDao.readBizFragmentConfig(type, refType, fragmentType);
+                    ArrayList<BizFragmentConfig> fragmentConfigs = mBasicServiceDao.readBizFragmentConfig(type, refType, fragmentType);
                     if (fragmentConfigs == null || fragmentConfigs.size() == 0) {
                         return Flowable.error(new Throwable("未获取到配置信息"));
                     }
@@ -235,18 +250,18 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public void deleteInspectionImages(String refNum, String refCodeId, boolean isLocal) {
-        mApprovalDao.deleteInspectionImages(refNum, refCodeId, isLocal);
+        mInspectionServiceDao.deleteInspectionImages(refNum, refCodeId, isLocal);
     }
 
     @Override
     public void deleteInspectionImagesSingle(String refNum, String refLineNum, String refLineId, boolean isLocal) {
-        mApprovalDao.deleteInspectionImagesSingle(refNum, refLineNum, refLineId, isLocal);
+        mInspectionServiceDao.deleteInspectionImagesSingle(refNum, refLineNum, refLineId, isLocal);
     }
 
     @Override
     public Flowable<String> deleteTakedImages(ArrayList<ImageEntity> images, boolean isLocal) {
         return Flowable.just(images).flatMap(imgs -> {
-            boolean flag = mApprovalDao.deleteTakedImages(imgs, isLocal);
+            boolean flag = mInspectionServiceDao.deleteTakedImages(imgs, isLocal);
             if (!flag) {
                 return Flowable.error(new Throwable("删除图片失败"));
             }
@@ -257,19 +272,19 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public void saveTakedImages(ArrayList<ImageEntity> images, String refNum, String refLineId,
                                 int takePhotoType, String imageDir, boolean isLocal) {
-        mApprovalDao.saveTakedImages(images, refNum, refLineId, takePhotoType, imageDir, isLocal);
+        mInspectionServiceDao.saveTakedImages(images, refNum, refLineId, takePhotoType, imageDir, isLocal);
     }
 
     @Override
     public ArrayList<ImageEntity> readImagesByRefNum(String refNum, boolean isLocal) {
-        return mApprovalDao.readImagesByRefNum(refNum, isLocal);
+        return mInspectionServiceDao.readImagesByRefNum(refNum, isLocal);
     }
 
     @Override
     public Flowable<String> getStorageNum(String workId, String workCode, String invId, String invCode) {
         return Flowable.just(workId)
-                .flatMap(id->{
-                    String storageNum = mCommonDao.getStorageNum(id, workCode, invId, invCode);
+                .flatMap(id -> {
+                    String storageNum = mBasicServiceDao.getStorageNum(id, workCode, invId, invCode);
                     if (TextUtils.isEmpty(storageNum)) {
                         return Flowable.error(new Throwable("未获取到仓库号"));
                     }
@@ -281,9 +296,9 @@ public class LocalRepositoryImp implements ILocalRepository {
     public Flowable<ArrayList<String>> getStorageNumList(int flag) {
         return Flowable.just(flag)
                 .flatMap(state -> {
-                    final ArrayList<String> list = mCommonDao.getStorageNumList(state);
+                    final ArrayList<String> list = mBasicServiceDao.getStorageNumList(state);
                     if (list == null || list.size() <= 1) {
-                        return  Flowable.error(new Throwable("未查询到仓库列表"));
+                        return Flowable.error(new Throwable("未查询到仓库列表"));
                     }
                     return Flowable.just(list);
                 });
@@ -291,14 +306,14 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public void saveMenuInfo(List<MenuNode> menus, String loginId, int mode) {
-        mCommonDao.saveMenuInfo(menus, loginId, mode);
+        mBasicServiceDao.saveMenuInfo(menus, loginId, mode);
     }
 
     @Override
     public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId, int mode) {
         return Flowable.just(loginId)
-                .flatMap(id->{
-                    ArrayList<MenuNode> menuNodes = mCommonDao.readMenuInfo(id, mode);
+                .flatMap(id -> {
+                    ArrayList<MenuNode> menuNodes = mBasicServiceDao.readMenuInfo(id, mode);
                     if (menuNodes == null || menuNodes.size() == 0) {
                         return Flowable.error(new Throwable("未获取到菜单信息"));
                     }
@@ -306,21 +321,6 @@ public class LocalRepositoryImp implements ILocalRepository {
                 });
     }
 
-    /**
-     * 通过bizType和refType给出Dao层的具体实现
-     *
-     * @param bizType
-     * @return
-     */
-    private ILocalDataDao createDaoProxyFactory(String bizType) {
-        switch (bizType) {
-            case "12":
-                //103-物资出库
-                return mASDao;
-            default:
-                return mCommonDao;
-        }
-    }
 
     /**
      * 获取单据数据
@@ -337,10 +337,30 @@ public class LocalRepositoryImp implements ILocalRepository {
     public Flowable<ReferenceEntity> getReference(final String refNum, final String refType,
                                                   final String bizType, final String moveType,
                                                   final String refLineId, final String userId) {
+
         return Flowable.just(bizType)
-                .flatMap(data -> Flowable.just(createDaoProxyFactory(data)
-                        .getReference(refNum, refType, data, moveType, refLineId, userId)))
+                .flatMap(type -> Flowable.just(getReferenceInfoInternal(refNum, refType, type, moveType, refLineId, userId)))
                 .flatMap(refData -> processReferenceError(refData, "未获取到单据数据"));
+    }
+
+    private ReferenceEntity getReferenceInfoInternal(String refNum, String refType, String bizType,
+                                                     String moveType, String refLineId, String userId) {
+        ReferenceEntity refData = null;
+        switch (refType) {
+            case "0":// 采购订单-(20N0||8200)
+                refData = mReferenceServiceDao.getPoInfo(refNum, refType, bizType, moveType, refLineId, userId);
+                break;
+            case "1":// 验收清单(8200)
+                refData = mReferenceServiceDao.getInspectionInfo(refNum, refType, bizType, moveType, refLineId, userId);
+                break;
+            case "4":// 交货单(20N0)
+                refData = mReferenceServiceDao.getDeliveryInfo(refNum, refType, bizType, moveType, refLineId, userId);
+                break;
+            case "10":// 预留单据(8200)
+                refData = mReferenceServiceDao.getReservationInfo(refNum, refType, bizType, moveType, refLineId, userId);
+                break;
+        }
+        return refData;
     }
 
 
@@ -357,7 +377,6 @@ public class LocalRepositoryImp implements ILocalRepository {
         if (TextUtils.isEmpty(bizType)) {
             return;
         }
-        createDaoProxyFactory(bizType).saveReferenceInfo(refData, bizType, refType);
     }
 
     /**
@@ -366,26 +385,28 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<ReferenceEntity> getTransferInfo(String recordNum, String refCodeId, String bizType,
                                                      String refType, String userId, String workId, String invId, String recWorkId, String recInvId) {
-        if (TextUtils.isEmpty(bizType)) {
-            return Flowable.error(new Throwable("未获取到缓存"));
-        }
-        return Flowable.just(bizType)
-                .flatMap(type -> Flowable.just(createDaoProxyFactory(type).getTransferInfo(recordNum, refCodeId, type,
-                        refType, userId, workId, invId, recWorkId, recInvId)))
-                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+//        if (TextUtils.isEmpty(bizType)) {
+//            return Flowable.error(new Throwable("未获取到缓存"));
+//        }
+//        return Flowable.just(bizType)
+//                .flatMap(type -> Flowable.just(createDaoProxyFactory(type).getTransferInfo(recordNum, refCodeId, type,
+//                        refType, userId, workId, invId, recWorkId, recInvId)))
+//                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+        return null;
     }
 
     @Override
     public Flowable<ReferenceEntity> getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
                                                            String batchFlag, String location, String refDoc, int refDocItem, String userId) {
-        if (TextUtils.isEmpty(bizType)) {
-            return Flowable.error(new Throwable("未获取到缓存"));
-        }
-        return Flowable.just(bizType)
-                .flatMap(type -> Flowable.just(createDaoProxyFactory(type).getTransferInfoSingle(refCodeId, refType,
-                        type, refLineId, workId, invId, recWorkId, recInvId, materialNum, "", "", refDoc, refDocItem,
-                        userId)))
-                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+//        if (TextUtils.isEmpty(bizType)) {
+//            return Flowable.error(new Throwable("未获取到缓存"));
+//        }
+//        return Flowable.just(bizType)
+//                .flatMap(type -> Flowable.just(createDaoProxyFactory(type).getTransferInfoSingle(refCodeId, refType,
+//                        type, refLineId, workId, invId, recWorkId, recInvId, materialNum, "", "", refDoc, refDocItem,
+//                        userId)))
+//                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+        return null;
     }
 
     @Override
@@ -395,17 +416,18 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<String> uploadCollectionDataSingle(ResultEntity result) {
-        if (TextUtils.isEmpty(result.businessType)) {
-            return Flowable.error(new Throwable("保存出错,未获取到业务类型"));
-        }
-        return Flowable.just(result)
-                .flatMap(res -> Flowable.just(createDaoProxyFactory(res.businessType).uploadCollectionDataSingle(res)))
-                .flatMap(flag -> {
-                    if (!flag.booleanValue()) {
-                        return Flowable.error(new Throwable("保存出错"));
-                    }
-                    return Flowable.just("保存成功");
-                });
+//        if (TextUtils.isEmpty(result.businessType)) {
+//            return Flowable.error(new Throwable("保存出错,未获取到业务类型"));
+//        }
+//        return Flowable.just(result)
+//                .flatMap(res -> Flowable.just(createDaoProxyFactory(res.businessType).uploadCollectionDataSingle(res)))
+//                .flatMap(flag -> {
+//                    if (!flag.booleanValue()) {
+//                        return Flowable.error(new Throwable("保存出错"));
+//                    }
+//                    return Flowable.just("保存成功");
+//                });
+        return null;
     }
 
     /**

@@ -142,7 +142,7 @@
     "bizType": "94",
     "refType": "1",
     "fragmentType" : 0,
-    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangNMS301HeaderFragment"
+    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301HeaderFragment"
   },
   {
     "id": "16",
@@ -151,7 +151,7 @@
     "bizType": "94",
     "refType": "1",
     "fragmentType" : 1,
-    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangNMS301DetailFragment"
+    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301DetailFragment"
   },
   {
     "id": "17",
@@ -160,7 +160,7 @@
     "bizType": "94",
     "refType": "1",
     "fragmentType" : 2,
-    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangNMS301CollectFragment"
+    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301CollectFragment"
   },
   {
     "id": "18",
@@ -169,6 +169,42 @@
     "bizType": "94",
     "refType": "1",
     "fragmentType" : -1,
-    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangNMS301EditFragment"
+    "className": "com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301EditFragment"
+  },
+  {
+    "id": "19",
+    "tabTitle" : "抬头",
+    "fragmentTag": "qingyang_rsy_header_fragment_tag",
+    "bizType": "43",
+    "refType": "9",
+    "fragmentType" : 0,
+    "className": "com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYHeaderFragment"
+  },
+  {
+    "id": "20",
+    "tabTitle" : "数据明细",
+    "fragmentTag": "qingyang_rsy_detail_fragment_tag",
+    "bizType": "43",
+    "refType": "9",
+    "fragmentType" : 1,
+    "className": "com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYDetailFragment"
+  },
+  {
+    "id": "21",
+    "tabTitle" : "数据采集",
+    "fragmentTag": "qingyang_rsy_collect_fragment_tag",
+    "bizType": "43",
+    "refType": "9",
+    "fragmentType" : 2,
+    "className": "com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYCollectFragment"
+  },
+  {
+    "id": "22",
+    "tabTitle" : "明细修改",
+    "fragmentTag": "qingyang_rsy_edit_fragment_tag",
+    "bizType": "43",
+    "refType": "9",
+    "fragmentType" : -1,
+    "className": "com.richfit.barcodesystemproduct.module_returnstore.qingyang_rsy.QingYangRSYEditFragment"
   }
 ]

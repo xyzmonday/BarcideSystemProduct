@@ -19,6 +19,7 @@ import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
 import com.richfit.domain.bean.UserEntity;
 import com.richfit.domain.bean.WorkEntity;
+import com.richfit.domain.repository.IBasicServiceDao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,10 +36,10 @@ import javax.inject.Inject;
  * Created by monday on 2016/11/8.
  */
 
-public class CommonDao extends BaseDao {
+public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
 
     @Inject
-    public CommonDao(@ContextLife("Application") Context context) {
+    public BasicServiceDao(@ContextLife("Application") Context context) {
         super(context);
     }
 
@@ -55,7 +56,7 @@ public class CommonDao extends BaseDao {
     private void updateExtraHeader(Set<String> targetColumns, String tableName) {
         if (targetColumns == null || targetColumns.size() == 0)
             return;
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
 
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM sqlite_master WHERE type=");
@@ -102,7 +103,7 @@ public class CommonDao extends BaseDao {
     public void saveUserInfo(UserEntity userEntity) {
         if (userEntity == null || TextUtils.isEmpty(userEntity.loginId))
             return;
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         //获取当前的时间
         final long lastLoginDate = System.currentTimeMillis();
         StringBuffer sb = new StringBuffer();
@@ -130,7 +131,7 @@ public class CommonDao extends BaseDao {
             final long endLoginDate = System.currentTimeMillis();
             //计算一个星期之内登陆的用户
             final long startLoginDate = endLoginDate - 7 * 24 * 60 * 60 * 1000;
-            db = mSqliteHelper.getReadableDatabase();
+            db = getWritableDB();
             cursor = db.rawQuery("SELECT login_id FROM T_USER WHERE LAST_LOGIN_DATE BETWEEN ? AND ?  ",
                     new String[]{String.valueOf(startLoginDate), String.valueOf(endLoginDate)});
 
@@ -157,7 +158,7 @@ public class CommonDao extends BaseDao {
     public void saveExtraConfigInfo(List<RowConfig> configs) {
         if (configs == null || configs.size() == 0)
             return;
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         //先删除数据
         db.delete("T_CONFIG", null, null);
         StringBuffer sb = new StringBuffer();
@@ -192,7 +193,7 @@ public class CommonDao extends BaseDao {
         if (TextUtils.isEmpty(bizType)) {
             return configs;
         }
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         configs = readExtraConfigInfo(db, refType, companyId, bizType, configType);
         db.close();
         return configs;
@@ -213,7 +214,7 @@ public class CommonDao extends BaseDao {
         try {
             if (TextUtils.isEmpty(dictionaryCode))
                 return map;
-            db = mSqliteHelper.getReadableDatabase();
+            db = getWritableDB();
             cursor = db.rawQuery("select val,name from T_EXTRA_DATA_SOURCE where code = ? order by sort asc",
                     new String[]{dictionaryCode});
 
@@ -242,7 +243,7 @@ public class CommonDao extends BaseDao {
         if (bizFragmentConfigs == null || bizFragmentConfigs.size() == 0) {
             return false;
         }
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         db.delete("T_FRAGMENT_CONFIGS", null, null);
         ContentValues cv = new ContentValues();
         for (BizFragmentConfig bizFragmentConfig : bizFragmentConfigs) {
@@ -269,7 +270,7 @@ public class CommonDao extends BaseDao {
      */
     @Override
     public String getLoadBasicDataTaskDate(String queryType) {
-        SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDB();
 
         Cursor cursor = db.rawQuery("select query_date from REQUEST_DATE where query_type = ?",
                 new String[]{queryType});
@@ -299,7 +300,7 @@ public class CommonDao extends BaseDao {
      */
     @Override
     public void saveLoadBasicDataTaskDate(String queryType, String queryDate) {
-        SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDB();
         db.delete("REQUEST_DATE", "query_type = ?", new String[]{queryType});
         ContentValues cv = new ContentValues();
         cv.put("query_type", queryType);
@@ -307,8 +308,6 @@ public class CommonDao extends BaseDao {
         db.insert("REQUEST_DATE", null, cv);
         db.close();
     }
-
-
 
     /**
      * 将服务器获取的基础数据保存到本地
@@ -369,7 +368,7 @@ public class CommonDao extends BaseDao {
             return;
         if (source == null || source.size() == 0)
             return;
-        SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDB();
         String tableName;
         StringBuilder sql = new StringBuilder();
         switch (tableIndex) {
@@ -480,7 +479,7 @@ public class CommonDao extends BaseDao {
      */
     private void patchUpdateBaseData(List<Map<String, Object>> source, int start, int end, int ptr, String sql,
                                      int tableIndex, boolean isCWFirst) {
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         db.beginTransaction();
         try {
             SQLiteStatement stmt = db.compileStatement(sql);
@@ -609,7 +608,7 @@ public class CommonDao extends BaseDao {
         if (TextUtils.isEmpty(workId)) {
             return datas;
         }
-        SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDB();
         InvEntity tamp = new InvEntity();
         Cursor cursor = null;
         try {
@@ -648,7 +647,7 @@ public class CommonDao extends BaseDao {
      */
     @Override
     public ArrayList<WorkEntity> getWorks(int flag) {
-        SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDB();
         ArrayList<WorkEntity> works = new ArrayList<>();
         Cursor cursor = null;
         WorkEntity data = new WorkEntity();
@@ -906,7 +905,7 @@ public class CommonDao extends BaseDao {
         if (TextUtils.isEmpty(bizType)) {
             return bizFragmentConfigs;
         }
-        SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDB();
         Cursor cursor = null;
         try {
             if (fragmentType < 0) {
