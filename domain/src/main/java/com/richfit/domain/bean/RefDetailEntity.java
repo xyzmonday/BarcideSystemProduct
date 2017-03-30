@@ -72,6 +72,15 @@ public class RefDetailEntity extends TreeNode {
     public String invCode;
     public String invName;
 
+    /*接收工厂*/
+    public String recWorkId;
+    public String recWorkCode;
+    public String recWorkName;
+    /*接收库存地点*/
+    public String recInvId;
+    public String recInvCode;
+    public String recInvName;
+
     public String photoFlag;
 
     /*累计数量*/
@@ -121,6 +130,7 @@ public class RefDetailEntity extends TreeNode {
     public String returnQuantity;
     //检验批数量
     public String insLotQuantity;
+    public String invType;
     public String insLot; //检验批
     public String decisionCode; //决策代码
     public String projectText; //项目文本
@@ -130,8 +140,8 @@ public class RefDetailEntity extends TreeNode {
     public Integer refDocItem; // 参考物料凭证行号
     /*仓位信息*/
     public List<LocationInfoEntity> locationList;
-    public String lastFlag;
 
+    public String lastFlag;
     /*单据行的额外字段数据*/
     public Map<String, Object> mapExt;
 

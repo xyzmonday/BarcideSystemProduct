@@ -1,6 +1,7 @@
 package com.richfit.domain.repository;
 
 import com.richfit.domain.bean.ImageEntity;
+import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
 
@@ -53,5 +54,7 @@ public interface IInspectionServiceDao {
      * @return
      */
     ArrayList<ImageEntity> readImagesByRefNum(String refNum, boolean isLocal);
+
+    boolean uploadInspectionDataSingle(ResultEntity result);
 
 }

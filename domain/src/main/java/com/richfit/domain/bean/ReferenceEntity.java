@@ -106,6 +106,7 @@ public class ReferenceEntity {
     public String materialGroup;
     public String materialDesc;
     public String batchFlag;
+    public String remark;
 
     @Override
     public String toString() {

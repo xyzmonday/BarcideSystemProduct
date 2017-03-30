@@ -339,12 +339,12 @@ public class LocalRepositoryImp implements ILocalRepository {
                                                   final String refLineId, final String userId) {
 
         return Flowable.just(bizType)
-                .flatMap(type -> Flowable.just(getReferenceInfoInternal(refNum, refType, type, moveType, refLineId, userId)))
+                .flatMap(type -> Flowable.just(getReferenceInfoInner(refNum, refType, type, moveType, refLineId, userId)))
                 .flatMap(refData -> processReferenceError(refData, "未获取到单据数据"));
     }
 
-    private ReferenceEntity getReferenceInfoInternal(String refNum, String refType, String bizType,
-                                                     String moveType, String refLineId, String userId) {
+    private ReferenceEntity getReferenceInfoInner(String refNum, String refType, String bizType,
+                                                  String moveType, String refLineId, String userId) {
         ReferenceEntity refData = null;
         switch (refType) {
             case "0":// 采购订单-(20N0||8200)
@@ -377,36 +377,146 @@ public class LocalRepositoryImp implements ILocalRepository {
         if (TextUtils.isEmpty(bizType)) {
             return;
         }
+        switch (refType) {
+            case "0":// 采购订单-(20N0||8200)
+                mReferenceServiceDao.savePoInfo(refData, bizType, refType);
+                break;
+            case "1":// 验收清单(8200)
+                mReferenceServiceDao.saveInspectionInfo(refData, bizType, refType);
+                break;
+            case "4":// 交货单(20N0)
+                mReferenceServiceDao.saveDeliveryInfo(refData, bizType, refType);
+                break;
+            case "10":// 预留单据(8200)
+                mReferenceServiceDao.saveReservationInfo(refData, bizType, refType);
+                break;
+        }
     }
+
 
     /**
      * 获取单条缓存
      */
     @Override
     public Flowable<ReferenceEntity> getTransferInfo(String recordNum, String refCodeId, String bizType,
-                                                     String refType, String userId, String workId, String invId, String recWorkId, String recInvId) {
-//        if (TextUtils.isEmpty(bizType)) {
-//            return Flowable.error(new Throwable("未获取到缓存"));
-//        }
-//        return Flowable.just(bizType)
-//                .flatMap(type -> Flowable.just(createDaoProxyFactory(type).getTransferInfo(recordNum, refCodeId, type,
-//                        refType, userId, workId, invId, recWorkId, recInvId)))
-//                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
-        return null;
+                                                     String refType, String userId, String workId,
+                                                     String invId, String recWorkId, String recInvId) {
+        if (TextUtils.isEmpty(bizType)) {
+            return Flowable.error(new Throwable("未获取到缓存"));
+        }
+        return Flowable.just(bizType)
+                .flatMap(type -> Flowable.just(getTransferInfoInner(recordNum, refCodeId, type,
+                        refType, userId, workId, invId, recWorkId, recInvId)))
+                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+    }
+
+    private ReferenceEntity getTransferInfoInner(String recordNum, String refCodeId, String businessType,
+                                                 String refType, String userId, String workId, String invId,
+                                                 String recWorkId, String recInvId) {
+
+        ReferenceEntity refData = null;
+        switch (businessType) {
+            case "11":// 采购入库-101
+            case "12":// 采购入库-103
+            case "13":// 采购入库-105(非必检)
+            case "19":// 委外入库
+            case "19_ZJ":// 委外入库-组件
+            case "110":// 采购入库-105(必检)
+            case "21":// 销售出库
+            case "23":// 委外发料
+            case "24":// 其他出库-有参考
+            case "38":// UB 351
+            case "311":// UB 101
+            case "45":// UB 352
+            case "51":// 采购退货
+                refData = mTransferServiceDao.getBusinessTransferInfoRef(recordNum, refCodeId, businessType, refType,
+                        userId, workId, invId, recWorkId, recInvId);
+                break;
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "71":// 代管料入库
+            case "72":// 代管料出库
+            case "73":// 代管料退库
+            case "74":// 代管料调拨
+            case "91":// 代管料入库-HRM
+            case "92":// 代管料出库-HRM
+            case "93":// 代管料退库-HRM
+            case "94":// 代管料调拨-HRM
+                refData = mTransferServiceDao.getBusinessTransferInfo(recordNum, refCodeId, businessType, refType,
+                        userId, workId, invId, recWorkId, recInvId);
+                break;
+        }
+        return refData;
     }
 
     @Override
     public Flowable<ReferenceEntity> getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
                                                            String batchFlag, String location, String refDoc, int refDocItem, String userId) {
-//        if (TextUtils.isEmpty(bizType)) {
-//            return Flowable.error(new Throwable("未获取到缓存"));
-//        }
-//        return Flowable.just(bizType)
-//                .flatMap(type -> Flowable.just(createDaoProxyFactory(type).getTransferInfoSingle(refCodeId, refType,
-//                        type, refLineId, workId, invId, recWorkId, recInvId, materialNum, "", "", refDoc, refDocItem,
-//                        userId)))
-//                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
-        return null;
+        if (TextUtils.isEmpty(bizType)) {
+            return Flowable.error(new Throwable("未获取到缓存"));
+        }
+        return Flowable.just(bizType)
+                .flatMap(type -> Flowable.just(getTransferInfoSingleInner(refCodeId, refType,
+                        type, refLineId, workId, invId, recWorkId, recInvId, materialNum, "", "", refDoc, refDocItem,
+                        userId)))
+                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+    }
+
+    private ReferenceEntity getTransferInfoSingleInner(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
+                                                       String batchFlag, String location, String refDoc, int refDocItem, String userId) {
+
+        ReferenceEntity refData = null;
+        switch (bizType) {
+            case "00":
+            case "01":
+                refData = mTransferServiceDao.getInspectTransferInfoSingle(refCodeId, refType, bizType, refLineId, workId, invId, recWorkId, recInvId,
+                        materialNum, batchFlag, location, refDoc, refDocItem, userId);
+                break;
+            case "11":// 采购入库-101
+            case "12":// 采购入库-103
+            case "13":// 采购入库-105(非必检)
+            case "19":// 委外入库
+            case "19_ZJ":// 委外入库-组件
+            case "110":// 采购入库-105(青海必检)
+            case "21":// 销售出库
+            case "23":// 委外发料
+            case "24":// 其他出库-有参考
+            case "38":// UB 351
+            case "311":// UB 101
+            case "45":// UB 352
+            case "51":// 采购退货-161
+                refData = mTransferServiceDao.getBusinessTransferInfoSingleRef(refCodeId, refType, bizType, refLineId, workId, invId, recWorkId, recInvId,
+                        materialNum, batchFlag, location, refDoc, refDocItem, userId);
+                break;
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "71":// 代管料入库
+            case "72":// 代管料出库
+            case "73":// 代管料退库
+            case "74":// 代管料调拨
+            case "91":// 代管料入库-HRM
+            case "92":// 代管料出库-HRM
+            case "93":// 代管料退库-HRM
+            case "94":// 代管料调拨-HRM
+                refData = mTransferServiceDao.getBusinessTransferInfoSingle(refCodeId, refType, bizType, refLineId, workId, invId, recWorkId, recInvId,
+                        materialNum, batchFlag, location, refDoc, refDocItem, userId);
+                break;
+        }
+        return refData;
     }
 
     @Override
@@ -416,18 +526,63 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<String> uploadCollectionDataSingle(ResultEntity result) {
-//        if (TextUtils.isEmpty(result.businessType)) {
-//            return Flowable.error(new Throwable("保存出错,未获取到业务类型"));
-//        }
-//        return Flowable.just(result)
-//                .flatMap(res -> Flowable.just(createDaoProxyFactory(res.businessType).uploadCollectionDataSingle(res)))
-//                .flatMap(flag -> {
-//                    if (!flag.booleanValue()) {
-//                        return Flowable.error(new Throwable("保存出错"));
-//                    }
-//                    return Flowable.just("保存成功");
-//                });
-        return null;
+        if (TextUtils.isEmpty(result.businessType)) {
+            return Flowable.error(new Throwable("保存出错,未获取到业务类型"));
+        }
+        return Flowable.just(result)
+                .flatMap(res -> Flowable.just(uploadCollectionDataSingleInner(res)))
+                .flatMap(flag -> {
+                    if (!flag.booleanValue()) {
+                        return Flowable.error(new Throwable("保存出错"));
+                    }
+                    return Flowable.just("保存成功");
+                });
+    }
+
+    private boolean uploadCollectionDataSingleInner(ResultEntity param) {
+        boolean isSuccess = false;
+        // 接收传入参数
+        switch (param.businessType) {
+            case "00":
+            case "01":
+                isSuccess = mInspectionServiceDao.uploadInspectionDataSingle(param);
+                break;
+            case "11":// 采购入库-101
+            case "12":// 采购入库-103
+            case "13":// 采购入库-105(非必检)
+            case "19":// 委外入库
+            case "19_ZJ":// 委外入库-组件
+            case "110":// 采购入库-105(青海必检)
+            case "21":// 销售出库
+            case "23":// 委外发料
+            case "24":// 其他出库-有参考
+            case "38":// UB 351
+            case "311":// UB 101
+            case "45":// UB 352
+            case "51":// 采购退货-161
+                isSuccess = mBusinessServiceDao.uploadBusinessDataSingle(param);
+                break;
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "71":// 代管料入库
+            case "72":// 代管料出库
+            case "73":// 代管料退库
+            case "74":// 代管料调拨
+            case "91":// 代管料入库-HRM
+            case "92":// 代管料出库-HRM
+            case "93":// 代管料退库-HRM
+            case "94":// 代管料调拨-HRM
+                isSuccess = mBusinessServiceDao.uploadBusinessDataSingle(param);
+                break;
+        }
+        return isSuccess;
     }
 
     /**

@@ -410,8 +410,7 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         int length = info.split("\\|", -1).length;
         String barcodeInfo;
         if (length > 1) {
-//            barcodeInfo = CharTrans(info);
-            barcodeInfo = info;
+            barcodeInfo = CharTrans(info);
         } else {
             barcodeInfo = info;
         }

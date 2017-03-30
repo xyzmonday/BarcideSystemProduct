@@ -346,6 +346,61 @@ create table IF not exists MTL_PO_LINES_CUSTOM
   po_line_num      NUMBER(5)
 );
 
+create table IF not exists MTL_INSPECTION_RESULT
+(
+  id                   VARCHAR2(32) PRIMARY KEY NOT NULL,
+  ins_lot              VARCHAR2(12),
+  ins_lot_date         TEXT,
+  po_id                VARCHAR2(32),
+  po_line_id           VARCHAR2(32),
+  po_num               VARCHAR2(10),
+  po_line_num          NUMBER(5),
+  material_id          VARCHAR2(32),
+  work_id              VARCHAR2(32),
+  mat_doc              VARCHAR2(10),
+  mat_doc_item         NUMBER(6),
+  ins_lot_quantity     NUMBER(13,3),
+  zyjsl                NUMBER(13,3),
+  zdjsl                NUMBER(13,3),
+  qualified_quantity   NUMBER(13,3),
+  unqualified_quantity NUMBER(13,3),
+  created_by           VARCHAR2(32),
+  creation_date        TEXT
+);
+
+create table IF not exists MTL_RESERVATION_LINES
+(
+  id               VARCHAR2(32) PRIMARY KEY NOT NULL,
+  reservation_id   VARCHAR2(32),
+  work_id          VARCHAR2(32),
+  inv_id           VARCHAR2(32),
+  line_num         NUMBER(4),
+  material_id      VARCHAR2(32),
+  shkzg            VARCHAR2(5),
+  batch_num        VARCHAR2(32),
+  order_quantity   NUMBER(13,3),
+  act_quantity     NUMBER(13,3),
+  delete_flag      VARCHAR2(1),
+  movement_flag    VARCHAR2(1),
+  last_flag        VARCHAR2(1),
+  special_flag     VARCHAR2(1),
+  unit             VARCHAR2(10),
+  unit_rate        NUMBER(13,3),
+  flag             VARCHAR2(4),
+  status           VARCHAR2(10),
+  created_by       VARCHAR2(32),
+  creation_date    TEXT,
+  last_updated_by  VARCHAR2(32),
+  last_update_date TEXT,
+  reservation_num  NUMBER(10),
+  parent_material  VARCHAR2(32),
+  sap_move_type    VARCHAR2(3),
+  po_line_id       VARCHAR2(32),
+  po_num           VARCHAR2(10),
+  po_line_num      NUMBER(5),
+  po_id            VARCHAR2(32)
+);
+
 create table IF not exists MTL_TRANSACTION_HEADERS
 (
   id               VARCHAR2(32) PRIMARY KEY NOT NULL,

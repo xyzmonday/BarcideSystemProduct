@@ -1,5 +1,6 @@
 package com.richfit.data.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,6 +16,7 @@ import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.repository.IReferenceServiceDao;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -23,6 +25,7 @@ import javax.inject.Inject;
  */
 
 public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao {
+
 
     @Inject
     public ReferenceServiceDao(@ContextLife("Application") Context context) {
@@ -65,42 +68,60 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
             if (TextUtils.isEmpty(refCodeId)) {
                 return refData;
             }
-            //开始查询缓存和明细
-            //2. 查询缓存
-            cursor = db.rawQuery("select id from mtl_transaction_headers where ref_code_id = ?",
-                    new String[]{refCodeId});
-            while (cursor.moveToNext()) {
-                refData.transId = cursor.getString(0);
-            }
-            cursor.close();
 
-            //3. 获取明细数据
-            Cursor detailCursor = db.rawQuery(createSqlForReadPoInfoDetail(bizType), new String[]{refData.refCodeId, bizType});
+            //3. 获取单据的明细数据
+            cursor = db.rawQuery(createSqlForReadPoInfoDetail(bizType), new String[]{refData.refCodeId, bizType});
             ArrayList<RefDetailEntity> billDetailList = new ArrayList<>();
             RefDetailEntity item;
             index = -1;
-            while (detailCursor.moveToNext()) {
+            while (cursor.moveToNext()) {
                 item = new RefDetailEntity();
-                item.workId = detailCursor.getString(++index);
-                item.workCode = detailCursor.getString(++index);
-                item.workName = detailCursor.getString(++index);
-                item.invId = detailCursor.getString(++index);
-                item.invCode = detailCursor.getString(++index);
-                item.invName = detailCursor.getString(++index);
-                item.actQuantity = detailCursor.getString(++index);
-                item.refLineId = detailCursor.getString(++index);
-                item.lineNum = detailCursor.getString(++index);
-                item.materialId = detailCursor.getString(++index);
-                item.materialNum = detailCursor.getString(++index);
-                item.materialDesc = detailCursor.getString(++index);
-                item.materialGroup = detailCursor.getString(++index);
-                item.unit = detailCursor.getString(++index);
-                item.orderQuantity = detailCursor.getString(++index);
-                item.qmFlag = detailCursor.getString(++index);
+                item.workId = cursor.getString(++index);
+                item.workCode = cursor.getString(++index);
+                item.workName = cursor.getString(++index);
+                item.invId = cursor.getString(++index);
+                item.invCode = cursor.getString(++index);
+                item.invName = cursor.getString(++index);
+                item.actQuantity = cursor.getString(++index);
+                item.refLineId = cursor.getString(++index);
+                item.lineNum = cursor.getString(++index);
+                item.materialId = cursor.getString(++index);
+                item.materialNum = cursor.getString(++index);
+                item.materialDesc = cursor.getString(++index);
+                item.materialGroup = cursor.getString(++index);
+                item.unit = cursor.getString(++index);
+                item.orderQuantity = cursor.getString(++index);
+                item.qmFlag = cursor.getString(++index);
                 billDetailList.add(item);
             }
-            detailCursor.close();
+            cursor.close();
             refData.billDetailList = billDetailList;
+
+            // 3.具体业务相关处理
+            switch (bizType) {
+                // 庆阳的验收功能相关处理
+                case "00":
+                    break;
+                case "01":
+                    // 青海的验收功能相关处理
+                    break;
+                case "38":// UB/STO发出 351
+                case "311":// UB/STO接收 101
+                case "11":// 采购入库-101
+                case "12":// 采购入库-103
+                case "13":// 采购入库-105（非必检）
+                case "19":// 委外入库
+                case "19_ZJ":// 委外入库-组件
+                case "23":// 委外出库
+                case "45":// UB/STO退库 352
+                    addPOHeaderCache(db, refData, refCodeId, bizType, refType, userId);
+                    break;
+                case "110":// 青海油田采购入库-105（必检）
+                    //这里我们不需要处理非必检情况，因为从服务器获取到的单据数据已经处理过了
+                    addPOHeaderCache(db, refData, refCodeId, bizType, refType, userId);
+                    break;
+            }
+
         } catch (Exception e) {
             L.e("读取采购订单单据数据出错 = " + e.getMessage());
             return refData;
@@ -111,13 +132,129 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
         return refData;
     }
 
+    private void addPOHeaderCache(SQLiteDatabase db, ReferenceEntity refData, String refCodeId,
+                                  String bizType, String refType, String userId) {
+        //获取抬头缓存
+        clearStringBuffer();
+        String[] selections;
+        List<String> selectionList = new ArrayList<>();
+        sb.append("SELECT H.ID, H.VOUCHER_DATE ")
+                .append(" FROM MTL_TRANSACTION_HEADERS H ")
+                .append(" WHERE H.TRANS_FLAG = '0' ");
+        if (!TextUtils.isEmpty(refType)) {
+            sb.append("  AND REF_TYPE = ?");
+            selectionList.add(refType);
+        }
+        if (!TextUtils.isEmpty(userId)) {
+            sb.append(" AND CREATED_BY = ?");
+            selectionList.add(userId);
+        }
+        if (!TextUtils.isEmpty(refCodeId)) {
+            sb.append(" AND REF_CODE_ID = ?");
+            selectionList.add(refCodeId);
+        }
+
+        sb.append(" AND BIZ_TYPE = ?");
+        selectionList.add(bizType);
+
+        selections = new String[selectionList.size()];
+        selectionList.toArray(selections);
+
+        int index = -1;
+        Cursor cursor = db.rawQuery(sb.toString(), selections);
+        while (cursor.moveToNext()) {
+            refData.transId = cursor.getString(++index);
+            refData.voucherDate = cursor.getString(++index);
+        }
+        cursor.close();
+    }
+
+    /**
+     * 将服务器获取到的采购订单数据保存到本地。这里模拟的是服务器从sap获取单据数据的过程。
+     * 区别是保存的可能不是原始单据的信息。
+     *
+     * @param refData
+     * @param bizType
+     * @param refType
+     */
+    @Override
+    public void savePoInfo(ReferenceEntity refData, String bizType, String refType) {
+        SQLiteDatabase db = getWritableDB();
+        try {
+            //1. 处理抬头
+            String poId = refData.refCodeId;
+            clearStringBuffer();
+            sb.append("insert or replace into MTL_PO_HEADERS (")
+                    .append("ID, PO_NUM,PO_DATE,SUPPLIER_CODE,SUPPLIER_DESC,ZD_FLAG,")
+                    .append("DOC_DATE,TYPE,STATUS,CREATED_BY,LAST_UPDATED_BY,LAST_UPDATE_DATE,WORK_ID,PO_TYPE")
+                    .append(")")
+                    .append("VALUES (")
+                    .append("?,?,?,?,?,?,?,?,?,?,?,?,?,?")
+                    .append(")");
+            String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
+            db.execSQL(sb.toString(), new Object[]{poId, refData.recordNum,
+                    currentDate, refData.supplierNum, refData.supplierDesc,
+                    "ZFD", "1", "Y", refData.recordCreator, currentDate,
+                    refData.recordCreator, currentDate, refData.workId, ""});
+
+            //处理明细
+            final List<RefDetailEntity> list = refData.billDetailList;
+            Cursor cursor;
+            if (list != null && list.size() > 0) {
+                clearStringBuffer();
+                sb.append("insert into MTL_PO_LINES ");
+                sb.append("(ID,PO_ID,LINE_NUM,WORK_ID,INV_ID,MATERIAL_ID,")
+                        .append("MATERIAL_NUM,MATERIAL_DESC,MATERIAL_GROUP,")
+                        .append("ORDER_QUANTITY,ACT_QUANTITY,QM_FLAG,UNIT,")
+                        .append("CREATED_BY,CREATION_DATE,LAST_UPDATED_BY,")
+                        .append("LAST_UPDATE_DATE,SEND_WORK_ID,SEND_INV_ID,")
+                        .append("STATUS,LINE_TYPE,BIZ_TYPE,REF_TYPE)")
+                        .append(" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+                for (RefDetailEntity data : list) {
+
+                    String poLineId = "";
+                    //获取该行的行id(注意这里的查询条件)
+                    cursor = db.rawQuery("select id from MTL_PO_LINES where po_id = ? and id = ? and biz_type = ? and ref_type = ?",
+                            new String[]{poId, data.refLineId, bizType, refType});
+
+                    while (cursor.moveToNext()) {
+                        poLineId = cursor.getString(0);
+                    }
+                    cursor.close();
+                    //注意这里需要将bizType和refType保存到单据数据中
+                    if (TextUtils.isEmpty(poLineId)) {
+                        poLineId = UiUtil.getUUID();
+                        db.execSQL(sb.toString(), new Object[]{poLineId, poId,
+                                data.lineNum, data.workId, data.invId, data.materialId, data.materialNum,
+                                data.materialDesc, data.materialGroup, data.orderQuantity, data.actQuantity,
+                                data.qmFlag, data.unit, refData.recordCreator, currentDate, "", "",
+                                data.workId, data.invId, "Y", data.lineType, bizType, refType});
+                    } else {
+                        ContentValues cv = new ContentValues();
+                        cv.put("last_updated_by", refData.recordCreator);
+                        cv.put("last_update_date", currentDate);
+                        db.update("MTL_PO_LINES", cv, "po_id = ? and id = ? and biz_type = ?",
+                                new String[]{poId, poLineId, bizType});
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close();
+        }
+    }
+
+
     /**
      * 拼接读取采购订单单据数据的sql语句
      *
      * @return
      */
     private String createSqlForReadPoInfoHeader(String bizType) {
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         //输出的字段信息
         sb.append("select ");
         switch (bizType) {
@@ -289,87 +426,6 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
         return sb.toString();
     }
 
-    /**
-     * 将服务器获取到的采购订单数据保存到本地。这里模拟的是服务器从sap获取单据数据的过程。
-     * 区别是保存的可能不是原始单据的信息。
-     *
-     * @param refData
-     * @param bizType
-     * @param refType
-     */
-    @Override
-    public void savePoInfo(ReferenceEntity refData, String bizType, String refType) {
-        SQLiteDatabase db = getWritableDB();
-        try {
-            //1. 处理抬头
-            String poId = "";
-            Cursor cursor = db.rawQuery("select distinct po.id from mtl_po_headers po where po.po_num = ?",
-                    new String[]{refData.recordNum});
-            while (cursor.moveToNext()) {
-                poId = cursor.getString(0);
-            }
-            cursor.close();
-
-            if (TextUtils.isEmpty(poId)) {
-                //新增一条
-                poId = UiUtil.getUUID();
-                String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
-                db.execSQL(insertSelective(), new Object[]{poId, refData.recordNum,
-                        currentDate , "", "", "",
-                        refData.supplierNum, refData.supplierDesc, "", "", "", "", refData.recordCreator,
-                        "ZFD", "", "", "", "", "1", "Y", refData.recordCreator,currentDate,
-                        refData.recordCreator, currentDate, refData.workId, ""});
-            } else {
-
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.close();
-        }
-    }
-
-    private String insertSelective() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("INSERT INTO MTL_PO_HEADERS ")
-                .append("(")
-                .append("ID, PO_NUM,PO_DATE,PURCHASE_MODE, CONTRACT_NUM, CONTRACT_NAME,")
-                .append("SUPPLIER_CODE,SUPPLIER_DESC, PO_ORG, PO_ORG_DESC,")
-                .append("PO_GROUP_EN,PO_GROUP_CN,PO_CREATOR,ZD_FLAG,DOC_PEOPLE,")
-                .append("DOC_PEOPLE_NAME,DOC_DATE,CONTRACT_AMOUNT,TYPE,")
-                .append("STATUS,CREATED_BY,LAST_UPDATED_BY,LAST_UPDATE_DATE,WORK_ID,")
-                .append("PO_TYPE")
-                .append(")")
-                .append("VALUES (")
-                .append("?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?")
-                .append(")");
-        L.e("保存采购订单抬头sql = " + sb.toString());
-        return sb.toString();
-    }
-
-
-    /**
-     * 创建保存采购订单单据数据明细部分的sql。
-     * 注意这里由于不同的业务是使用了同一个应收数量，所以查询条件为
-     * refCodeId+bizType
-     *
-     * @param bizType
-     * @return
-     */
-    private String createSqlForWritePoInfoDetail(String bizType) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("insert or replace into mtl_po_lines ");
-        switch (bizType) {
-            case "12":
-                sb.append("(id,po_id,biz_type,ref_type,line_num,work_id,material_id,")
-                        .append("material_num,material_desc,material_group,unit,act_quantity,order_quantity)")
-                        .append(" values(?,?,?,?,?,?,?,?,?,?,?,?,?) ");
-                break;
-        }
-        L.e("保存采购订单单据数据抬头部分sql = " + sb.toString());
-        return sb.toString();
-    }
 
     @Override
     public ReferenceEntity getInspectionInfo(String refNum, String refType, String bizType, String moveType, String refLineId, String userId) {

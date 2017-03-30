@@ -25,16 +25,18 @@ import javax.inject.Inject;
  * Created by monday on 2016/11/8.
  */
 
-public class BaseDao  {
+public class BaseDao {
 
     protected final static String PAuthOrgKey = "P_AUTH_ORG";
     protected final static String PAuthOrg2Key = "P_AUTH_ORG2";
 
     private BCSSQLiteHelper mSQLiteHelper;
+    protected StringBuffer sb;
 
     @Inject
     public BaseDao(Context context) {
         this.mSQLiteHelper = BCSSQLiteHelper.getInstance(context);
+        this.sb = new StringBuffer();
     }
 
     protected SQLiteDatabase getReadableDB() {
@@ -62,7 +64,7 @@ public class BaseDao  {
         if (extraMap == null || extraMap.size() == 0)
             return;
 
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         Set<String> keys = extraMap.keySet();
         //插入抬头的额外字段
         switch (configType) {
@@ -108,7 +110,7 @@ public class BaseDao  {
     }
 
     private String createSql(Set<String> keys) {
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         for (String key : keys) {
             sb.append(",").append(key);
         }
@@ -145,7 +147,7 @@ public class BaseDao  {
                                      String transId, String transLineId, String transLocationId) {
         if (extraMap == null || extraMap.size() == 0)
             return;
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         Set<String> keys = extraMap.keySet();
         switch (configType) {
             case Global.HEADER_CONFIG_TYPE:
@@ -307,7 +309,7 @@ public class BaseDao  {
             return configs;
         }
 
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         sb.append("select id,property_name,property_code,");
         sb.append("display_flag,input_flag,company_id,");
         sb.append("biz_type,ref_type,");
@@ -354,7 +356,7 @@ public class BaseDao  {
      */
     protected Set<String> getTableInfo(SQLiteDatabase db, String tableName) {
         Set<String> columns = new HashSet<>();
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         sb.append("PRAGMA table_info");
         sb.append("([");
         sb.append(tableName);
@@ -366,6 +368,15 @@ public class BaseDao  {
         columnCursor.close();
         sb.setLength(0);
         return columns;
+    }
+
+    /**
+     * 情况StringBuffer的字符串
+     */
+    protected void clearStringBuffer() {
+        if (sb != null) {
+            sb.setLength(0);
+        }
     }
 
 }

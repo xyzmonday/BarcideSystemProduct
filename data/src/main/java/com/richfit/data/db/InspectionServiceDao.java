@@ -10,6 +10,7 @@ import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.ImageEntity;
+import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.repository.IInspectionServiceDao;
 
 import java.util.ArrayList;
@@ -120,5 +121,10 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         cursor.close();
         db.close();
         return images;
+    }
+
+    @Override
+    public boolean uploadInspectionDataSingle(ResultEntity result) {
+        return false;
     }
 }

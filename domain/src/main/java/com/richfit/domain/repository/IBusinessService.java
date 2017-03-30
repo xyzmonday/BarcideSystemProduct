@@ -14,7 +14,7 @@ public interface IBusinessService {
      * @param param
      * @return
      */
-    String uploadBusinessDataSingle(ResultEntity param);
+    boolean uploadBusinessDataSingle(ResultEntity param);
 
 
     /**
