@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_ww;
 
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.BaseASDetailFragment;
-import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_ww.imp.QingHaiASWWDetialPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.imp.ASDetailPresenterImp;
 import com.richfit.domain.bean.BottomMenuEntity;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  * Created by monday on 2017/2/20.
  */
 
-public class QingHaiASWWDetailFragment extends BaseASDetailFragment<QingHaiASWWDetialPresenterImp> {
+public class QingHaiASWWDetailFragment extends BaseASDetailFragment<ASDetailPresenterImp> {
 
     @Override
     public void initInjector() {

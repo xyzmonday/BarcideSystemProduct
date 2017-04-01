@@ -238,4 +238,6 @@ public class Global {
     public static final int MATERIAL_POS = 2;
     public static final int BATCHFALG_POS = 12;
     public static final int LOCATION_POS = 0;
+    public static final int MATERIAL_POS_L = 4;
+    public static final int BATCHFALG_POS_L = 6;
 }

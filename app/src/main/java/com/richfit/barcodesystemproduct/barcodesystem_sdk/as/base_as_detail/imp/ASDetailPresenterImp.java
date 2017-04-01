@@ -15,6 +15,7 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -45,7 +46,7 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
 
     @Override
     public void getTransferInfo(final ReferenceEntity refData, String refCodeId, String bizType, String refType,
-                                String userId, String workId, String invId, String recWorkId, String recInvId ) {
+                                String userId, String workId, String invId, String recWorkId, String recInvId) {
         mView = getView();
         ResourceSubscriber<ArrayList<RefDetailEntity>> subscriber =
                 mRepository.getTransferInfo("", refCodeId, bizType, refType,
@@ -122,7 +123,7 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
     }
 
     @Override
-    public void editNode(ArrayList<String> sendLocations,ArrayList<String> recLocations,
+    public void editNode(ArrayList<String> sendLocations, ArrayList<String> recLocations,
                          ReferenceEntity refData, RefDetailEntity node, String companyCode,
                          String bizType, String refType, String subFunName, int position) {
         if (refData != null) {
@@ -217,10 +218,12 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId,
-                                         String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap) {
+                                         String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         RxSubscriber<String> subscriber = mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
+                .doOnError(e -> SPrefUtil.saveData(bizType + refType, "0"))
+                .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在过账数据...") {
                     @Override
@@ -268,6 +271,7 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
         RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
                 userId, voucherDate, transToSapFlag, extraHeaderMap)
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
+                .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
                     @Override

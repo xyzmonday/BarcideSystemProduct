@@ -289,7 +289,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
             return false;
         }
 
-        if(spLocation.getSelectedItemPosition() == 0) {
+        if(spLocation.getSelectedItemPosition() <= 0) {
             showMessage("请先选择发出仓位");
             return false;
         }

@@ -33,10 +33,19 @@ public class MaterialInfoQueryFragment extends BaseFragment<IMaterialInfoQeuryPr
 
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
-        if (list != null && list.length >= 12) {
-            final String materialNum = list[Global.MATERIAL_POS];
-            final String batchFlag = list[Global.BATCHFALG_POS];
+        String materialNum;
+        String batchFlag;
 
+        if (list != null && list.length > 12) {
+            materialNum = list[Global.MATERIAL_POS];
+            batchFlag = list[Global.BATCHFALG_POS];
+
+            etMaterialNum.setText(materialNum);
+            tvBatchFlag.setText(batchFlag);
+            loadMaterialInfo(materialNum);
+        } else if (list != null && list.length >= 7 && list.length <= 12) {
+            materialNum = list[Global.MATERIAL_POS_L];
+            batchFlag = list[Global.BATCHFALG_POS_L];
             etMaterialNum.setText(materialNum);
             tvBatchFlag.setText(batchFlag);
             loadMaterialInfo(materialNum);

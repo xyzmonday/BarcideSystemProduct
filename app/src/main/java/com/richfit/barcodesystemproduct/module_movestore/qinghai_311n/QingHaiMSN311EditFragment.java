@@ -4,13 +4,13 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.BaseMSNEditFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.imp.QingHaiMSN311EditPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp.MSNEditPresenterImp;
 
 /**
  * Created by monday on 2017/2/17.
  */
 
-public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<QingHaiMSN311EditPresenterImp> {
+public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresenterImp> {
 
     @Override
     public void initInjector() {

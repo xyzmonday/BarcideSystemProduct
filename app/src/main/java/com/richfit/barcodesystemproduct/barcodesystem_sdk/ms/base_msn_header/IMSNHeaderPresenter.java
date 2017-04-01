@@ -6,7 +6,7 @@ import com.richfit.barcodesystemproduct.base.base_header.IBaseHeaderPresenter;
  * Created by monday on 2016/11/20.
  */
 
-public interface INMSHeaderPresenter extends IBaseHeaderPresenter<INMSHeaderView> {
+public interface IMSNHeaderPresenter extends IBaseHeaderPresenter<IMSNHeaderView> {
 
     /**
      * 获取发出工厂列表

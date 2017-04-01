@@ -113,12 +113,10 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     private InvAdapter mInvAdapter;
     /*累计数量*/
     protected String mSelectedRefLineNum;
-    /*缓存的批次*/
-    protected String mCachedBatchFlag;
     /*缓存的仓位级别的额外字段*/
     protected Map<String, Object> mExtraLocationMap;
     /*校验仓位是否存在，如果false表示校验该仓位不存在或者没有校验该仓位，不允许保存数据*/
-    private boolean isLocationChecked = false;
+    protected boolean isLocationChecked = false;
     /*是否是质检物资*/
     protected boolean isQmFlag = false;
     /*是否不上架。false表示上架处理，那么用户必须输入上架仓位，true表示不做上架处理，保存数据默认传barcode*/
@@ -144,7 +142,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
      */
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
-        if (list != null && list.length >= 12) {
+        if (list != null && list.length > 12) {
             if (!etMaterialNum.isEnabled()) {
                 showMessage("请先在抬头界面获取相关数据");
                 return;
@@ -417,7 +415,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             showMessage("请先输入上架仓位");
             return;
         }
-        mCachedBatchFlag = "";
         isBatchValidate = false;
         mExtraLocationMap = null;
 
@@ -524,7 +521,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
 
                     //注意它没有匹配次成功可能是批次页可能是仓位。
                     if (isMatch) {
-                        mCachedBatchFlag = cachedItem.batchFlag;
                         mExtraLocationMap = cachedItem.mapExt;
                         tvLocQuantity.setText(cachedItem.quantity);
                         break;
@@ -581,7 +577,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         if (!isNLocation)
             tvLocQuantity.setText("0");
         tvTotalQuantity.setText("0");
-        mCachedBatchFlag = "";
         mExtraLocationMap = null;
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();

@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by monday on 2016/11/20.
  */
 
-public interface INMSDetailPresenter extends IBaseDetailPresenter<INMSDetailView> {
+public interface IMSNDetailPresenter extends IBaseDetailPresenter<IMSNDetailView> {
  /*增加一个寄售转自有的业务，该业务仅仅针对出库移库相关的业务才有*/
 
     /**

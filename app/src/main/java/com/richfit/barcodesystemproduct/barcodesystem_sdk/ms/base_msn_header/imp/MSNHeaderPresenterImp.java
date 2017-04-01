@@ -5,8 +5,8 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderPresenterImp;
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.INMSHeaderPresenter;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.INMSHeaderView;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.IMSNHeaderPresenter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.IMSNHeaderView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.domain.bean.InvEntity;
@@ -22,12 +22,12 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2016/11/20.
  */
 
-public class NMSHeaderPresenterImp extends BaseHeaderPresenterImp<INMSHeaderView>
-        implements INMSHeaderPresenter {
+public class MSNHeaderPresenterImp extends BaseHeaderPresenterImp<IMSNHeaderView>
+        implements IMSNHeaderPresenter {
 
 
     @Inject
-    public NMSHeaderPresenterImp(@ContextLife("Activity") Context context) {
+    public MSNHeaderPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
 

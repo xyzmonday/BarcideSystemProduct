@@ -131,8 +131,6 @@ public class DSNEditPresenterImp extends BasePresenter<IDSNEditView>
     public void uploadCollectionDataSingle(ResultEntity result) {
         mView = getView();
         ResourceSubscriber<String> subscriber =
-//                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, result.location),
-//                        mRepository.uploadCollectionDataSingle(result))
                 mRepository.uploadCollectionDataSingle(result)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {

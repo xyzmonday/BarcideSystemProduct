@@ -8,7 +8,7 @@ import com.richfit.domain.bean.ResultEntity;
  * Created by monday on 2016/11/20.
  */
 
-public interface INMSCollectPresenter extends IPresenter<INMSCollectView> {
+public interface IMSNCollectPresenter extends IPresenter<IMSNCollectView> {
     /**
      * 获取发出库存地点列表
      *

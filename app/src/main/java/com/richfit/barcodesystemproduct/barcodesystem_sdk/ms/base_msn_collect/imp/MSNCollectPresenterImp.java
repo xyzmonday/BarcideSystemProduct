@@ -2,12 +2,12 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.i
 
 import android.content.Context;
 
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.IMSNCollectPresenter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.IMSNCollectView;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.INMSCollectPresenter;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.INMSCollectView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.InventoryEntity;
@@ -19,20 +19,19 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
  * Created by monday on 2016/11/20.
  */
 
-public class NMSCollectPresenterImp extends BasePresenter<INMSCollectView>
-        implements INMSCollectPresenter {
+public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
+        implements IMSNCollectPresenter {
 
-    protected INMSCollectView mView;
+    protected IMSNCollectView mView;
 
     @Inject
-    public NMSCollectPresenterImp(@ContextLife("Activity") Context context) {
+    public MSNCollectPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
 
@@ -163,10 +162,8 @@ public class NMSCollectPresenterImp extends BasePresenter<INMSCollectView>
     @Override
     public void uploadCollectionDataSingle(ResultEntity result) {
         mView = getView();
-        //注意这里需要检查接收仓位是否存在
         ResourceSubscriber<String> subscriber =
-                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId,"", result.location),
-                        mRepository.uploadCollectionDataSingle(result))
+                mRepository.uploadCollectionDataSingle(result)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {
                             @Override

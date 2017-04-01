@@ -8,7 +8,7 @@ import com.richfit.domain.bean.ResultEntity;
  * Created by monday on 2016/11/22.
  */
 
-public interface INMSEditPresenter extends IPresenter<INMSEditView> {
+public interface IMSNEditPresenter extends IPresenter<IMSNEditView> {
     /**
      * 获取数据采集界面的缓存
      *

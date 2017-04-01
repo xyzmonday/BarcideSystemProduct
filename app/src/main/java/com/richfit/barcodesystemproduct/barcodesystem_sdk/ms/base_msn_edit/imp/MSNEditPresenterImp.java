@@ -2,10 +2,10 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp;
 
 import android.content.Context;
 
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.IMSNEditPresenter;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.INMSEditPresenter;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.INMSEditView;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.IMSNEditView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
@@ -17,20 +17,19 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
  * Created by monday on 2016/11/22.
  */
 
-public class NMSEditPresenterImp extends BasePresenter<INMSEditView>
-        implements INMSEditPresenter {
+public class MSNEditPresenterImp extends BasePresenter<IMSNEditView>
+        implements IMSNEditPresenter {
 
-    protected INMSEditView mView;
+    protected IMSNEditView mView;
 
     @Inject
-    public NMSEditPresenterImp(@ContextLife("Activity") Context context) {
+    public MSNEditPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
 
@@ -85,12 +84,12 @@ public class NMSEditPresenterImp extends BasePresenter<INMSEditView>
     @Override
     public void getInventoryInfo(String queryType, String workId, String invId, String workCode,
                                  String invCode, String storageNum, String materialNum, String materialId, String location, String batchFlag,
-                                 String specialInvFlag, String specialInvNum, String invType,String deviceId) {
+                                 String specialInvFlag, String specialInvNum, String invType, String deviceId) {
         mView = getView();
 
         RxSubscriber<List<InventoryEntity>> subscriber =
                 mRepository.getInventoryInfo(queryType, workId, invId, workCode, invCode, storageNum,
-                        materialNum, materialId, "", "", batchFlag, location, specialInvFlag, specialInvNum, invType,deviceId)
+                        materialNum, materialId, "", "", batchFlag, location, specialInvFlag, specialInvNum, invType, deviceId)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<List<InventoryEntity>>(mContext) {
                             @Override
@@ -133,8 +132,7 @@ public class NMSEditPresenterImp extends BasePresenter<INMSEditView>
     public void uploadCollectionDataSingle(ResultEntity result) {
         mView = getView();
         ResourceSubscriber<String> subscriber =
-                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId,"", result.location),
-                        mRepository.uploadCollectionDataSingle(result))
+                mRepository.uploadCollectionDataSingle(result)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {
                             @Override

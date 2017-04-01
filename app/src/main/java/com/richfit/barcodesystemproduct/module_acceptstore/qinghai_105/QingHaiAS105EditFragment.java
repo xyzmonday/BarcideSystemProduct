@@ -9,7 +9,7 @@ import android.widget.Spinner;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.BaseASEditFragment;
-import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105.imp.QingHaiAS105EditPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.imp.ASEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -26,7 +26,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/3/8.
  */
 
-public class QingHaiAS105EditFragment extends BaseASEditFragment<QingHaiAS105EditPresenterImp> {
+public class QingHaiAS105EditFragment extends BaseASEditFragment<ASEditPresenterImp> {
 
     EditText etReturnQuantity;
     EditText etProjectText;

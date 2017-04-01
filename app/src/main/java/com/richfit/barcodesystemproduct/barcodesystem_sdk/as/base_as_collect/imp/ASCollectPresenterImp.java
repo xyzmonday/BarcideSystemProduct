@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
+ * 注意这里在获取缓存时候就已经检查了上架仓位
  * Created by monday on 2016/11/15.
  */
 

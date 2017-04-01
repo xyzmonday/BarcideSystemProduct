@@ -6,7 +6,7 @@ import com.richfit.barcodesystemproduct.base.base_detail.IBaseDetailView;
  * Created by monday on 2016/11/20.
  */
 
-public interface INMSDetailView<T> extends IBaseDetailView<T> {
+public interface IMSNDetailView<T> extends IBaseDetailView<T> {
     /**
      * 寄售转自有成功
      */

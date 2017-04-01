@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsxs;
 
 import com.richfit.barcodesystemproduct.adapter.DSYDetailAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.BaseDSDetailFragment;
-import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsxs.imp.QingHaiDSXSDetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.imp.DSDetailPresenterImp;
 import com.richfit.domain.bean.BottomMenuEntity;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.List;
  * Created by monday on 2017/1/20.
  */
 
-public class QingHaiDSXSDetailFFragment extends BaseDSDetailFragment<QingHaiDSXSDetailPresenterImp> {
+public class QingHaiDSXSDetailFFragment extends BaseDSDetailFragment<DSDetailPresenterImp> {
 
 
     @Override

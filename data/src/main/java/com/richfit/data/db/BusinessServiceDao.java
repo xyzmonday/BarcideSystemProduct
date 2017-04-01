@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.common_lib.utils.CommonUtil;
+import com.richfit.common_lib.utils.ArithUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.ResultEntity;
@@ -122,7 +122,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         // 条件
         // 无参考：bizType、createdBy、
         // 有参考：bizType、refType、refCodeId
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         SQLiteDatabase db = getWritableDB();
         String transId = "";
 
@@ -175,11 +175,10 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("ref_code", param.refCode);
             cv.put("trans_flag", "0");
             cv.put("voucher_date", param.voucherDate);
-            cv.put("created_by", param.userId);
             cv.put("move_type", param.moveType);
             cv.put("supplier_id", param.supplierId);
             cv.put("supplier_code", param.supplierNum);
-            cv.put("created_by", param.createdBy);
+            cv.put("created_by", param.userId);
             cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
             long iResult = db.insert("mtl_transaction_headers", null, cv);
             if (iResult < 1) {
@@ -249,9 +248,13 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
 
         if (subGroup || refDoc) {
             // 组件和有参考物料凭证的业务还需要加上对应的单号和行号
-            sb.append(" and L.ref_doc = ? and L.ref_doc_item = ?");
+            sb.append(" and L.ref_doc = ? ");
             selectionList.add(param.refDoc);
-            selectionList.add(CommonUtil.valueOf(param.refDocItem));
+            if (param.refDocItem != null) {
+                sb.append("  and L.ref_doc_item = ? ");
+                //注意list不能给出
+                selectionList.add(String.valueOf(param.refDocItem));
+            }
         }
         if (prodGroup) {
             // 产成品需要去除参考单据号
@@ -269,18 +272,17 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cursor.close();
 
         ContentValues cv = new ContentValues();
-        cv.put("trans_id",transId);
+        cv.put("trans_id", transId);
         cv.put("material_id", param.materialId);
         cv.put("work_id", param.workId);
         cv.put("inv_id", param.invId);
         cv.put("inv_type", param.invType);
         cv.put("ref_line_id", param.refLineId);
-        cv.put("batch_num", param.batchFlag);
+        //注意数据源对于空的处理为"",为了查询方便这里保存null
+        cv.put("batch_num", TextUtils.isEmpty(param.batchFlag) ? null : param.batchFlag);
         cv.put("ref_line_num", param.refLineNum);
         cv.put("ref_doc", param.refDoc);
-        if (param.refDocItem != null) {
-            cv.put("ref_doc_item", param.refDocItem);
-        }
+        cv.put("ref_doc_item", param.refDocItem);
         // 移库增加接收工厂、库存地点、接收批次
         if (yk) {
             cv.put("rec_work_id", param.recWorkId);
@@ -313,8 +315,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         } else {
             // 修改
             cv.put("id", transLineId);
-            cv.put("lase_updated_by", param.userId);
-            cv.put("last_updated_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_updated_by", param.userId);
+            cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
             int iResult = db.update("mtl_transaction_lines", cv, "id = ?", new String[]{transLineId});
             if (iResult < 1) {
                 return "";
@@ -335,7 +337,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         String transLineSplitId = null;
         String transId = param.transId;
         String transLineId = param.transLineId;
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         SQLiteDatabase db = getWritableDB();
         String[] selections;
         List<String> selectionList = new ArrayList<>();
@@ -346,20 +348,39 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 .append(" where trans_id = ? and trans_line_id = ? ");
         selectionList.add(transId);
         selectionList.add(transLineId);
-        sb.append(" and batch_num = ?");
-        // 行里增加批次的条件(传进来批次就按照批次查询 没有传进来就按照is null查询)
-        selectionList.add(!TextUtils.isEmpty(param.batchFlag) ? param.batchFlag : "null");
+        if (!TextUtils.isEmpty(param.batchFlag)) {
+            // 行里增加批次的条件(传进来批次就按照批次查询 没有传进来就按照is null查询)
+            sb.append(" and batch_num = ?");
+            selectionList.add(param.batchFlag);
+        } else {
+            sb.append(" and batch_num is null ");
+        }
+
         if (yk) {
-            sb.append(" and rec_batch_num = ? ");
             // 移库增加接收批次的条件
-            selectionList.add(!TextUtils.isEmpty(param.recBatchFlag) ? param.recBatchFlag : "null");
+            if (!TextUtils.isEmpty(param.recBatchFlag)) {
+                sb.append(" and rec_batch_num = ? ");
+                selectionList.add(!TextUtils.isEmpty(param.recBatchFlag) ? param.recBatchFlag : "null");
+            } else {
+                sb.append(" and rec_batch_num is null");
+            }
         }
 
         // 行里增加特殊库存的条件(传进来批次就按照特殊库存查询 没有传进来就按照is null查询)
-        sb.append(" and special_flag = ? ");
-        sb.append(" and special_num = ? ");
-        selectionList.add(!TextUtils.isEmpty(param.specialInvFlag) ? param.specialInvFlag : "null");
-        selectionList.add(!TextUtils.isEmpty(param.specialInvNum) ? param.specialInvNum : "null");
+        if (!TextUtils.isEmpty(param.specialInvFlag)) {
+            sb.append(" and special_flag = ? ");
+            selectionList.add(param.specialInvFlag);
+        } else {
+            sb.append(" and special_flag is null");
+        }
+
+        if (!TextUtils.isEmpty(param.specialInvNum)) {
+            sb.append(" and special_num = ? ");
+            selectionList.add(param.specialInvNum);
+        } else {
+            sb.append(" and special_num is null");
+        }
+
         selections = new String[selectionList.size()];
         selectionList.toArray(selections);
         Cursor cursor = db.rawQuery(sb.toString(), selections);
@@ -379,7 +400,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cv.put("special_flag", param.specialInvFlag);
         cv.put("special_num", param.specialInvNum);
         cv.put("ref_line_id", param.refLineId);
-        cv.put("batch_num", param.batchFlag);
+        cv.put("batch_num", !TextUtils.isEmpty(param.batchFlag) ? param.batchFlag : null);
         cv.put("ref_line_num", param.refLineNum);
         cv.put("ref_doc", param.refDoc);
         if (param.refDocItem != null) {
@@ -421,8 +442,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         } else {
             // 修改
             cv.put("id", transLineSplitId);
-            cv.put("lase_updated_by", param.userId);
-            cv.put("last_updated_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_updated_by", param.userId);
+            cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
             int iResult = db.update("mtl_transaction_lines_split", cv, "id = ?", new String[]{transLineSplitId});
             if (iResult < 1) {
                 return "";
@@ -446,9 +467,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         String transId = param.transId;
         String transLineId = param.transLineId;
         String transLineSplitId = param.transLineSplitId;
-
+        clearStringBuffer();
         SQLiteDatabase db = getWritableDB();
-        StringBuffer sb = new StringBuffer();
         String[] selections;
         List<String> selectionList = new ArrayList<>();
 
@@ -456,9 +476,10 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         if (!TextUtils.isEmpty(param.modifyFlag) && "Y".equalsIgnoreCase(param.modifyFlag)) {
             db.delete("mtl_transaction_lines_location", "id = ?", new String[]{param.locationId});
         }
-        sb.append(" select id from mtl_transaction_lines_location ");
-        // 查询条件 transId transLineId transLineSplitId location
 
+        sb.append(" select id from mtl_transaction_lines_location ");
+
+        // 查询条件 transId transLineId transLineSplitId location
         sb.append(" where trans_id = ? and trans_line_id = ? and trans_line_split_id = ? and location = ? ");
         selectionList.add(transId);
         selectionList.add(transLineId);
@@ -473,7 +494,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         if (yk) {
             sb.append(" and rec_location = ? ");
             selectionList.add(param.recLocation);
-
             if (!TextUtils.isEmpty(param.recBatchFlag)) {
                 sb.append(" and rec_batch_num = ? ");
                 selectionList.add(param.recBatchFlag);
@@ -532,13 +552,13 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             }
         } else {
             // 修改
-            cv.put("created_by", param.userId);
-            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_updated_by", param.userId);
+            cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
             cv.put("quantity", param.quantity);
             if (yk) {
                 cv.put("rec_quantity", param.quantity);
             }
-            db.update("MTL_TRANSACTION_LINES_LOCATION", cv, "id = ?", new String[]{locationId});
+            db.update("mtl_transaction_lines_location", cv, "id = ?", new String[]{locationId});
         }
         return locationId;
     }
@@ -551,7 +571,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
     public void updateLineTotalQuantity(ResultEntity param) {
         // mtl_transaction_lines
         SQLiteDatabase db = getWritableDB();
-        StringBuffer sb = new StringBuffer();
+        clearStringBuffer();
         sb.append(" SELECT IFNULL(SUM(T.QUANTITY), 0) AS A ")
                 .append(" FROM MTL_TRANSACTION_LINES_LOCATION T , MTL_TRANSACTION_LINES_SPLIT L")
                 .append(" WHERE T.TRANS_LINE_SPLIT_ID = L.ID ")
@@ -564,9 +584,11 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             totalQuantity = cursor.getString(0);
         }
         cursor.close();
-        totalQuantity = TextUtils.isEmpty(totalQuantity) ? "0" : totalQuantity;
-        db.execSQL("update MTL_TRANSACTION_LINES_LOCATION set quantity = ? where trans_line_id = ?",
-                new String[]{totalQuantity, param.transLineId});
+        final float totalQuantityV = UiUtil.convertToFloat(totalQuantity, 0.0F);
+        final float newTotalQuantityV = UiUtil.convertToFloat(param.quantity, 0.0F);
+        final String quantity = String.valueOf(ArithUtil.add(totalQuantityV, newTotalQuantityV));
+        db.execSQL("update MTL_TRANSACTION_LINES_LOCATION set quantity =  ? where trans_line_id = ?",
+                new String[]{quantity, param.transLineId});
         db.close();
     }
 
@@ -588,7 +610,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         }
         totalQuantity = TextUtils.isEmpty(totalQuantity) ? "0" : totalQuantity;
         cursor.close();
-
         db.execSQL("update MTL_TRANSACTION_LINES_SPLIT set quantity = ? where id = ?",
                 new String[]{totalQuantity, param.transLineSplitId});
         db.close();

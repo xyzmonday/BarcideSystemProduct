@@ -5,14 +5,14 @@ import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.BaseMSNCollectFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.imp.QingHaiMSN311CollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.imp.MSNCollectPresenterImp;
 
 /**
- *  工厂内311移库，不需要接收批次。接收仓位默认与发出仓位一致，而且不允许修改
+ * 工厂内311移库，不需要接收批次。接收仓位默认与发出仓位一致，而且不允许修改
  * Created by monday on 2017/2/16.
  */
 
-public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<QingHaiMSN311CollectPresenterImp> {
+public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNCollectPresenterImp> {
 
     @Override
     public void initInjector() {
@@ -22,8 +22,9 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<QingHai
     @Override
     protected void initView() {
         //工厂内移库不需要接收批次
-        setVisibility(View.GONE,llRecBatch);
-        setVisibility(View.GONE,llRecLocation);
+        setVisibility(View.GONE, llRecBatch);
+        //青海的接收仓位默认与发出仓位一致，而且不允许修改
+        setVisibility(View.GONE, llRecLocation);
         super.initView();
     }
 
@@ -90,6 +91,11 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<QingHai
         //检查发出批次
         if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
             showMessage("批次为空");
+            return false;
+        }
+
+        if (spSendLoc.getSelectedItemPosition() <= 0) {
+            showMessage("请先选择发出仓位");
             return false;
         }
 

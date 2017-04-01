@@ -13,7 +13,7 @@ import java.util.List;
  * Created by monday on 2016/11/20.
  */
 
-public interface INMSCollectView extends BaseView {
+public interface IMSNCollectView extends BaseView {
     /**
      * 显示发出库位
      * @param invs

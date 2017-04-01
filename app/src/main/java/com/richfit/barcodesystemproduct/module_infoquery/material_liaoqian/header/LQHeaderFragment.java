@@ -59,7 +59,7 @@ public class LQHeaderFragment extends BaseFragment<LQHeaderPresenterImp>
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
 
-        if (list != null && list.length >= 6) {
+        if (list != null && list.length >= 7 && list.length <= 12) {
             workCode = list[0];
             invCode = list[1];
             location = list[2];

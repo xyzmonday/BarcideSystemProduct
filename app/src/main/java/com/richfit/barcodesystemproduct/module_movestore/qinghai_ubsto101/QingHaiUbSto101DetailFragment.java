@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.BaseASDetailFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto101.imp.QingHaiUbSto101DetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.imp.ASDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.BottomMenuEntity;
@@ -16,7 +16,7 @@ import java.util.List;
  * Created by monday on 2017/2/15.
  */
 
-public class QingHaiUbSto101DetailFragment extends BaseASDetailFragment<QingHaiUbSto101DetailPresenterImp> {
+public class QingHaiUbSto101DetailFragment extends BaseASDetailFragment<ASDetailPresenterImp> {
 
 
     @Override

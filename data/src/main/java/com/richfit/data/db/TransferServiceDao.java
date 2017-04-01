@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -157,14 +156,17 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         sb.append("SELECT H.ID, H.VOUCHER_DATE, H.REMARK, H.REF_CODE_ID ")
                 .append(" FROM MTL_TRANSACTION_HEADERS H ")
                 .append(" WHERE H.TRANS_FLAG = '0' ");
+
         if (!TextUtils.isEmpty(refType)) {
             sb.append("  AND REF_TYPE = ?");
             selectionList.add(refType);
         }
+
         if (!TextUtils.isEmpty(userId)) {
             sb.append(" AND CREATED_BY = ?");
             selectionList.add(userId);
         }
+
         if (!TextUtils.isEmpty(refCodeId)) {
             sb.append(" AND REF_CODE_ID = ?");
             selectionList.add(refCodeId);
@@ -175,9 +177,10 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
 
         selections = new String[selectionList.size()];
         selectionList.toArray(selections);
-        int index = -1;
+        int index;
         Cursor cursor = db.rawQuery(sb.toString(), selections);
         while (cursor.moveToNext()) {
+            index = -1;
             refData.transId = cursor.getString(++index);
             refData.voucherDate = cursor.getString(++index);
             refData.remark = cursor.getString(++index);
@@ -192,18 +195,17 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
 
         //获取明细缓存 条件 transId refLineId
         clearStringBuffer();
-        index = -1;
         String[] lineSelections;
         selectionList.clear();
         sb.append("SELECT T.ID, T.REF_LINE_ID, T.WORK_ID,")
                 .append("T.INV_ID,T.REC_WORK_ID,T.REC_INV_ID,")
                 .append("T.MATERIAL_ID,T.QUANTITY,T.INV_TYPE,T.SPECIAL_FLAG,")
-                .append("T.SPECIAL_NUM,W.ORGCODE AD WORK_CODE,W.ORGNAME AS WORK_NAME,")
-                .append("I.ORGCODE AS INV_CODE,I.ORGNAME AS INV_NAME,")
-                .append("RW.ORGCODE AS REC_WORK_CODE,RW.ORGNAME AS REC_WORK_NAME,")
-                .append("RI.ORGCODE AS REC_INV_CODE,RI.ORGNAME AD REC_INV_NAME,")
+                .append("T.SPECIAL_NUM,W.ORG_CODE AS WORK_CODE,W.ORG_NAME AS WORK_NAME,")
+                .append("I.ORG_CODE AS INV_CODE,I.ORG_NAME AS INV_NAME,")
+                .append("RW.ORG_CODE AS REC_WORK_CODE,RW.ORG_NAME AS REC_WORK_NAME,")
+                .append("RI.ORG_CODE AS REC_INV_CODE,RI.ORG_NAME AS REC_INV_NAME,")
                 .append("T.INS_LOT,T.DECISION_CODE,T.PROJECT_TEXT,T.MOVE_CAUSE,")
-                .append("T.MOVE_CAUSE_TEXT,T.RETURN_QUANTITY,T.REF_DOC,T.REF_DOC_ITEM,")
+                .append("T.MOVE_CAUSE_DESC,T.RETURN_QUANTITY,T.REF_DOC,T.REF_DOC_ITEM,")
                 .append("T.REF_DOC || '_' || T.REF_DOC_ITEM AS LINE_NUM_105 ")
                 .append("FROM  MTL_TRANSACTION_LINES T ");
         //二级单位的组织机构
@@ -212,12 +214,12 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
 //                .append("  P_AUTH_ORG2               W,")
 //                .append("  P_AUTH_ORG2               I,");
 
-        sb.append("  LEFT JOIN P_AUTH_ORG RW ON T.REC_WORK_ID = RW.ID")
-                .append(" LEFT JOIN P_AUTH_ORG RI ON T.REC_INV_ID = RI.ID")
-                .append(" LEFT JOIN P_AUTH_ORG I ON T.INV_ID = I.ID ")
-                .append(" P_AUTH_ORG               W,");
+        sb.append("  LEFT JOIN P_AUTH_ORG RW ON T.REC_WORK_ID = RW.ORG_ID")
+                .append(" LEFT JOIN P_AUTH_ORG RI ON T.REC_INV_ID = RI.ORG_ID")
+                .append(" LEFT JOIN P_AUTH_ORG I ON T.INV_ID = I.ORG_ID ")
+                .append(" , P_AUTH_ORG               W");
         //条件
-        sb.append(" WHERE T.WORK_ID = W.ID ");
+        sb.append(" WHERE T.WORK_ID = W.ORG_ID ");
         if (!TextUtils.isEmpty(materialNum)) {
             sb.append(" AND T.MATERIAL_NUM = ?");
             selectionList.add(materialNum);
@@ -233,7 +235,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
 
         if (refDocItem > 0) {
             sb.append(" AND T.REF_DOC_ITEM = ?");
-            selectionList.add(CommonUtil.valueOf(refDocItem));
+            selectionList.add(String.valueOf(refDocItem));
         }
 
         if (!TextUtils.isEmpty(businessType) && "19_ZJ".equalsIgnoreCase(businessType)) {
@@ -255,8 +257,8 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
 
         cursor = db.rawQuery(sb.toString(), lineSelections);
         while (cursor.moveToNext()) {
+            index = -1;
             item = new RefDetailEntity();
-
             item.transLineId = cursor.getString(++index);
             item.refLineId = cursor.getString(++index);
             item.workId = cursor.getString(++index);
@@ -296,7 +298,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         //获取仓位缓存
         clearStringBuffer();
         sb.append(" SELECT T.ID,T.TRANS_ID,T.TRANS_LINE_ID,T.LOCATION,")
-                .append("T.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,T.REC_BATCH_NUM")
+                .append("T.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,T.REC_BATCH_NUM,")
                 .append("L.SPECIAL_FLAG,L.SPECIAL_NUM,")
                 .append("DECODE(L.SPECIAL_FLAG,NULL,T.LOCATION,T.LOCATION || '_' || L.SPECIAL_FLAG || '_' || L.SPECIAL_NUM) AS LOCATION_COMBINE,")
                 .append("L.COMPLETE_411_K ")
@@ -308,9 +310,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         for (RefDetailEntity data : billDetailList) {
             ArrayList<LocationInfoEntity> locations = new ArrayList<>();
             LocationInfoEntity locItem;
-            index = -1;
             cursor = db.rawQuery(sb.toString(), new String[]{data.transLineId});
             while (cursor.moveToNext()) {
+                index = -1;
                 locItem = new LocationInfoEntity();
                 locItem.id = cursor.getString(++index);
                 locItem.transId = cursor.getString(++index);

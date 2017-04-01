@@ -17,6 +17,7 @@ import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
+ * 在数据保存修改的数据之前检查上架仓位是否存在
  * Created by monday on 2016/11/19.
  */
 

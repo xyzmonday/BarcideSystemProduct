@@ -34,8 +34,8 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2016/11/22.
  */
 
-public abstract class BaseMSNEditFragment<P extends INMSEditPresenter> extends BaseFragment<P>
-        implements INMSEditView {
+public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends BaseFragment<P>
+        implements IMSNEditView {
 
     @BindView(R.id.tv_material_num)
     TextView tvMaterialNum;
@@ -327,7 +327,7 @@ public abstract class BaseMSNEditFragment<P extends INMSEditPresenter> extends B
             return false;
         }
 
-        if (spSendLoc.getSelectedItemPosition() == 0) {
+        if (spSendLoc.getSelectedItemPosition() <= 0) {
             showMessage("请先选择发出仓位");
             return false;
         }
@@ -337,6 +337,13 @@ public abstract class BaseMSNEditFragment<P extends INMSEditPresenter> extends B
             return false;
         }
 
+        //检查接收仓位
+
+        final String recLocation = getString(etRecLoc);
+        if (!TextUtils.isEmpty(recLocation) && recLocation.length() != 11) {
+            showMessage("修改失败,请先检查接收仓位是否合理");
+            return false;
+        }
 
         //检查额外字段是否合格
         if (!checkExtraData(mSubFunEntity.collectionConfigs)) {

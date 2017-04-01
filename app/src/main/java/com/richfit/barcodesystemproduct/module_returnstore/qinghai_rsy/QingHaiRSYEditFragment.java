@@ -1,13 +1,13 @@
 package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy;
 
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.BaseASEditFragment;
-import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsy.imp.QingHaiRSYEditPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.imp.ASEditPresenterImp;
 
 /**
  * Created by monday on 2017/2/27.
  */
 
-public class QingHaiRSYEditFragment extends BaseASEditFragment<QingHaiRSYEditPresenterImp> {
+public class QingHaiRSYEditFragment extends BaseASEditFragment<ASEditPresenterImp> {
 
 
     @Override

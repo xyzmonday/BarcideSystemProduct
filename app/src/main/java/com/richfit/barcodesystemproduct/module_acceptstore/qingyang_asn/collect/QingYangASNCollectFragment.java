@@ -86,7 +86,7 @@ public class QingYangASNCollectFragment extends BaseFragment<ASNCollectPresenter
      */
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
-        if (list != null && list.length >= 12) {
+        if (list != null && list.length > 12) {
             if (!etMaterialNum.isEnabled()) {
                 showMessage("请先在抬头界面获取相关数据");
                 return;

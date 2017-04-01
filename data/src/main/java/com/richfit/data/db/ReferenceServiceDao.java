@@ -51,8 +51,9 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
         try {
             //查询单据抬头
             Cursor cursor = db.rawQuery(createSqlForReadPoInfoHeader(bizType), new String[]{refNum});
-            int index = -1;
+            int index;
             while (cursor.moveToNext()) {
+                index = -1;
                 refData.refCodeId = cursor.getString(++index);
                 refData.recordNum = cursor.getString(++index);
                 refData.supplierNum = cursor.getString(++index);
@@ -73,9 +74,10 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
             cursor = db.rawQuery(createSqlForReadPoInfoDetail(bizType), new String[]{refData.refCodeId, bizType});
             ArrayList<RefDetailEntity> billDetailList = new ArrayList<>();
             RefDetailEntity item;
-            index = -1;
+
             while (cursor.moveToNext()) {
                 item = new RefDetailEntity();
+                index = -1;
                 item.workId = cursor.getString(++index);
                 item.workCode = cursor.getString(++index);
                 item.workName = cursor.getString(++index);
@@ -142,27 +144,28 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 .append(" FROM MTL_TRANSACTION_HEADERS H ")
                 .append(" WHERE H.TRANS_FLAG = '0' ");
         if (!TextUtils.isEmpty(refType)) {
-            sb.append("  AND REF_TYPE = ?");
+            sb.append("  AND H.REF_TYPE = ?");
             selectionList.add(refType);
         }
         if (!TextUtils.isEmpty(userId)) {
-            sb.append(" AND CREATED_BY = ?");
+            sb.append(" AND H.CREATED_BY = ?");
             selectionList.add(userId);
         }
         if (!TextUtils.isEmpty(refCodeId)) {
-            sb.append(" AND REF_CODE_ID = ?");
+            sb.append(" AND H.REF_CODE_ID = ?");
             selectionList.add(refCodeId);
         }
 
-        sb.append(" AND BIZ_TYPE = ?");
+        sb.append(" AND H.BIZ_TYPE = ?");
         selectionList.add(bizType);
 
         selections = new String[selectionList.size()];
         selectionList.toArray(selections);
 
-        int index = -1;
+        int index;
         Cursor cursor = db.rawQuery(sb.toString(), selections);
         while (cursor.moveToNext()) {
+            index = -1;
             refData.transId = cursor.getString(++index);
             refData.voucherDate = cursor.getString(++index);
         }
@@ -186,16 +189,17 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
             clearStringBuffer();
             sb.append("insert or replace into MTL_PO_HEADERS (")
                     .append("ID, PO_NUM,PO_DATE,SUPPLIER_CODE,SUPPLIER_DESC,ZD_FLAG,")
-                    .append("DOC_DATE,TYPE,STATUS,CREATED_BY,LAST_UPDATED_BY,LAST_UPDATE_DATE,WORK_ID,PO_TYPE")
+                    .append("TYPE,STATUS,CREATED_BY,CREATION_DATE,LAST_UPDATED_BY,LAST_UPDATE_DATE,WORK_ID,PO_TYPE")
                     .append(")")
                     .append("VALUES (")
                     .append("?,?,?,?,?,?,?,?,?,?,?,?,?,?")
                     .append(")");
+
             String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
             db.execSQL(sb.toString(), new Object[]{poId, refData.recordNum,
                     currentDate, refData.supplierNum, refData.supplierDesc,
-                    "ZFD", "1", "Y", refData.recordCreator, currentDate,
-                    refData.recordCreator, currentDate, refData.workId, ""});
+                    "ZFD", "1", "Y",refData.recordCreator,currentDate, refData.recordCreator,
+                    currentDate, refData.workId, ""});
 
             //处理明细
             final List<RefDetailEntity> list = refData.billDetailList;
@@ -215,8 +219,8 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
 
                     String poLineId = "";
                     //获取该行的行id(注意这里的查询条件)
-                    cursor = db.rawQuery("select id from MTL_PO_LINES where po_id = ? and id = ? and biz_type = ? and ref_type = ?",
-                            new String[]{poId, data.refLineId, bizType, refType});
+                    cursor = db.rawQuery("select id from MTL_PO_LINES where po_id = ?  and biz_type = ? and ref_type = ?",
+                            new String[]{poId, bizType, refType});
 
                     while (cursor.moveToNext()) {
                         poLineId = cursor.getString(0);

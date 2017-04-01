@@ -9,7 +9,6 @@ import com.richfit.barcodesystemproduct.adapter.MSNDetailAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.domain.bean.RefDetailEntity;
 
@@ -25,8 +24,8 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
  * Created by monday on 2016/11/20.
  */
 
-public abstract class BaseMSNDetailFragment<P extends INMSDetailPresenter> extends BaseDetailFragment<P, RefDetailEntity>
-        implements INMSDetailView<RefDetailEntity> {
+public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> extends BaseDetailFragment<P, RefDetailEntity>
+        implements IMSNDetailView<RefDetailEntity> {
 
     /*移库无参考的公共组件*/
 

@@ -10,7 +10,7 @@ import android.widget.Spinner;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
-import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105.imp.QingHaiAS105CollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -32,7 +32,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/3/1.
  */
 
-public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS105CollectPresenterImp> {
+public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollectPresenterImp> {
 
 
     EditText etReturnQuantity;
@@ -90,6 +90,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS
      * @param batchFlag
      * @return
      */
+    @Override
     protected Flowable<ArrayList<String>> matchMaterialInfo(final String materialNum, final String batchFlag) {
         if (mRefData == null || mRefData.billDetailList == null ||
                 mRefData.billDetailList.size() == 0 || TextUtils.isEmpty(materialNum)) {
@@ -133,6 +134,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS
      * @param insLot:单据行的检验批
      * @return 返回该行号对应的行明细在明细列表的索引
      */
+    @Override
     protected int getIndexByLineNum(String insLot) {
         int index = -1;
         if (TextUtils.isEmpty(insLot))
@@ -179,6 +181,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS
      * @param quantity
      * @return
      */
+    @Override
     protected boolean refreshQuantity(final String quantity) {
         //1.实收数量必须大于0
         final float quantityV = UiUtil.convertToFloat(quantity, 0.0f);
@@ -216,11 +219,23 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<QingHaiAS
 
     @Override
     public boolean checkCollectedDataBeforeSave() {
-        //如果退货数量不为o那么移动原因说明必须输入
+        //如果退货数量不为0那么移动原因说明必须输入
         if ((!isEmpty(getString(etReturnQuantity)) && !"0".equals(getString(etReturnQuantity)))
                 && isEmpty(getString(etMoveCauseDesc))) {
             showMessage("请输入移动原因说明");
             return false;
+        }
+        if (!isNLocation) {
+            final String location = getString(etLocation);
+            if (TextUtils.isEmpty(location)) {
+                showMessage("请输入上架仓位");
+                return false;
+            }
+
+            if (location.length() > 10) {
+                showMessage("您输入的上架不合理");
+                return false;
+            }
         }
         return super.checkCollectedDataBeforeSave();
     }

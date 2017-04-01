@@ -11,8 +11,8 @@ import com.jakewharton.rxbinding.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.imp.MSNHeaderPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.imp.NMSHeaderPresenterImp;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -34,8 +34,8 @@ import rx.android.schedulers.AndroidSchedulers;
  * Created by monday on 2016/11/20.
  */
 
-public abstract class BaseMSNHeaderFragment extends BaseFragment<NMSHeaderPresenterImp>
-        implements INMSHeaderView {
+public abstract class BaseMSNHeaderFragment extends BaseFragment<MSNHeaderPresenterImp>
+        implements IMSNHeaderView {
 
     //发出工厂
     @BindView(R.id.ll_send_work)

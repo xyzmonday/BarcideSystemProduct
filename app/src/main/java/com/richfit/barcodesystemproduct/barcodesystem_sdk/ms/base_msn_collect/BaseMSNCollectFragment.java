@@ -48,8 +48,8 @@ import rx.android.schedulers.AndroidSchedulers;
  * Created by monday on 2016/11/20.
  */
 
-public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> extends BaseFragment<P>
-        implements INMSCollectView {
+public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> extends BaseFragment<P>
+        implements IMSNCollectView {
 
     @BindView(R.id.et_material_num)
     protected RichEditText etMaterialNum;
@@ -108,6 +108,10 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
     /*缓存的行级别的额外字段*/
     Map<String, Object> mCachedExtraLineMap;
 
+    /*新增设备Id*/
+    protected String mDeviceId;
+
+
     @Override
     protected int getContentId() {
         return R.layout.fragment_base_msn_collect;
@@ -121,7 +125,7 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
      */
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
-        if (list != null && list.length >= 12) {
+        if (list != null && list.length > 12) {
             if (!etMaterialNum.isEnabled()) {
                 showMessage("请先在抬头界面获取相关数据");
                 return;
@@ -587,9 +591,15 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
             return false;
         }
         if (TextUtils.isEmpty(mRefData.recInvId)) {
+            showMessage("请先在抬头界面选择发出库位");
+            return false;
+        }
+
+        if(spSendInv.getSelectedItemPosition() <= 0) {
             showMessage("请先选择发出库位");
             return false;
         }
+
         if (TextUtils.isEmpty(getString(etMaterialNum))) {
             showMessage("物料编码为空");
             return false;
@@ -652,6 +662,7 @@ public abstract class BaseMSNCollectFragment<P extends INMSCollectPresenter> ext
             result.quantity = getString(etQuantity);
             result.invType = getInvType();
             result.modifyFlag = "N";
+            result.deviceId = mDeviceId;
             int locationPos = spSendLoc.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;
             result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;

@@ -13,7 +13,7 @@ import android.widget.LinearLayout;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.BottomMenuAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
-import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_ww.imp.QingHaiASWWCollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
 import com.richfit.barcodesystemproduct.module_acceptstore.ww_component.WWComponentActivity;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
@@ -35,7 +35,7 @@ import static com.richfit.common_lib.utils.Global.companyCode;
  * Created by monday on 2017/2/20.
  */
 
-public class QingHaiASWWCollectFragment extends BaseASCollectFragment<QingHaiASWWCollectPresenterImp> {
+public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectPresenterImp> {
 
     @Override
     public void initInjector() {

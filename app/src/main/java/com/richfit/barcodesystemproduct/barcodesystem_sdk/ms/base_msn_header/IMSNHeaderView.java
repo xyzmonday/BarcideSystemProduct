@@ -12,7 +12,7 @@ import java.util.List;
  * Created by monday on 2016/11/20.
  */
 
-public interface INMSHeaderView extends IBaseHeaderView {
+public interface IMSNHeaderView extends IBaseHeaderView {
     void showWorks(List<WorkEntity> works);
     void loadWorksFail(String message);
 

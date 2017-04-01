@@ -60,10 +60,6 @@ public class QingYangMSN301DetailFragment extends BaseMSNDetailFragment<QingYang
         mPresenter.showHeadFragmentByPosition(BaseFragment.HEADER_FRAGMENT_INDEX);
     }
 
-    @Override
-    public void submitBarcodeSystemFail(String message) {
-        showErrorDialog(message);
-    }
 
     @Override
     public void submitSAPSuccess() {

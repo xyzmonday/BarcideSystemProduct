@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
-import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n.imp.QingHaiAS105NCollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
 import com.richfit.domain.bean.RefDetailEntity;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import io.reactivex.Flowable;
  * Created by monday on 2017/2/20.
  */
 
-public class QingHaiAS105NCollectFragment extends BaseASCollectFragment<QingHaiAS105NCollectPresenterImp> {
+public class QingHaiAS105NCollectFragment extends BaseASCollectFragment<ASCollectPresenterImp> {
 
     @Override
     public void initInjector() {

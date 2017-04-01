@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.BaseDSCollectFragment;
-import com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww.imp.QingHaiDSWWCollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.imp.DSCollectPresenterImp;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
 
@@ -10,7 +10,7 @@ import com.richfit.domain.bean.RefDetailEntity;
  * Created by monday on 2017/3/5.
  */
 
-public class QingHaiDSWWCollectFragment extends BaseDSCollectFragment<QingHaiDSWWCollectPresenterImp> {
+public class QingHaiDSWWCollectFragment extends BaseDSCollectFragment<DSCollectPresenterImp> {
 
     @Override
     public void initInjector() {

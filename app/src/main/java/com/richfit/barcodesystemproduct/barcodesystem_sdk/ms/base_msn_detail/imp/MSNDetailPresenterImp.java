@@ -9,8 +9,8 @@ import android.text.TextUtils;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.INMSDetailPresenter;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.INMSDetailView;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.IMSNDetailPresenter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.IMSNDetailView;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
@@ -35,12 +35,12 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2016/11/20.
  */
 
-public class NMSDetailPresenterImp extends BaseDetailPresenterImp<INMSDetailView>
-        implements INMSDetailPresenter {
+public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView>
+        implements IMSNDetailPresenter {
 
 
     @Inject
-    public NMSDetailPresenterImp(@ContextLife("Activity") Context context) {
+    public MSNDetailPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
 

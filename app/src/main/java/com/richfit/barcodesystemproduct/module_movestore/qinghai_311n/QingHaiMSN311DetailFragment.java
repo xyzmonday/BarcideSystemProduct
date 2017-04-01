@@ -6,7 +6,7 @@ import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.BaseMSNDetailFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.imp.QingHaiMSN311DetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.imp.MSNDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -20,7 +20,7 @@ import java.util.List;
  * Created by monday on 2017/2/16.
  */
 
-public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<QingHaiMSN311DetailPresenterImp> {
+public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<MSNDetailPresenterImp> {
 
     @Override
     public void initInjector() {

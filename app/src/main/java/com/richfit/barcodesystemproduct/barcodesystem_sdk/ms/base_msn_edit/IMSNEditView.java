@@ -10,7 +10,7 @@ import java.util.List;
  * Created by monday on 2016/11/22.
  */
 
-public interface INMSEditView extends BaseView {
+public interface IMSNEditView extends BaseView {
     /**
      * 输入物料获取缓存后，刷新界面
      *

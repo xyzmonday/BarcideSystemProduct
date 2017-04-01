@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.BaseMSNCollectFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.imp.QingYangNMS301CollectPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.imp.MSNCollectPresenterImp;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ResultEntity;
@@ -22,7 +22,7 @@ import butterknife.BindView;
  * Created by monday on 2017/2/8.
  */
 
-public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYangNMS301CollectPresenterImp> {
+public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCollectPresenterImp> {
 
     /*设备位号*/
     @BindView(R.id.ll_device_location)
@@ -35,8 +35,6 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYa
     @BindView(R.id.tv_device_name)
     TextView tvDeviceName;
 
-    /*新增设备Id*/
-    String mDeviceId;
 
     /**
      * 处理扫描。重写该方法的目的是增加设备Id的处理逻辑
@@ -209,15 +207,34 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYa
             return false;
         }
 
+        //检查接收批次
+        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etRecBatchFlag))) {
+            showMessage("请输入接收批次");
+            return false;
+        }
+
+        final int sendLocPos = spSendLoc.getSelectedItemPosition();
+        if(sendLocPos <= 0) {
+            showMessage("请先选择发出仓位");
+            return false;
+        }
+        final String sendLocation = mInventoryDatas.get(sendLocPos).location;
+        if(!TextUtils.isEmpty(sendLocation) && sendLocation.length() != 11) {
+            showMessage("您选择的发出仓位格式不合理");
+            return false;
+        }
+
+        //检查接收仓位
         if (isWareHouseSame && TextUtils.isEmpty(getString(etRecLoc))) {
             showMessage("请输入接收仓位");
             return false;
         }
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etRecBatchFlag))) {
-            showMessage("请输入接收批次");
+        if(isWareHouseSame && getString(etRecLoc).length() != 11) {
+            showMessage("您输入的接收仓位格式不对");
             return false;
         }
+
         return super.checkCollectedDataBeforeSave();
     }
 
@@ -229,6 +246,12 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<QingYa
     @Override
     protected String getInventoryQueryType() {
         return getString(R.string.inventoryQueryTypePrecise);
+    }
+
+    @Override
+    public void _onPause() {
+        clearCommonUI(tvDeviceLocation,tvDeviceName);
+        super._onPause();
     }
 
     @Override

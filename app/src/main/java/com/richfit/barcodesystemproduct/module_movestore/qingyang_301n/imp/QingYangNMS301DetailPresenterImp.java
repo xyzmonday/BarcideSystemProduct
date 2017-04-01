@@ -2,11 +2,13 @@ package com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.imp;
 
 import android.content.Context;
 
-import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.imp.NMSDetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.imp.MSNDetailPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -14,14 +16,16 @@ import javax.inject.Inject;
  * Created by monday on 2017/2/15.
  */
 
-public class QingYangNMS301DetailPresenterImp extends NMSDetailPresenterImp {
+public class QingYangNMS301DetailPresenterImp extends MSNDetailPresenterImp {
 
     @Inject
     public QingYangNMS301DetailPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
 
-    public void submitData2BarcodeSystem(String transId, String bizType, String refType, String voucherDate) {
+    @Override
+    public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
+                                         String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
         RxSubscriber<String> subscriber =
                 mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")

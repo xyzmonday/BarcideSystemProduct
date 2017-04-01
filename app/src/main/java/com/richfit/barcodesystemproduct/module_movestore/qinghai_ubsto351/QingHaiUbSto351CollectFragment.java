@@ -8,7 +8,7 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_collect.Bas
  * Created by monday on 2017/2/10.
  */
 
-public class QingHaiUbSto351CollectFragment extends BaseMSCollectFragment{
+public class QingHaiUbSto351CollectFragment extends BaseMSCollectFragment {
 
     @Override
     public void initInjector() {

@@ -77,7 +77,7 @@ public class QingHaiCNCollectFragment extends BaseFragment<CNCollectPresenterImp
 
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
-        if (list != null && list.length >= 12) {
+        if (list != null && list.length > 12) {
             final String materialNum = list[Global.MATERIAL_POS];
             if (cbSingle.isChecked() && materialNum.equalsIgnoreCase(getString(etMaterialNum))) {
                 saveCollectedData();

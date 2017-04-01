@@ -105,7 +105,7 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
 
-        if (list != null && list.length >= 12) {
+        if (list != null && list.length > 12) {
             final String materialNum = list[Global.MATERIAL_POS];
             final String batchFlag = list[Global.BATCHFALG_POS];
             loadMaterialInfo(materialNum, batchFlag);

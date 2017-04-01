@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
+ * 注意青海103入库不上架，所以不做仓位检查
  * Created by monday on 2017/2/17.
  */
 
