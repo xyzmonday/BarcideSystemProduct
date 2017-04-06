@@ -197,7 +197,7 @@
     <string name="qm_num">质检单号</string>
 
 
-    //库存查询类型
+    //库存查询类型InventoryQueryType
     //获取总库存
     <string name="inventoryQueryTypeSAPTotal">01</string>
     <string name="inventoryQueryTypeUnPrecise">02</string>
@@ -205,9 +205,13 @@
     //获取某仓位的库存
     <string name="inventoryQueryTypeSAPLocation">04</string>
 
+    //库存类型InvType
+    <string name="invTypeNorm">""</string>
+    <string name="invTypeQ">Q</string>
+    <string name="invTypeS">S</string>
+    <string name="invTypeR">R</string>
+
     //库存类型
-    <string name="invTypeDaiGuan">0</string>
-    <string name="invTypeNorm">1</string>
     <string name="return_delivery_quantity">退货交货数量</string>
     <string name="set_zero">标记0数量</string>
     <string name="new_flag">新增</string>

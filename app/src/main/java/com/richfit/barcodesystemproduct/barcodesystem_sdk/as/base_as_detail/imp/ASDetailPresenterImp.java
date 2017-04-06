@@ -10,7 +10,6 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.IASD
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.IASDetailView;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
-import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
@@ -33,6 +32,7 @@ import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
+ * 注意这里给出的数据上传是标准的，也就是说uploadCollectionData和上下架是分开的
  * Created by monday on 2016/11/15.
  */
 
@@ -217,19 +217,19 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
     }
 
     @Override
-    public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId,
-                                         String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
+    public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
+                                         String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
-                .retryWhen(new RetryWhenNetworkException(3, 3000))
-                .doOnError(e -> SPrefUtil.saveData(bizType + refType, "0"))
+        RxSubscriber<String> subscriber = Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
+                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSapFlag, extraHeaderMap))
+                .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在过账数据...") {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在过账...") {
                     @Override
-                    public void _onNext(String s) {
+                    public void _onNext(String message) {
                         if (mView != null) {
-                            mView.showTransferedVisa(s);
+                            mView.showTransferedVisa(message);
                         }
                     }
 
@@ -270,13 +270,14 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
         mView = getView();
         RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
                 userId, voucherDate, transToSapFlag, extraHeaderMap)
-                .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
                     @Override
-                    public void _onNext(String s) {
-
+                    public void _onNext(String message) {
+                        if (mView != null) {
+                            mView.showInspectionNum(message);
+                        }
                     }
 
                     @Override

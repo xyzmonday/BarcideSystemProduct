@@ -9,8 +9,8 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.imp.DSEditPresenterImp;
+import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -57,7 +57,7 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
     @BindView(R.id.tv_total_quantity)
     protected TextView tvTotalQuantity;
     @BindView(R.id.tv_inv_quantity)
-    protected  TextView tvInvQuantity;
+    protected TextView tvInvQuantity;
 
     protected String mRefLineId;
     protected String mLocationId;
@@ -68,6 +68,8 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
     private LocationAdapter mLocationAdapter;
     private List<String> mLocations;
     protected String mSelectedLocation;
+    private String mSpecialInvFlag;
+    private String mSpecialInvNum;
     Map<String, Object> mExtraLocationMap;
     protected float mTotalQuantity;
 
@@ -100,7 +102,7 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
                     //获取缓存
                     mPresenter.getTransferInfoSingle(mRefData.refCodeId, mRefData.refType,
                             mRefData.bizType, mRefLineId, getString(tvBatchFlag), mSelectedLocation,
-                            "",-1, Global.USER_ID);
+                            "", -1, Global.USER_ID);
                 });
     }
 
@@ -126,6 +128,8 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
         Bundle bundle = getArguments();
         mExtraLocationMap = (Map<String, Object>) bundle.getSerializable(Global.LOCATION_EXTRA_MAP_KEY);
         mSelectedLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
+        mSpecialInvFlag = bundle.getString(Global.EXTRA_SPECIAL_INV_FLAG_KEY);
+        mSpecialInvNum = bundle.getString(Global.EXTRA_SPECIAL_INV_NUM_KEY);
         final String totalQuantity = bundle.getString(Global.EXTRA_TOTAL_QUANTITY_KEY);
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
         final String invId = bundle.getString(Global.EXTRA_INV_ID_KEY);
@@ -154,7 +158,6 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
            /*绑定额外字段的数据*/
             bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt, false);
             bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap, false);
-
             //下载库存
             loadInventoryInfo(lineData.workId, lineData.workCode, invId, invCode, lineData.materialId, "", batchFlag);
         }
@@ -181,10 +184,8 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             showMessage("库存地点");
             return;
         }
-        final RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
         mPresenter.getInventoryInfo(getInventoryQueryType(), workId, invId, workCode, invCode, "",
-                getString(tvMaterialNum), materialId, location, batchFlag, lineData.specialInvFlag,
-                mRefData.supplierNum, getInvType(),"");
+                getString(tvMaterialNum), materialId, location, batchFlag, "", "", getInvType(), "");
     }
 
     @Override
@@ -203,14 +204,23 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             spLocation.setSelection(0);
             return;
         }
+
+        String locationCombine = null;
+        if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
+            locationCombine = mSelectedLocation + mSpecialInvFlag + mSpecialInvNum;
+        }
+
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
+            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
+                break;
+            } else if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
                 break;
             }
         }
-        spLocation.setSelection(pos);
+        if (pos >= 0 && pos < list.size())
+            spLocation.setSelection(pos);
     }
 
     @Override
@@ -249,11 +259,18 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
 
     @Override
     public boolean checkCollectedDataBeforeSave() {
+
         //检查是否合理，可以保存修改后的数据
         if (TextUtils.isEmpty(getString(etQuantity))) {
             showMessage("请输入实发数量");
             return false;
         }
+
+        if (TextUtils.isEmpty(getString(tvInvQuantity))) {
+            showMessage("请先获取库存");
+            return false;
+        }
+
 
         if (Float.parseFloat(getString(etQuantity)) <= 0.0f) {
             showMessage("输入出库数量不合理,请重新输入");
@@ -284,6 +301,14 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             return false;
         }
 
+        //该仓位的库存数量
+        final float invQuantityV = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+        if (Float.compare(quantityV, invQuantityV) > 0.0f) {
+            showMessage("输入数量大于库存数量，请重新输入");
+            etQuantity.setText("");
+            return false;
+        }
+
         mQuantity = quantityV + "";
         mTotalQuantity = residualQuantity;
         return true;
@@ -306,9 +331,14 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             result.refLineId = lineData.refLineId;
             result.workId = lineData.workId;
             result.locationId = mLocationId;
+            result.refLineNum = lineData.lineNum;
             result.invId = tvInv.getTag().toString();
             result.materialId = lineData.materialId;
-            result.location = mInventoryDatas.get(spLocation.getSelectedItemPosition()).location;
+            //库存相关的字段回传
+            int locationPos = spLocation.getSelectedItemPosition();
+            result.location = mInventoryDatas.get(locationPos).location;
+            result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
+            result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.batchFlag = getString(tvBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";

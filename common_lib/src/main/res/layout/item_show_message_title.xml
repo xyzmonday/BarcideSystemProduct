@@ -5,13 +5,14 @@
     android:padding="5dp"
     android:orientation="horizontal">
 
-    <ImageView
-        android:layout_width="20dp"
-        android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:scaleType="fitCenter"
-        android:layout_marginRight="10dp"
-        android:src="@mipmap/icon_error" />
+    <!--<ImageView-->
+        <!--android:id="@+id/iv_error"-->
+        <!--android:layout_width="20dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:gravity="center_vertical"-->
+        <!--android:scaleType="fitCenter"-->
+        <!--android:layout_marginRight="10dp"-->
+        <!--android:src="@mipmap/icon_error" />-->
 
     <TextView
         android:id="@+id/tv_title"

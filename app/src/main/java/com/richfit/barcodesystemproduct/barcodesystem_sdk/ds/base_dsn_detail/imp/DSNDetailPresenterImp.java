@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -46,6 +47,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
 
     /**
      * 注意获取无参考的整单缓存时，单据数据refData为null
+     *
      * @param refData：抬头界面获取的单据数据
      * @param refCodeId：单据id
      * @param bizType:业务类型
@@ -57,7 +59,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
      * @param recInvId
      */
     @Override
-    public void getTransferInfo(ReferenceEntity refData,String refCodeId, String bizType, String refType, String userId, String workId,
+    public void getTransferInfo(ReferenceEntity refData, String refCodeId, String bizType, String refType, String userId, String workId,
                                 String invId, String recWorkId, String recInvId) {
         mView = getView();
         ResourceSubscriber<ArrayList<RefDetailEntity>> subscriber =
@@ -83,7 +85,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                             @Override
                             public void onComplete() {
                                 if (mView != null) {
-                                   mView.refreshComplete();
+                                    mView.refreshComplete();
                                 }
                             }
                         });
@@ -162,7 +164,8 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
 
         //下架仓位
         bundle.putString(Global.EXTRA_LOCATION_KEY, node.location);
-
+        bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY,node.specialInvFlag);
+        bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY,node.specialInvNum);
         //批次
         bundle.putString(Global.EXTRA_BATCH_FLAG_KEY, node.batchFlag);
 
@@ -280,8 +283,10 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                                 String voucherDate, String transToSapFlag,
                                 Map<String, Object> extraHeaderMap, int submitFlag) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
-                Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap)
+        RxSubscriber<String> subscriber = Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType,
+                userId, voucherDate, transToSapFlag, extraHeaderMap),
+                mRepository.transferCollectionData(transId, bizType, refType,
+                        userId, voucherDate, "08", extraHeaderMap).delay(Global.TURN_OWN_SUPPLIESD_ELAY, TimeUnit.MILLISECONDS))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
                     @Override
@@ -319,7 +324,6 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                 });
         addSubscriber(subscriber);
     }
-
 
 
     /**

@@ -4,7 +4,7 @@ import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.BaseMSDetailFragment;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.imp.MSDetailPresenter;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_detail.imp.MSDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -18,7 +18,7 @@ import java.util.List;
  * Created by monday on 2017/2/10.
  */
 
-public class QingHaiUbSto351DetailFragment extends BaseMSDetailFragment<MSDetailPresenter> {
+public class QingHaiUbSto351DetailFragment extends BaseMSDetailFragment<MSDetailPresenterImp> {
 
 
     @Override

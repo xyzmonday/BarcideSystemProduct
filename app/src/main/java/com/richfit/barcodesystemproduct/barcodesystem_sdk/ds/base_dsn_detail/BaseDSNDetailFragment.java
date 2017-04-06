@@ -5,7 +5,6 @@ import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.DSNDetailAdapter;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_detail.imp.DSNDetailPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.common_lib.utils.Global;
@@ -22,7 +21,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
  * Created by monday on 2017/2/23.
  */
 
-public abstract class BaseDSNDetailFragment extends BaseDetailFragment<DSNDetailPresenterImp, RefDetailEntity>
+public abstract class BaseDSNDetailFragment<P extends IDSNDetailPresenter> extends BaseDetailFragment<P, RefDetailEntity>
         implements IDSNDetailView<RefDetailEntity> {
 
 

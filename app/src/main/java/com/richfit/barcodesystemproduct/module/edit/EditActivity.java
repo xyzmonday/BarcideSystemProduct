@@ -71,12 +71,7 @@ public class EditActivity extends BaseActivity<EditPresenterImp> implements IEdi
     @OnClick(R.id.floating_button)
     public void onClick(View v) {
         //注意这里由于子菜单的code都是从0开始的，所以拍照需要特别设置
-        switch (mBizType) {
-            default:
-                String message = "您真的需要修改数据吗?点击确定将完成修改.";
-                showWarningDialog(message);
-                break;
-        }
+        showWarningDialog("您真的需要修改数据吗?点击确定将完成修改.");
     }
 
     /**
@@ -90,10 +85,8 @@ public class EditActivity extends BaseActivity<EditPresenterImp> implements IEdi
         builder.setMessage(message);
         builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
         builder.setPositiveButton("确定", (dialog, which) -> {
-            /*这里使用了数据采集的状态*/
-            if (mFragment != null && mFragment.checkCollectedDataBeforeSave()) {
+            if (mFragment != null)
                 mFragment.saveCollectedData();
-            }
         });
         builder.show();
     }

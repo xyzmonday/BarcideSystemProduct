@@ -92,7 +92,8 @@ public class QingHaiAS105EditFragment extends BaseASEditFragment<ASEditPresenter
         int pos = -1;
         for (int i = 0, size = list.size(); i < size; i++) {
             pos++;
-            if (key.equalsIgnoreCase(list.get(i))) {
+            //注意这里仅仅匹配的是code
+            if (key.equalsIgnoreCase(list.get(i).split("_")[0])) {
                 break;
             }
         }
@@ -123,10 +124,16 @@ public class QingHaiAS105EditFragment extends BaseASEditFragment<ASEditPresenter
             result.location = getString(etLocation);
             result.batchFlag = getString(tvBatchFlag);
             result.quantity = getString(etQuantity);
-
+            //物料凭证
+            result.refDoc = lineData.refDoc;
+            //物料凭证单据行
+            result.refDocItem = lineData.refDocItem;
+            //退货交货数量
+            result.returnQuantity = getString(etReturnQuantity);
+            //检验批数量
+            result.insLot = lineData.insLot;
             //项目文本
             result.projectText = getString(etProjectText);
-
             //移动原因说明
             result.moveCauseDesc = getString(etMoveCauseDesc);
 

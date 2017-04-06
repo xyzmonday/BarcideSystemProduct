@@ -16,6 +16,7 @@ public class LocationInfoEntity {
     public String transId;
     /*行ID*/
     public String transLineId;
+    public String transLineSplitId;
     /*仓位号*/
     public String location;
     /*批次*/

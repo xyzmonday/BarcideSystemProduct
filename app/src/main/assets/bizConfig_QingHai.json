@@ -339,7 +339,7 @@
         "bizType": "26",
         "refType": "0",
         "fragmentType": -1,
-        "className": "com.richfit.barcodesystemproduct.module_delivery.qinghai_dsn.edit.QingHaiDSNEditFragment"
+        "className": "com.richfit.barcodesystemproduct.module_delivery.qinghai_dsn.QingHaiDSNEditFragment"
     },
     {
         "id": "39",

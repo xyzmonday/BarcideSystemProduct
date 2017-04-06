@@ -61,7 +61,7 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
 
     private boolean initAppConfig(Context context) {
         Global.macAddress = UiUtil.getMacAddress();
-        Global.serialNum = UiUtil.getDeviceId(context.getApplicationContext());
+//        Global.serialNum = UiUtil.getDeviceId(context.getApplicationContext());
         return true;
     }
 
@@ -87,12 +87,12 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     public void unRegister(String message) {
         new SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE)
                 .setTitleText("提示")
-                .setContentText(message + "。请点击立即注册获取手持MAC和序列号进行注册")
+                .setContentText(message + "。请点击立即注册获取手持MAC地址进行注册")
                 .setConfirmText("立即注册")
                 .setCancelText("下次再说")
                 .setConfirmClickListener(sDialog -> {
                     sDialog.setTitleText("用户注册")
-                            .setContentText("手持的MAC地址:" + Global.macAddress + ";\n" + "手持的序列号:" + Global.serialNum)
+                            .setContentText("手持的MAC地址:" + Global.macAddress)
                             .setConfirmText("OK")
                             .setConfirmClickListener(null)
                             .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);

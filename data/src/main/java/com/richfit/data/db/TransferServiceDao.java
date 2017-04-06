@@ -65,10 +65,174 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
     public ReferenceEntity getBusinessTransferInfoRef(String recordNum, String refCodeId, String bizType,
                                                       String refType, String userId, String workId,
                                                       String invId, String recWorkId, String recInvId) {
-        // 查 transId 条件bizType、refType、refCodeId
+        // 查 transId 条件bizType、refType、refCodeId、createdBy
         ReferenceEntity refData = new ReferenceEntity();
 
+        clearStringBuffer();
+        String[] selections;
+        List<String> selectionList = new ArrayList<>();
+        SQLiteDatabase db = getWritableDB();
 
+        //查询抬头缓存
+        sb.append("SELECT H.ID, H.VOUCHER_DATE, H.REMARK, H.REF_CODE_ID ")
+                .append("  FROM MTL_TRANSACTION_HEADERS H")
+                .append("  WHERE H.TRANS_FLAG = '0'");
+
+        if (!TextUtils.isEmpty(refType)) {
+            sb.append(" AND H.REF_TYPE = ?");
+            selectionList.add(refType);
+        }
+        if (!TextUtils.isEmpty(userId)) {
+            sb.append(" AND H.CREATED_BY = ?");
+            selectionList.add(userId);
+        }
+
+        if (!TextUtils.isEmpty(refCodeId)) {
+            sb.append(" AND H.REF_CODE_ID = ?");
+            selectionList.add(refCodeId);
+        }
+
+        if (!TextUtils.isEmpty(bizType)) {
+            sb.append(" AND H.BIZ_TYPE = ?");
+            selectionList.add("19_ZJ".equals(bizType) ? "19" : bizType);
+        }
+
+        selections = new String[selectionList.size()];
+        selectionList.toArray(selections);
+
+        Cursor cursor = db.rawQuery(sb.toString(), selections);
+        int index;
+        while (cursor.moveToNext()) {
+            index = -1;
+            refData.transId = cursor.getString(++index);
+            refData.voucherDate = cursor.getString(++index);
+            refData.refCodeId = cursor.getString(++index);
+        }
+        cursor.close();
+
+        if (TextUtils.isEmpty(refData.transId)) {
+            return refData;
+        }
+
+        //查询行缓存
+        clearStringBuffer();
+        selectionList.clear();
+        sb.append(" SELECT T.ID,T.REF_LINE_ID,T.WORK_ID,T.INV_ID,")
+                .append("T.REC_WORK_ID,T.REC_INV_ID,T.MATERIAL_ID,")
+                .append("T.QUANTITY,")
+                .append("W.ORG_CODE AS WORK_CODE,")
+                .append("W.ORG_NAME AS WORK_NAME,")
+                .append("I.ORG_CODE AS INV_CODE,")
+                .append("I.ORG_NAME AS INV_NAME,")
+                .append("RW.ORG_CODE AS REC_WORK_CODE,")
+                .append("RW.ORG_NAME AS REC_WORK_NAME,")
+                .append("RI.ORG_CODE AS REC_INV_CODE,")
+                .append("RI.ORG_NAME AS REC_INV_NAME,")
+                .append("T.QUANTITY,T.INS_LOT,T.DECISION_CODE,T.PROJECT_TEXT,")
+                .append("T.MOVE_CAUSE,T.MOVE_CAUSE_DESC,")
+                .append("T.RETURN_QUANTITY,T.REF_DOC,T.REF_DOC_ITEM,")
+                .append("T.REF_DOC || '_' || T.REF_DOC_ITEM AS LINE_NUM_105 ")
+                .append("FROM MTL_TRANSACTION_LINES T ");
+
+        sb.append(" LEFT JOIN P_AUTH_ORG RW ON T.REC_WORK_ID = RW.ORG_ID ")
+                .append(" LEFT JOIN P_AUTH_ORG RI ON T.REC_INV_ID = RI.ORG_ID,")
+                .append(" P_AUTH_ORG               W, ")
+                .append(" P_AUTH_ORG               I ");
+
+        //查询条件Trans_id,bizType
+        sb.append(" WHERE T.WORK_ID = W.ORG_ID ")
+                .append(" AND T.INV_ID = I.ORG_ID ")
+                .append(" AND T.TRANS_ID = ? ");
+
+        cursor = db.rawQuery(sb.toString(), new String[]{refData.transId});
+        ArrayList<RefDetailEntity> billDetailList = new ArrayList<>();
+        RefDetailEntity item;
+        while (cursor.moveToNext()) {
+            index = -1;
+            item = new RefDetailEntity();
+            item.transLineId = cursor.getString(++index);
+            item.refLineId = cursor.getString(++index);
+            item.workId = cursor.getString(++index);
+            item.invId = cursor.getString(++index);
+            item.recWorkId = cursor.getString(++index);
+            item.recInvId = cursor.getString(++index);
+            item.materialId = cursor.getString(++index);
+            item.quantity = cursor.getString(++index);
+            item.workCode = cursor.getString(++index);
+            item.workName = cursor.getString(++index);
+            item.invCode = cursor.getString(++index);
+            item.invName = cursor.getString(++index);
+            item.recWorkCode = cursor.getString(++index);
+            item.recWorkName = cursor.getString(++index);
+            item.recInvCode = cursor.getString(++index);
+            item.recInvName = cursor.getString(++index);
+            item.totalQuantity = cursor.getString(++index);
+            item.insLot = cursor.getString(++index);
+            item.decisionCode = cursor.getString(++index);
+            item.projectText = cursor.getString(++index);
+            item.moveCause = cursor.getString(++index);
+            item.moveCauseDesc = cursor.getString(++index);
+            item.returnQuantity = cursor.getString(++index);
+            item.refDoc = cursor.getString(++index);
+            item.refDocItem = cursor.getInt(++index);
+            item.lineNum105 = cursor.getString(++index);
+
+            billDetailList.add(item);
+        }
+        cursor.close();
+
+        if (billDetailList.size() == 0) {
+            return refData;
+        }
+
+        //获取仓位缓存
+        clearStringBuffer();
+        sb.append(" SELECT T.ID,T.TRANS_ID,T.TRANS_LINE_ID,T.LOCATION,")
+                .append("L.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,L.REC_BATCH_NUM,")
+                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM ")
+                .append("FROM MTL_TRANSACTION_LINES_LOCATION T , MTL_TRANSACTION_LINES_SPLIT L")
+                .append(" WHERE T.TRANS_LINE_SPLIT_ID = L.ID ")
+                .append(" AND T.TRANS_LINE_ID = ?")
+                .append(" ORDER BY T.LOCATION");
+
+        for (RefDetailEntity data : billDetailList) {
+            ArrayList<LocationInfoEntity> locations = new ArrayList<>();
+            LocationInfoEntity locItem;
+            cursor = db.rawQuery(sb.toString(), new String[]{data.transLineId});
+            while (cursor.moveToNext()) {
+                index = -1;
+                locItem = new LocationInfoEntity();
+                locItem.id = cursor.getString(++index);
+                locItem.transId = cursor.getString(++index);
+                locItem.transLineId = cursor.getString(++index);
+                locItem.location = cursor.getString(++index);
+                locItem.batchFlag = cursor.getString(++index);
+                locItem.quantity = cursor.getString(++index);
+                locItem.recLocation = cursor.getString(++index);
+                locItem.recBatchFlag = cursor.getString(++index);
+                locItem.specialInvFlag = cursor.getString(++index);
+                locItem.specialInvNum = cursor.getString(++index);
+                locItem.locationCombine = !TextUtils.isEmpty(locItem.specialInvFlag) ?
+                        locItem.location + "_" + locItem.specialInvFlag + "_" + locItem.specialInvNum :
+                        locItem.location;
+                locations.add(locItem);
+            }
+            data.locationList = locations;
+            cursor.close();
+        }
+        //最后确定是否有缓存
+        boolean hashCache = false;
+        for (RefDetailEntity detail : billDetailList) {
+            if (detail.locationList != null && detail.locationList.size() > 0) {
+                hashCache = true;
+                break;
+            }
+        }
+        if (!hashCache)
+            return refData;
+        refData.billDetailList = billDetailList;
+
+        db.close();
         return refData;
     }
 
@@ -199,8 +363,8 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         selectionList.clear();
         sb.append("SELECT T.ID, T.REF_LINE_ID, T.WORK_ID,")
                 .append("T.INV_ID,T.REC_WORK_ID,T.REC_INV_ID,")
-                .append("T.MATERIAL_ID,T.QUANTITY,T.INV_TYPE,T.SPECIAL_FLAG,")
-                .append("T.SPECIAL_NUM,W.ORG_CODE AS WORK_CODE,W.ORG_NAME AS WORK_NAME,")
+                .append("T.MATERIAL_ID,T.QUANTITY,")
+                .append("W.ORG_CODE AS WORK_CODE,W.ORG_NAME AS WORK_NAME,")
                 .append("I.ORG_CODE AS INV_CODE,I.ORG_NAME AS INV_NAME,")
                 .append("RW.ORG_CODE AS REC_WORK_CODE,RW.ORG_NAME AS REC_WORK_NAME,")
                 .append("RI.ORG_CODE AS REC_INV_CODE,RI.ORG_NAME AS REC_INV_NAME,")
@@ -267,9 +431,8 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item.recInvId = cursor.getString(++index);
             item.materialId = cursor.getString(++index);
             item.totalQuantity = cursor.getString(++index);
-            item.invType = cursor.getString(++index);
-            item.specialInvFlag = cursor.getString(++index);
-            item.specialInvNum = cursor.getString(++index);
+//            item.specialInvFlag = cursor.getString(++index);
+//            item.specialInvNum = cursor.getString(++index);
             item.workCode = cursor.getString(++index);
             item.workName = cursor.getString(++index);
             item.invCode = cursor.getString(++index);
@@ -298,13 +461,10 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         //获取仓位缓存
         clearStringBuffer();
         sb.append(" SELECT T.ID,T.TRANS_ID,T.TRANS_LINE_ID,T.LOCATION,")
-                .append("T.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,T.REC_BATCH_NUM,")
-                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM,")
-                .append("DECODE(L.SPECIAL_FLAG,NULL,T.LOCATION,T.LOCATION || '_' || L.SPECIAL_FLAG || '_' || L.SPECIAL_NUM) AS LOCATION_COMBINE,")
-                .append("L.COMPLETE_411_K ")
+                .append("L.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,L.REC_BATCH_NUM,")
+                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM ")
                 .append("FROM MTL_TRANSACTION_LINES_LOCATION T , MTL_TRANSACTION_LINES_SPLIT L")
                 .append(" WHERE T.TRANS_LINE_SPLIT_ID = L.ID ")
-                .append(" AND L.COMPLETE_411_K IS NULL ")
                 .append(" AND T.TRANS_LINE_ID = ?")
                 .append(" ORDER BY T.LOCATION");
         for (RefDetailEntity data : billDetailList) {
@@ -323,7 +483,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 locItem.recBatchFlag = cursor.getString(++index);
                 locItem.specialInvFlag = cursor.getString(++index);
                 locItem.specialInvNum = cursor.getString(++index);
-                locItem.locationCombine = cursor.getString(++index);
+                locItem.locationCombine = !TextUtils.isEmpty(locItem.specialInvFlag) ?
+                        locItem.location + "_" + locItem.specialInvFlag + "_" + locItem.specialInvNum :
+                        locItem.location;
                 locations.add(locItem);
             }
             data.locationList = locations;

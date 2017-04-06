@@ -3,13 +3,14 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.IDSEditPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.IDSEditView;
+import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
@@ -48,6 +49,7 @@ public class DSEditPresenterImp extends BasePresenter<IDSEditView>
                     .flatMap(num -> mRepository.getInventoryInfo(queryType, workId, invId,
                             workCode, invCode, num, materialNum, materialId, "", "", batchFlag, location,
                             specialInvFlag, specialInvNum, invType, deviceId))
+                    .filter(list -> list != null && list.size() > 0)
                     .compose(TransformerHelper.io2main())
                     .subscribeWith(new InventorySubscriber(mContext, "正在获取库存"));
 
@@ -55,6 +57,7 @@ public class DSEditPresenterImp extends BasePresenter<IDSEditView>
             subscriber = mRepository.getInventoryInfo(queryType, workId, invId,
                     workCode, invCode, storageNum, materialNum, materialId, "", "", batchFlag, location,
                     specialInvFlag, specialInvNum, invType, deviceId)
+                    .filter(list -> list != null && list.size() > 0)
                     .compose(TransformerHelper.io2main())
                     .subscribeWith(new InventorySubscriber(mContext, "正在获取库存"));
         }
@@ -104,6 +107,7 @@ public class DSEditPresenterImp extends BasePresenter<IDSEditView>
     @Override
     public void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,
                                       String batchFlag, String location, String refDoc, int refDocItem, String userId) {
+
         mView = getView();
         RxSubscriber<RefDetailEntity> subscriber =
                 mRepository.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,

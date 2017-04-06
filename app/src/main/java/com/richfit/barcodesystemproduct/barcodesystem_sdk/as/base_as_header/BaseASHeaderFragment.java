@@ -15,6 +15,7 @@ import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
+import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.RowConfig;
 
@@ -136,7 +137,15 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
         refData.bizType = mBizType;
         refData.moveType = getMoveType();
         refData.refType = mRefType;
+        //这里必须先判断该张单据是否全是必检物资
+        boolean isQmFlag = false;
+        for (RefDetailEntity item : refData.billDetailList) {
+            isQmFlag = "X".equalsIgnoreCase(item.qmFlag);
+            if(isQmFlag)
+                break;
+        }
         mRefData = refData;
+        mRefData.qmFlag = isQmFlag;
         cacheProcessor(mRefData.transId, mRefData.transId, mRefData.recordNum,
                 mRefData.refCodeId, mRefData.refType, mRefData.bizType);
     }

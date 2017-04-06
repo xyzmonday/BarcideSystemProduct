@@ -1,5 +1,7 @@
 package com.richfit.barcodesystemproduct.module_movestore.qingyang_301n;
 
+import android.text.TextUtils;
+
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.BaseMSNEditFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp.MSNEditPresenterImp;
@@ -17,7 +19,17 @@ public class QingYangMSN301EditFragment extends BaseMSNEditFragment<MSNEditPrese
 
     @Override
     protected String getInvType() {
-        return getString(R.string.invTypeDaiGuan);
+        return "0";
+    }
+
+    @Override
+    public boolean checkCollectedDataBeforeSave() {
+        final String recLocation = getString(etRecLoc);
+        if (!TextUtils.isEmpty(recLocation) && recLocation.length() != 11) {
+            showMessage("修改失败,请先检查接收仓位是否合理");
+            return false;
+        }
+        return super.checkCollectedDataBeforeSave();
     }
 
     @Override

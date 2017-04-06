@@ -16,8 +16,9 @@ public class QingHaiRGEditFragment extends BaseDSEditFragment {
 
     @Override
     protected String getInvType() {
-        return "采购退货";
+        return getString(R.string.invTypeNorm);
     }
+
 
     @Override
     protected String getInventoryQueryType() {

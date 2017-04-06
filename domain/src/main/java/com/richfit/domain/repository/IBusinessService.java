@@ -28,7 +28,7 @@ public interface IBusinessService {
      * @param companyCode
      * @return
      */
-    String deleteBusinessData(String refNum, String transId, String refCodeId,
+    boolean deleteBusinessData(String refNum, String transId, String refCodeId,
                               String refType, String bizType, String userId,
                               String companyCode);
 
@@ -39,7 +39,7 @@ public interface IBusinessService {
      * @param transId
      * @return
      */
-    String deleteBusinessDataByLineId(String businessType, String transLineId, String transId);
+    boolean deleteBusinessDataByLineId(String businessType, String transId, String transLineId);
 
     /**
      * 删除单条缓存数据(仅仅针对子节点，如果没有父子节点，那么删除时当前节点的数据)
@@ -48,7 +48,7 @@ public interface IBusinessService {
      * @param transId
      * @return
      */
-    String deleteBusinessDataByLocationId(String locationId, String transLineId, String transId);
+    boolean deleteBusinessDataByLocationId(String locationId, String transId, String transLineId);
 
     /**
      * 提交所有离线数据到服务器

@@ -61,9 +61,8 @@ public class QingHaiRSNEditFragment extends BaseFragment<QingHaiRSNEditPresenter
     Map<String, Object> mExtraLocationMap;
     /*缓存的行级别的额外字段*/
     Map<String, Object> mExtraLineMap;
-
     //修改前的上架仓位
-    String mLocation;
+    String mSelectedLocation;
     String mLocationId;
 
 
@@ -107,7 +106,7 @@ public class QingHaiRSNEditFragment extends BaseFragment<QingHaiRSNEditPresenter
         //批次
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
         //仓位
-        mLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
+        mSelectedLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
         mLocationId = bundle.getString(Global.EXTRA_LOCATION_ID_KEY);
         //入库数量
         mQuantity = bundle.getString(Global.EXTRA_QUANTITY_KEY);
@@ -147,7 +146,7 @@ public class QingHaiRSNEditFragment extends BaseFragment<QingHaiRSNEditPresenter
     @Override
     public void loadTransferSingeInfoComplete() {
         //设置上架仓位，系统自动匹配最新的缓存
-        etLocation.setText(mLocation);
+        etLocation.setText(mSelectedLocation);
     }
 
     /**

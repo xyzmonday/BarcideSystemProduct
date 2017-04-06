@@ -74,6 +74,8 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
     protected String mSelectedLocation;
     Map<String, Object> mExtraLocationMap;
     private float mTotalQuantity;
+    private String mSpecialInvFlag;
+    private String mSpecialInvNum;
 
     @Override
     protected int getContentId() {
@@ -130,6 +132,8 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
         Bundle bundle = getArguments();
         mExtraLocationMap = (Map<String, Object>) bundle.getSerializable(Global.LOCATION_EXTRA_MAP_KEY);
         mSelectedLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
+        mSpecialInvFlag = bundle.getString(Global.EXTRA_SPECIAL_INV_FLAG_KEY);
+        mSpecialInvNum = bundle.getString(Global.EXTRA_SPECIAL_INV_NUM_KEY);
         final String totalQuantity = bundle.getString(Global.EXTRA_TOTAL_QUANTITY_KEY);
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
         final String invId = bundle.getString(Global.EXTRA_INV_ID_KEY);
@@ -202,14 +206,22 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             spLocation.setSelection(0);
             return;
         }
+        String locationCombine = null;
+        if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
+            locationCombine = mSelectedLocation + mSpecialInvFlag + mSpecialInvNum;
+        }
+
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
+            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
+                break;
+            } else if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
                 break;
             }
         }
-        spLocation.setSelection(pos);
+        if (pos >= 0 && pos < list.size())
+            spLocation.setSelection(pos);
     }
 
     @Override
@@ -254,6 +266,11 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             return false;
         }
 
+        if(TextUtils.isEmpty(getString(tvInvQuantity))) {
+            showMessage("请先获取库存");
+            return false;
+        }
+
         if (Float.parseFloat(getString(etQuantity)) <= 0.0f) {
             showMessage("输入出库数量不合理,请重新输入");
             return false;
@@ -278,11 +295,17 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
         float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);
         float residualQuantity = totalQuantityV - collectedQuantity + quantityV;//减去已经录入的数量
         if (Float.compare(residualQuantity, actQuantityV) > 0.0f) {
-            showMessage("输入实收数量有误");
+            showMessage("输入移库数量有误");
             etQuantity.setText("");
             return false;
         }
-
+        //是否满足本次录入数量<=库存数量
+        final float invQuantityV = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+        if (Float.compare(quantityV, invQuantityV) > 0.0f) {
+            showMessage("移库数量有误,请重新输入");
+            etQuantity.setText("");
+            return false;
+        }
         mQuantity = quantityV + "";
         mTotalQuantity = residualQuantity;
         return true;
@@ -306,9 +329,13 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             result.userId = Global.USER_ID;
             result.refLineId = lineData.refLineId;
             result.workId = lineData.workId;
+            result.locationId = mLocationId;
             result.invId = CommonUtil.Obj2String(tvInv.getTag());
             result.materialId = lineData.materialId;
-            result.location = mInventoryDatas.get(spLocation.getSelectedItemPosition()).location;
+            int locationPos = spLocation.getSelectedItemPosition();
+            result.location = mInventoryDatas.get(locationPos).location;
+            result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
+            result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.batchFlag = getString(tvBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";
@@ -324,9 +351,8 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
 
     @Override
     public void saveCollectedDataSuccess(String message) {
-        tvTotalQuantity.setText(getString(etQuantity));
+        tvTotalQuantity.setText(String.valueOf(mTotalQuantity));
         tvLocQuantity.setText(getString(etQuantity));
-
         showMessage(message);
     }
 

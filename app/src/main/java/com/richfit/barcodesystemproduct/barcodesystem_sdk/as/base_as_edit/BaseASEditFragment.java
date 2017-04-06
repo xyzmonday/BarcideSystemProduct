@@ -72,9 +72,9 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
     protected int mPosition;
     //是否上架（直接通过父节点的标志位判断即可）
     protected boolean isNLocation;
-
     protected Map<String, Object> mExtraLocationMap;
     protected Map<String, Object> mExtraCollectMap;
+    protected float mTotalQuantity;
 
     @Override
     protected int getContentId() {
@@ -98,6 +98,7 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
         final String invId = bundle.getString(Global.EXTRA_INV_ID_KEY);
         final String invCode = bundle.getString(Global.EXTRA_INV_CODE_KEY);
+
         isNLocation = "BARCODE".equalsIgnoreCase(location);
 
         mPosition = bundle.getInt(Global.EXTRA_POSITION_KEY);
@@ -123,7 +124,6 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
             }
             etQuantity.setText(mQuantity);
             tvTotalQuantity.setText(totalQuantity);
-
         }
     }
 
@@ -191,6 +191,7 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
             return false;
         }
         mQuantity = quantityV + "";
+        mTotalQuantity = residualQuantity;
         return true;
     }
 
@@ -206,6 +207,7 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
             result.refCodeId = mRefData.refCodeId;
             result.voucherDate = mRefData.voucherDate;
             result.refType = mRefData.refType;
+            result.refLineNum = lineData.lineNum;
             result.moveType = mRefData.moveType;
             result.userId = Global.USER_ID;
             result.refLineId = lineData.refLineId;
@@ -234,12 +236,12 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
         showMessage("修改成功");
         if (!isNLocation)
             tvLocationQuantity.setText(mQuantity);
-        tvTotalQuantity.setText(mQuantity);
+        tvTotalQuantity.setText(String.valueOf(mTotalQuantity));
     }
 
     @Override
     public void saveEditedDataFail(String message) {
-        showMessage("修改失败");
+        showMessage("修改失败;" + message);
     }
 
     @Override

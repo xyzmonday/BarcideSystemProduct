@@ -100,6 +100,16 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
     }
 
     @Override
+    public boolean deleteInspectionByHeadId(String refCodeId) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteInspectionByLineId(String refLineId) {
+        return false;
+    }
+
+    @Override
     public ArrayList<ImageEntity> readImagesByRefNum(String refNum, boolean isLocal) {
         ArrayList<ImageEntity> images = new ArrayList<>();
         SQLiteDatabase db = getWritableDB();

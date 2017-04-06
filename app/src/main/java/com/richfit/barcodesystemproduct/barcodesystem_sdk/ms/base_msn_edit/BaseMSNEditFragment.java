@@ -67,19 +67,17 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     /*修改前的其他子节点的发出仓位列表*/
     ArrayList<String> mSendLocations;
     ArrayList<String> mRecLocations;
-
     /*库存列表*/
     private List<InventoryEntity> mInventoryDatas;
     private LocationAdapter mSendLocAdapter;
-
     /*缓存的历史仓位数量*/
     private List<RefDetailEntity> mHistoryDetailList;
-
     /*缓存的仓位级别的额外字段*/
     Map<String, Object> mExtraLocationMap;
     /*缓存的行级别的额外字段*/
     Map<String, Object> mExtraLineMap;
-
+    private String mSpecialInvFlag;
+    private String mSpecialInvNum;
     protected boolean isWareHouseSame;
 
     @Override
@@ -135,6 +133,8 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         mQuantity = bundle.getString(Global.EXTRA_QUANTITY_KEY);
         //其他子节点的发出仓位列表
         mSendLocations = bundle.getStringArrayList(Global.EXTRA_LOCATION_LIST_KEY);
+        mSpecialInvFlag = bundle.getString(Global.EXTRA_SPECIAL_INV_FLAG_KEY);
+        mSpecialInvNum = bundle.getString(Global.EXTRA_SPECIAL_INV_NUM_KEY);
         //其他子节点的接收仓位列表
         mRecLocations = bundle.getStringArrayList(Global.EXTRA_REC_LOCATION_LIST_KEY);
         mLocationId = bundle.getString(Global.EXTRA_LOCATION_ID_KEY);
@@ -157,7 +157,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         //获取缓存信息
         mPresenter.getTransferInfoSingle(mRefData.bizType, materialNum,
                 Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
-                mRefData.recInvId, batchFlag,"",-1);
+                mRefData.recInvId, batchFlag, "", -1);
     }
 
     @Override
@@ -180,7 +180,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId,
                 CommonUtil.Obj2String(tvSendInv.getTag()), mRefData.workCode, getString(tvSendInv),
                 "", getString(tvMaterialNum), tvMaterialNum.getTag().toString(),
-                "", getString(tvSendBatchFlag), "", "", getInvType(),"");
+                "", getString(tvSendBatchFlag), "", "", getInvType(), "");
     }
 
     @Override
@@ -191,9 +191,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     @Override
     public void showInventory(List<InventoryEntity> list) {
         mInventoryDatas.clear();
-        InventoryEntity temp = new InventoryEntity();
-        temp.location = "请选择";
-        mInventoryDatas.add(temp);
         mInventoryDatas.addAll(list);
         if (mSendLocAdapter == null) {
             mSendLocAdapter = new LocationAdapter(mActivity, R.layout.item_simple_sp, mInventoryDatas);
@@ -208,14 +205,22 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             spSendLoc.setSelection(0);
             return;
         }
+        String locationCombine = null;
+        if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
+            locationCombine = mSendLocation + mSpecialInvFlag + mSpecialInvNum;
+        }
+
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (mSendLocation.equalsIgnoreCase(loc.location)) {
+            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
+                break;
+            } else if (mSendLocation.equalsIgnoreCase(loc.location)) {
                 break;
             }
         }
-        spSendLoc.setSelection(pos);
+        if (pos >= 0 && pos < list.size())
+            spSendLoc.setSelection(pos);
     }
 
     @Override
@@ -322,26 +327,20 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             return false;
         }
 
+        if (TextUtils.isEmpty(getString(tvInvQuantity))) {
+            showMessage("请先获取库存");
+            return false;
+        }
+
         if (Float.parseFloat(getString(etQuantity)) <= 0.0f) {
             showMessage("输入移库数量有误，请重新输入");
             return false;
         }
 
-        if (spSendLoc.getSelectedItemPosition() <= 0) {
-            showMessage("请先选择发出仓位");
-            return false;
-        }
-
-        if (!isValidatedRecLocation(getString(etRecLoc))) {
-            showMessage("您输入的接收仓位不合理,请重新输入");
-            return false;
-        }
 
         //检查接收仓位
-
-        final String recLocation = getString(etRecLoc);
-        if (!TextUtils.isEmpty(recLocation) && recLocation.length() != 11) {
-            showMessage("修改失败,请先检查接收仓位是否合理");
+        if (!isValidatedRecLocation(getString(etRecLoc))) {
+            showMessage("您输入的接收仓位不合理,请重新输入");
             return false;
         }
 
@@ -359,8 +358,8 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         //修改后的出库数量
         float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);
         //是否满足本次录入数量<=库存数量
-        final float inventoryQuantity = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
-        if (Float.compare(quantityV, inventoryQuantity) > 0.0f) {
+        final float invQuantityV = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+        if (Float.compare(quantityV, invQuantityV) > 0.0f) {
             showMessage("移库数量有误,请重新输入");
             etQuantity.setText("");
             return false;
@@ -395,12 +394,15 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             result.workId = mRefData.workId;
             result.locationId = mLocationId;
             result.invType =
-            result.invId = CommonUtil.Obj2String(tvSendInv.getTag());
+                    result.invId = CommonUtil.Obj2String(tvSendInv.getTag());
             result.recWorkId = mRefData.recWorkId;
             result.recInvId = mRefData.recInvId;
             result.materialId = CommonUtil.Obj2String(tvMaterialNum.getTag());
             result.batchFlag = getString(tvSendBatchFlag);
-            result.location = mInventoryDatas.get(spSendLoc.getSelectedItemPosition()).location;
+            int locationPos = spSendLoc.getSelectedItemPosition();
+            result.location = mInventoryDatas.get(locationPos).location;
+            result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
+            result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.recLocation = getString(etRecLoc);
             result.recBatchFlag = getString(tvRecBatchFlag);
             result.quantity = getString(etQuantity);
@@ -433,7 +435,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             case Global.RETRY_LOAD_SINGLE_CACHE_ACTION:
                 mPresenter.getTransferInfoSingle(mRefData.bizType, getString(tvMaterialNum),
                         Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
-                        mRefData.recInvId, getString(tvSendBatchFlag),"",-1);
+                        mRefData.recInvId, getString(tvSendBatchFlag), "", -1);
                 break;
             case Global.RETRY_SAVE_COLLECTION_DATA_ACTION:
                 saveCollectedData();

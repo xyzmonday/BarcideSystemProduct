@@ -6,14 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
-import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.IMSNDetailPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_detail.IMSNDetailView;
+import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
+import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -45,7 +46,7 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
     }
 
     @Override
-    public void getTransferInfo(ReferenceEntity refData,String refCodeId, String bizType, String refType, String userId, String workId,
+    public void getTransferInfo(ReferenceEntity refData, String refCodeId, String bizType, String refType, String userId, String workId,
                                 String invId, String recWorkId, String recInvId) {
         mView = getView();
         ResourceSubscriber<ArrayList<RefDetailEntity>> subscriber =
@@ -122,7 +123,7 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
     @Override
     public void editNode(ArrayList<String> sendLocations, ArrayList<String> recLocations,
                          ReferenceEntity refData, RefDetailEntity node,
-                         String companyCode, String bizType, String refType, String subFunName,int position) {
+                         String companyCode, String bizType, String refType, String subFunName, int position) {
 
         Intent intent = new Intent(mContext, EditActivity.class);
         Bundle bundle = new Bundle();
@@ -149,7 +150,8 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
 
         //发出仓位
         bundle.putString(Global.EXTRA_LOCATION_KEY, node.location);
-
+        bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY,node.specialInvFlag);
+        bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY,node.specialInvNum);
         //发出批次
         bundle.putString(Global.EXTRA_BATCH_FLAG_KEY, node.batchFlag);
 
@@ -178,48 +180,47 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
                                          String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber =
-                mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
-                        .retryWhen(new RetryWhenNetworkException(3, 3000))
-                        .doOnError(e -> SPrefUtil.saveData(bizType, "0"))
-                        .doOnComplete(() -> SPrefUtil.saveData(bizType, "1"))
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new RxSubscriber<String>(mContext) {
-                            @Override
-                            public void _onNext(String s) {
-                                if (mView != null) {
-                                    mView.showTransferedVisa(s);
-                                }
-                            }
+        RxSubscriber<String> subscriber = Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
+                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSapFlag, extraHeaderMap))
+                .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
+                .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
+                .compose(TransformerHelper.io2main())
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在过账...") {
+                    @Override
+                    public void _onNext(String message) {
+                        if (mView != null) {
+                            mView.showTransferedVisa(message);
+                        }
+                    }
 
-                            @Override
-                            public void _onNetWorkConnectError(String message) {
-                                if (mView != null) {
-                                    mView.networkConnectError(Global.RETRY_TRANSFER_DATA_ACTION);
-                                }
-                            }
+                    @Override
+                    public void _onNetWorkConnectError(String message) {
+                        if (mView != null) {
+                            mView.networkConnectError(Global.RETRY_TRANSFER_DATA_ACTION);
+                        }
+                    }
 
-                            @Override
-                            public void _onCommonError(String message) {
-                                if (mView != null) {
-                                    mView.submitBarcodeSystemFail(message);
-                                }
-                            }
+                    @Override
+                    public void _onCommonError(String message) {
+                        if (mView != null) {
+                            mView.submitBarcodeSystemFail(message);
+                        }
+                    }
 
-                            @Override
-                            public void _onServerError(String code, String message) {
-                                if (mView != null) {
-                                    mView.submitBarcodeSystemFail(message);
-                                }
-                            }
+                    @Override
+                    public void _onServerError(String code, String message) {
+                        if (mView != null) {
+                            mView.submitBarcodeSystemFail(message);
+                        }
+                    }
 
-                            @Override
-                            public void _onComplete() {
-                                if (mView != null) {
-                                    mView.submitBarcodeSystemSuccess();
-                                }
-                            }
-                        });
+                    @Override
+                    public void _onComplete() {
+                        if (mView != null) {
+                            mView.submitBarcodeSystemSuccess();
+                        }
+                    }
+                });
         addSubscriber(subscriber);
     }
 
@@ -227,15 +228,17 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
                                String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
-                Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, userId,
+                voucherDate, transToSapFlag, extraHeaderMap)
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
-                .doOnComplete(() -> SPrefUtil.saveData(bizType, "0"))
+                .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext) {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
                     @Override
-                    public void _onNext(String s) {
-
+                    public void _onNext(String message) {
+                        if (mView != null) {
+                            mView.showInspectionNum(message);
+                        }
                     }
 
                     @Override
@@ -275,9 +278,9 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
                                 Map<String, Object> extraHeaderMap, int submitFlag) {
         mView = getView();
         RxSubscriber<String> subscriber = Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType,
-                Global.USER_ID, voucherDate, transToSapFlag, extraHeaderMap),
+                userId, voucherDate, transToSapFlag, extraHeaderMap),
                 mRepository.transferCollectionData(transId, bizType, refType,
-                        Global.USER_ID, voucherDate, "08", extraHeaderMap))
+                        userId, voucherDate, "08", extraHeaderMap).delay(Global.TURN_OWN_SUPPLIESD_ELAY, TimeUnit.MILLISECONDS))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有数据...") {
                     @Override
@@ -315,7 +318,6 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
                 });
         addSubscriber(subscriber);
     }
-
 
 
     /**

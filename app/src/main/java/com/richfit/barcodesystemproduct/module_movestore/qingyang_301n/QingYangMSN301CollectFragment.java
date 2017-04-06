@@ -19,6 +19,7 @@ import butterknife.BindView;
  * 主要的逻辑是如果通过扫描条码未获取到设备Id那么用户不能做该业务，如果存在
  * 设备Id,那么在获取物料信息后，先尝试调用getDeviceInfo的接口获取相关的
  * 信息，不管获取成功或者失败都应该让用户继续操作。
+ * 另外庆阳的没有打开批次管理
  * Created by monday on 2017/2/8.
  */
 
@@ -52,7 +53,6 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
             final String materialNum = list[Global.MATERIAL_POS];
             final String batchFlag = list[Global.BATCHFALG_POS];
             mDeviceId = list[list.length - 2];
-//            mDeviceId = "5DEA6C98E1865F172D6604B702F779F3";
             L.e("扫描到的设备Id = " + mDeviceId);
             //如果设备Id为空那么不允许在操作.isContinue为true表示设备Id不为空可以继续该业务
             final boolean isContinue = !isEmpty(mDeviceId);
@@ -68,8 +68,8 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
                 saveCollectedData();
             } else {
                 etMaterialNum.setText(materialNum);
-                etSendBatchFlag.setText(batchFlag);
-                loadMaterialInfo(materialNum, batchFlag);
+//                etSendBatchFlag.setText(batchFlag);
+                loadMaterialInfo(materialNum, "");
             }
         } else if (list != null && list.length == 1 & !cbSingle.isChecked()) {
             final String location = list[0];
@@ -213,6 +213,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
             return false;
         }
 
+        //检查发出仓位
         final int sendLocPos = spSendLoc.getSelectedItemPosition();
         if(sendLocPos <= 0) {
             showMessage("请先选择发出仓位");
@@ -240,7 +241,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
 
     @Override
     protected String getInvType() {
-        return getString(R.string.invTypeDaiGuan);
+        return "0";
     }
 
     @Override

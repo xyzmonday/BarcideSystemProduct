@@ -60,7 +60,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     String mLocationId;
     String mQuantity;
     /*修改前的发出仓位*/
-    String mLocation;
+    String mSelectedLocation;
     /*修改前的其他子节点的发出仓位列表*/
     ArrayList<String> mLocations;
 
@@ -75,7 +75,8 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     Map<String, Object> mExtraLocationMap;
     /*缓存的行级别的额外字段*/
     Map<String, Object> mExtraLineMap;
-
+    private String mSpecialInvFlag;
+    private String mSpecialInvNum;
 
     @Override
     protected int getContentId() {
@@ -99,7 +100,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         //选择下架仓位，刷新库存并且请求缓存
         RxAdapterView
                 .itemSelections(spLocation)
-                .filter(position -> position > 0 && isValidatedSendLocation())
+                .filter(position -> position >= 0 && isValidatedSendLocation())
                 .subscribe(position -> {
                     //库存数量
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
@@ -119,7 +120,9 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         final String invId = bundle.getString(Global.EXTRA_INV_ID_KEY);
         final String invCode = bundle.getString(Global.EXTRA_INV_CODE_KEY);
         //下架仓位
-        mLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
+        mSelectedLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
+        mSpecialInvFlag = bundle.getString(Global.EXTRA_SPECIAL_INV_FLAG_KEY);
+        mSpecialInvNum = bundle.getString(Global.EXTRA_SPECIAL_INV_NUM_KEY);
         //发出批次
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
         //接收仓位
@@ -160,10 +163,10 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     @Override
     public void loadTransferSingleInfoComplete() {
         //获取库存信息
-        mPresenter.getInventoryInfo("04", mRefData.workId,
+        mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId,
                 CommonUtil.Obj2String(tvInv.getTag()), mRefData.workCode, getString(tvInv),
                 "", getString(tvMaterialNum), tvMaterialNum.getTag().toString(),
-                "", getString(tvBatchFlag),"","", "1","");
+                "", getString(tvBatchFlag),"","",getInvType(),"");
     }
 
     @Override
@@ -174,9 +177,6 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     @Override
     public void showInventory(List<InventoryEntity> list) {
         mInventoryDatas.clear();
-        InventoryEntity temp = new InventoryEntity();
-        temp.location = "请选择";
-        mInventoryDatas.add(temp);
         mInventoryDatas.addAll(list);
         if (mLocAdapter == null) {
             mLocAdapter = new LocationAdapter(mActivity, R.layout.item_simple_sp, mInventoryDatas);
@@ -187,18 +187,26 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
 
         //自动选定用户修改前的发出仓位
         //默认选择已经下架的仓位
-        if (TextUtils.isEmpty(mLocation)) {
+        if (TextUtils.isEmpty(mSelectedLocation)) {
             spLocation.setSelection(0);
             return;
         }
+        String locationCombine = null;
+        if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
+            locationCombine = mSelectedLocation + mSpecialInvFlag + mSpecialInvNum;
+        }
+
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (mLocation.equalsIgnoreCase(loc.location)) {
+            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
+                break;
+            } else if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
                 break;
             }
         }
-        spLocation.setSelection(pos);
+        if (pos >= 0 && pos < list.size())
+            spLocation.setSelection(pos);
     }
 
     @Override
@@ -258,13 +266,13 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
      * @return
      */
     private boolean isValidatedSendLocation() {
-        if (TextUtils.isEmpty(mLocation)) {
+        if (TextUtils.isEmpty(mSelectedLocation)) {
             return false;
         }
         if (mLocations == null || mLocations.size() == 0)
             return true;
         for (String location : mLocations) {
-            if (mLocation.equalsIgnoreCase(location)) {
+            if (mSelectedLocation.equalsIgnoreCase(location)) {
                 showMessage("您修改的仓位不合理,请重新输入");
                 spLocation.setSelection(0);
                 return false;
@@ -290,7 +298,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         }
 
         if(spLocation.getSelectedItemPosition() <= 0) {
-            showMessage("请先选择发出仓位");
+            showMessage("请先选择下架仓位");
             return false;
         }
 
@@ -308,9 +316,9 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         //修改后的出库数量
         float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);
         //是否满足本次录入数量<=库存数量
-        final float inventoryQuantity = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
-        if (Float.compare(quantityV, inventoryQuantity) > 0.0f) {
-            showMessage("移库数量有误,请重新输入");
+        final float invQuantityV = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+        if (Float.compare(quantityV, invQuantityV) > 0.0f) {
+            showMessage("实发数量有误,请重新输入");
             etQuantity.setText("");
             return false;
         }
@@ -392,5 +400,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         super.retry(retryAction);
     }
 
+    protected abstract String getInvType();
+    protected abstract String getInventoryQueryType();
 
 }

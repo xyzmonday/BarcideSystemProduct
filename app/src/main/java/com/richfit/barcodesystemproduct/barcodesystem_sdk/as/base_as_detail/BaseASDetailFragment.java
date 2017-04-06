@@ -54,6 +54,8 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
     /*工厂*/
     @BindView(R.id.work)
     protected TextView tvWork;
+    /*针对委外出库，如果该张单据全部是质检物资，那么不需要上架*/
+    private boolean isQmFlag = false;
 
 
     @Override

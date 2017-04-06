@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -174,13 +175,13 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                     bundle.putString(Global.EXTRA_TOTAL_QUANTITY_KEY, parentNode.totalQuantity);
                     //批次
                     bundle.putString(Global.EXTRA_BATCH_FLAG_KEY, node.batchFlag);
-
                     //累计数量
                     bundle.putSerializable(Global.EXTRA_TOTAL_QUANTITY_KEY, node.totalQuantity);
-
                     //需要修改的字段
                     //上架仓位
                     bundle.putString(Global.EXTRA_LOCATION_KEY, node.location);
+                    bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY,node.specialInvFlag);
+                    bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY,node.specialInvNum);
                     //实收数量
                     bundle.putString(Global.EXTRA_QUANTITY_KEY, node.quantity);
 
@@ -199,14 +200,15 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
 
     @Override
     public void submitData2BarcodeSystem(String transId, String bizType, String refType, String userId, String voucherDate,
-                                         String transToSAPFlag, Map<String, Object> extraHeaderMap) {
+                                         String transToSap, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", "")
+        RxSubscriber<String> subscriber = Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
+                mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSap, extraHeaderMap))
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
-                .doOnError(e -> SPrefUtil.saveData(bizType + refType, "0"))
+                .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<String>(mContext, "正在过账数据...") {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在过账...") {
                     @Override
                     public void _onNext(String message) {
                         if (mView != null) {
@@ -242,22 +244,24 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                         }
                     }
                 });
+        addSubscriber(subscriber);
     }
-
 
     @Override
     public void submitData2SAP(String transId, String bizType, String refType, String userId,
-                               String voucherDate, String transToSAPFlag,
-                               Map<String, Object> extraHeaderMap) {
+                               String voucherDate, String transToSap, Map<String, Object> extraHeaderMap) {
         mView = getView();
-        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate, transToSAPFlag, extraHeaderMap)
+        RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
+                userId, voucherDate, transToSap, extraHeaderMap)
                 .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
                     @Override
-                    public void _onNext(String s) {
-
+                    public void _onNext(String message) {
+                        if (mView != null) {
+                            mView.showInspectionNum(message);
+                        }
                     }
 
                     @Override
@@ -297,10 +301,10 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                                 Map<String, Object> extraHeaderMap, int submitFlag) {
         mView = getView();
         RxSubscriber<String> subscriber =
-                Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate,
+                Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate,
                         transToSAPFlag, extraHeaderMap),
-                        mRepository.transferCollectionData(transId, bizType, refType, Global.USER_ID, voucherDate,
-                                "08", extraHeaderMap))
+                        mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate,
+                                "08", extraHeaderMap).delay(Global.TURN_OWN_SUPPLIESD_ELAY, TimeUnit.MILLISECONDS))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
                             @Override

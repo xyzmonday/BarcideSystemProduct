@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_returngoods;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.BaseDSDetailFragment;
-import com.richfit.barcodesystemproduct.module_returngoods.imp.QingHaiRGDetailPresenterImp;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.imp.DSDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.BottomMenuEntity;
@@ -15,7 +15,7 @@ import java.util.List;
  * Created by monday on 2017/2/23.
  */
 
-public class QingHaiRGDetailFragment extends BaseDSDetailFragment<QingHaiRGDetailPresenterImp> {
+public class QingHaiRGDetailFragment extends BaseDSDetailFragment<DSDetailPresenterImp> {
 
     @Override
     protected void initView() {

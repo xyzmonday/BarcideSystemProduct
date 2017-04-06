@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ImageView;
 
 import com.richfit.common_lib.R;
 import com.richfit.common_lib.adapter.TimeLineAdapter;
@@ -26,6 +27,7 @@ public class ShowErrorMessageDialog extends DialogFragment {
 
     public static final String MESSAGES_KEY = "messages";
     RecyclerView mRvmessages;
+    ImageView mIvError;
 
 
     public static ShowErrorMessageDialog newInstance(String[] messages) {

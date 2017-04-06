@@ -4,7 +4,7 @@ import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.BaseASDetailFragment;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_detail.imp.ASDetailPresenterImp;
+import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n.imp.QingHaiAS105NDetailPresenterImp;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.BottomMenuEntity;
@@ -16,7 +16,7 @@ import java.util.List;
  * Created by monday on 2017/2/20.
  */
 
-public class QingHaiAS105NDetailFragment extends BaseASDetailFragment<ASDetailPresenterImp> {
+public class QingHaiAS105NDetailFragment extends BaseASDetailFragment<QingHaiAS105NDetailPresenterImp> {
 
     @Override
     public void initInjector() {

@@ -25,8 +25,7 @@ import android.widget.TextView;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.di.component
-        .DaggerFragmentComponent;
+import com.richfit.barcodesystemproduct.di.component.DaggerFragmentComponent;
 import com.richfit.barcodesystemproduct.di.component.FragmentComponent;
 import com.richfit.barcodesystemproduct.di.module.FragmentModule;
 import com.richfit.common_lib.IInterface.IFragmentState;

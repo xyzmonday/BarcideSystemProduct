@@ -5,12 +5,15 @@ package com.richfit.common_lib.utils;
  */
 
 public class Global {
+    //青海勘探板块
+    public final static String BASE_URL = "http://11.11.47.29:8087/ktbk_middleware/MobileProcess/";
+    //庆阳炼化板块
+//    public final static String BASE_URL = "http://11.11.47.29:8092/lhbk_middleware/MobileProcess/";
 
-    public final static String BASE_URL = "http://11.11.47.29:8087/qysh/MobileProcess/";
-    //        String BASE_URL = "http://barcode.bgp.com.cn:8090/MobileProcess/";
 //    public final static String BASE_URL = "http://10.88.53.10:8080/middleware/MobileProcess/";
     //        String BASE_URL = "http://10.88.9.155:8080/test/";
 //    String BASE_URL = "http://192.168.1.101:8080/test/";
+
     public final static String RETURN_SUCCESS_CODE = "S";
 
     public static String USER_ID;
@@ -19,14 +22,9 @@ public class Global {
     public static String companyId;
     public static String companyCode;
     public static String macAddress;
-    public static String serialNum;
     public static String authOrg;
     //是否打开批次管理Y表示打开
     public static boolean batchFlag;
-
-    /*是否注册*/
-    public static final String REGISGER_KEY = "regisger";
-
 
     /*主模块编码*/
     public static final String WZYS = "100";
@@ -68,17 +66,8 @@ public class Global {
     public static final String EXTRA_LINE_MAP_TYPE = "2";
     public static final String EXTRA_LOCATION_MAP_TYPE = "3";
 
-    /*全局事件类型*/
-    /*浮动按钮隐藏*/
-    public static final String FLOATING_BUTTON_SHOW_HIDE_BEHAVIOR = "floating_button_show_hide_behavior";
-    public static final String SHOW_REF_NUM_LIST = "show_ref_num_list";
-    public static final String SHOW_ERROR_MESSAGE = "show_error_message";
     /*数据上传成功，跳转到抬头界面后清除抬头界面的数据*/
     public static final String CLEAR_HEADER_UI = "clear_header_ui";
-    /*组织机构，配置文件下载完毕*/
-    public static final String LOAD_BASIC_DATA_COMPLETE = "load_basic_data_complete";
-    /*无参考库存查询成功*/
-    public static final String INVENTORY_QUERY_SUCCESS = "inventory_query_success";
 
     /*全局日期格式*/
     public static final String GLOBAL_DATE_PATTERN_TYPE1 = "yyyyMMdd";
@@ -110,9 +99,6 @@ public class Global {
     public static final String RETRY_LOAD_INVENTORY_ACTION = "retry_load_inventory_action";
     /*数据修改*/
     public static final String RETRY_EDIT_DATA_ACTION = "retry_edit_data_action";
-    /*下载扩展字段的配置信息*/
-    public static final String RETRY_LOAD_EXTRACONFIG_ACTION = "retry_load_extraconfig_action";
-
 
     /*
      * 父节点的布局类型,存在两种状态的父节点
@@ -136,24 +122,14 @@ public class Global {
 
     /*基础数据的key*/
     public static final String id_Key = "id";
-    public static final String dataFlag_Key = "dataFlag";
     public static final String code_Key = "code";
     public static final String name_Key = "name";
     public static final String parentId_Key = "parentId";
     public static final String orgLevel_Key = "orgLevel";
     public static final String storageNum_Key = "storageNum";
-    public static final String storageName_Key = "storageName";
-    public static final String materialGroup_Key = "materialGroup";
-    public static final String unit_Key = "unit";
-    public static final String status_Key = "status";
     public static final String sort_key = "sort";
     public static final String value_key = "value";
-    public static final String oldMaterialNum_Key = "oldMaterialNum";
-    public static final String sapCreationDate_Key = "sapCreationDate";
     public static final String sapUpdateDate_Key = "sapUpdateDate";
-    public static final String queryPage_Key = "queryPage";
-    public static final String startNum_Key = "startNum";
-    public static final String endNum_Key = "endNum";
     public static final String EXTRA_LOCATION_LIST_KEY = "extra_location_list";
     public static final String EXTRA_REC_LOCATION_LIST_KEY = "extra_rec_location_list";
     public static final String EXTRA_BATCH_FLAG_KEY = "extra_batch_flag";
@@ -173,7 +149,6 @@ public class Global {
 
     public static final String EXTRA_REC_LOCATION_KEY = "extra_rec_location";
     public static final String EXTRA_REC_BATCH_FLAG_KEY = "extra_rec_batch_flag";
-    public static final String EXTRA_INSPECTION_RESULT = "Extra_inspection_result";
     public static final String EXTRA_TOTAL_QUANTITY_KEY = "extra_total_quantity";
     /*特殊库存标识*/
     public static final String EXTRA_SPECIAL_INV_FLAG_KEY = "extra_special_inv_flag_key";
@@ -215,13 +190,10 @@ public class Global {
     public static final String COLLECT_EXTRA_MAP_KEY = "collect_extra_map";
     public static final String IMAGE_DEFAULT_FORMAT = ".jpeg";
     public static final String EXTRA_TAKE_PHOTO_TYPE = "extra_take_photo_type";
-    public static final String EXTRA_TAKE_PHOTO_MODE = "extra_take_photo_mode";
     public static final String EXTRA_TITLE_KEY = "extra_title";
     public static final String EXTRA_FRAGMENT_TYPE_KEY = "extra_fragment_type";
     public static final String EXTRA_MODULE_CODE_KEY = "extra_module_code";
     public static final String EXTRA_COMPANY_CODE_KEY = "extra_company_code";
-    public static final String EXTRA_SUBFUN_CODE_KEY = "extra_subfun_code";
-    public static final String EXTRA_REF_CODE_ID_KEY = "extra_ref_code_id";
     public static final String EXTRA_REF_NUM_KEY = "extra_ref_num";
     public static final String EXTRA_REF_LINE_NUM_KEY = "extra_ref_line_num";
     public static final String EXTRA_REF_LINE_ID_KEY = "extra_ref_line_id";
@@ -240,4 +212,7 @@ public class Global {
     public static final int LOCATION_POS = 0;
     public static final int MATERIAL_POS_L = 4;
     public static final int BATCHFALG_POS_L = 6;
+
+    /*寄售转自有的延时*/
+    public static final int TURN_OWN_SUPPLIESD_ELAY = 2000;
 }

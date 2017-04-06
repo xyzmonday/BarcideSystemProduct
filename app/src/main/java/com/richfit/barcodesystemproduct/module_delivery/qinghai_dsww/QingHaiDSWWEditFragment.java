@@ -22,9 +22,13 @@ public class QingHaiDSWWEditFragment extends BaseDSEditFragment {
     @Override
     public boolean checkCollectedDataBeforeSave() {
         //检查是否合理，可以保存修改后的数据
-
         if (TextUtils.isEmpty(getString(etQuantity))) {
             showMessage("请输入实发数量");
+            return false;
+        }
+
+        if(TextUtils.isEmpty(getString(tvInvQuantity))) {
+            showMessage("请先获取库存");
             return false;
         }
 
@@ -43,10 +47,18 @@ public class QingHaiDSWWEditFragment extends BaseDSEditFragment {
             showMessage("请检查输入数据");
             return false;
         }
-        /*lastFlag 委外出库行数量判断标识如果 lastFlag = 'X'  则累计录入数量不能大于 应发数量*/
+        /*lastFlag 委外出库行数量判断标识如果 lastFlag = 'X'  则累计录入数量不能大于应发数量*/
         RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
+        float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);
         if (lineData != null) {
             if (!"X".equalsIgnoreCase(lineData.lastFlag)) {
+                //该仓位的库存数量
+                final float invQuantityV = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+                if (Float.compare(quantityV, invQuantityV) > 0.0f) {
+                    showMessage("输入数量大于库存数量，请重新输入");
+                    etQuantity.setText("");
+                    return false;
+                }
                 return true;
             }
         }
@@ -55,8 +67,6 @@ public class QingHaiDSWWEditFragment extends BaseDSEditFragment {
         float actQuantityV = UiUtil.convertToFloat(getString(tvActQuantity), 0.0f);
         float totalQuantityV = UiUtil.convertToFloat(getString(tvTotalQuantity), 0.0f);
         float collectedQuantity = UiUtil.convertToFloat(mQuantity, 0.0f);
-        //修改后的出库数量
-        float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);
         float residualQuantity = totalQuantityV - collectedQuantity + quantityV;//减去已经录入的数量
         if (Float.compare(residualQuantity, actQuantityV) > 0.0f) {
             showMessage("输入实发数量有误");
@@ -68,8 +78,6 @@ public class QingHaiDSWWEditFragment extends BaseDSEditFragment {
         mTotalQuantity = residualQuantity;
         return true;
     }
-
-
 
     @Override
     protected String getInvType() {

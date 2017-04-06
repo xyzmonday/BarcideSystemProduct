@@ -37,6 +37,7 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
 
     int mode;
 
+
     @Override
     protected int getContentId() {
         return R.layout.activity_welcome;

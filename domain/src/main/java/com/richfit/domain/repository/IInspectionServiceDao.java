@@ -48,6 +48,21 @@ public interface IInspectionServiceDao {
                          String imageDir, boolean isLocal);
 
     /**
+     * 通过单据抬头id删除整单验收单据数据
+     * @param refCodeId
+     * @return
+     */
+    boolean deleteInspectionByHeadId(String refCodeId);
+
+    /**
+     * 通过明细行Id删除该验收明细行
+     * @param refLineId
+     * @return
+     */
+    boolean deleteInspectionByLineId(String refLineId);
+
+
+    /**
      * 读取该张验收单的所有图片信息
      * @param refNum
      * @param isLocal

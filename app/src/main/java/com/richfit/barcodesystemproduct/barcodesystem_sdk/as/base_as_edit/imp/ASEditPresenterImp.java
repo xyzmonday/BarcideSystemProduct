@@ -1,6 +1,7 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.imp;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.scope.ContextLife;
@@ -34,10 +35,16 @@ public class ASEditPresenterImp extends BasePresenter<IASEditView>
     @Override
     public void uploadCollectionDataSingle(ResultEntity result) {
         mView = getView();
+        Flowable<String> flowable;
+        if (!TextUtils.isEmpty(result.location) && "barcode".equalsIgnoreCase(result.location)) {
+            //意味着上架
+            flowable = mRepository.uploadCollectionDataSingle(result);
+        } else {
+            flowable = Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, "", result.location),
+                    mRepository.uploadCollectionDataSingle(result));
+        }
         ResourceSubscriber<String> subscriber =
-                Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId,"", result.location),
-                        mRepository.uploadCollectionDataSingle(result))
-                        .compose(TransformerHelper.io2main())
+                flowable.compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {
                             @Override
                             public void _onNext(String s) {

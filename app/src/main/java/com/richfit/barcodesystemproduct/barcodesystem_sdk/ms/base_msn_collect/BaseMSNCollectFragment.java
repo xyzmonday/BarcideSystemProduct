@@ -403,7 +403,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId, invEntity.invId,
                 mRefData.workCode, invEntity.invCode, "", getString(etMaterialNum),
                 CommonUtil.Obj2String(etMaterialNum.getTag()), "",
-                getString(etSendBatchFlag), "", "", getInvType(), "");
+                getString(etSendBatchFlag), "", "", getInvType(), mDeviceId);
     }
 
     /**

@@ -47,8 +47,8 @@ public class QingHaiDSWWCollectFragment extends BaseDSCollectFragment<DSCollectP
         //该仓位的历史出库数量
         final float historyQuantityV = UiUtil.convertToFloat(getString(tvLocQuantity), 0.0f);
         //该仓位的库存数量
-        final float inventoryQuantity = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
-        if (Float.compare(quantityV + historyQuantityV, inventoryQuantity) > 0.0f) {
+        final float invQuantityV = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+        if (Float.compare(quantityV + historyQuantityV, invQuantityV) > 0.0f) {
             showMessage("输入数量有误，请重新输入");
             etQuantity.setText("");
             return false;

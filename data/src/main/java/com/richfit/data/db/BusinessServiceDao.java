@@ -7,9 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.common_lib.utils.ArithUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
+import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.repository.IBusinessService;
 
@@ -87,8 +87,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         if (TextUtils.isEmpty(transLineId)) {
             return false;
         }
-
         result.transLineId = transLineId;
+
         // 3.行表-拆分表
         String transLineSplitId = saveBusinessLineSplit(result, yk);
         if (TextUtils.isEmpty(transLineSplitId)) {
@@ -145,7 +145,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             case "47":// 无参考-222
             case "94":// 代管料调拨-HRM
                 sb.append(" and H.created_by = ?");
-                selectionsList.add(param.createdBy);
+                selectionsList.add(param.userId);
                 break;
             default:
                 sb.append(" and H.ref_type = ? and H.ref_code_id = ? ");
@@ -188,7 +188,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             //修改
             cv = new ContentValues();
             cv.put("id", transId);
-            cv.put("created_by", param.createdBy);
+            cv.put("created_by", param.userId);
             cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
             int iResult = db.update("mtl_transaction_headers", cv, "id = ?", new String[]{transId});
             if (iResult < 1) {
@@ -276,10 +276,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cv.put("material_id", param.materialId);
         cv.put("work_id", param.workId);
         cv.put("inv_id", param.invId);
-        cv.put("inv_type", param.invType);
         cv.put("ref_line_id", param.refLineId);
-        //注意数据源对于空的处理为"",为了查询方便这里保存null
-        cv.put("batch_num", TextUtils.isEmpty(param.batchFlag) ? null : param.batchFlag);
         cv.put("ref_line_num", param.refLineNum);
         cv.put("ref_doc", param.refDoc);
         cv.put("ref_doc_item", param.refDocItem);
@@ -307,7 +304,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("id", transLineId);
             cv.put("created_by", param.userId);
             cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-
             long iResult = db.insert("mtl_transaction_lines", null, cv);
             if (iResult < 1) {
                 return "";
@@ -423,9 +419,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("rec_inv_id", param.recInvId);
             cv.put("inv_type", param.invType);
             cv.put("rec_batch_flag", param.recBatchFlag);
-            // 对于接收方暂时不启用特殊库存
-            // line.setRecSpecialFlag(param.getSpecialInvFlag());
-            // line.setRecSpecialNum(param.getSpecialInvNum());
         }
 
         if (TextUtils.isEmpty(transLineSplitId)) {
@@ -449,7 +442,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 return "";
             }
         }
-
         db.close();
         return transLineSplitId;
     }
@@ -486,18 +478,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         selectionList.add(transLineSplitId);
         selectionList.add(param.location);
 
-        if (!TextUtils.isEmpty(param.batchFlag)) {
-            sb.append(" and batch_num = ? ");
-            selectionList.add(param.batchFlag);
-        }
-
         if (yk) {
             sb.append(" and rec_location = ? ");
             selectionList.add(param.recLocation);
-            if (!TextUtils.isEmpty(param.recBatchFlag)) {
-                sb.append(" and rec_batch_num = ? ");
-                selectionList.add(param.recBatchFlag);
-            }
         }
 
         if (device) {
@@ -524,14 +507,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("trans_line_id", transLineId);
             cv.put("trans_line_split_id", transLineSplitId);
             cv.put("location", param.location);
-            if (!TextUtils.isEmpty(param.batchFlag)) {
-                cv.put("batch_num", param.batchFlag);
-            }
+
             if (yk) {
                 cv.put("rec_location", param.recLocation);
-                if (!TextUtils.isEmpty(param.recBatchFlag)) {
-                    cv.put("rec_batch_num", param.recBatchFlag);
-                }
             }
             if (device) {
                 cv.put("device_id", param.deviceId);
@@ -554,17 +532,26 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             // 修改
             cv.put("last_updated_by", param.userId);
             cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-            cv.put("quantity", param.quantity);
-            if (yk) {
-                cv.put("rec_quantity", param.quantity);
+
+            int iResult = db.update("mtl_transaction_lines_location", cv, "id = ?", new String[]{locationId});
+            if (iResult < 0) {
+                return "";
             }
-            db.update("mtl_transaction_lines_location", cv, "id = ?", new String[]{locationId});
+
+            //如果是修改则累加数量
+            db.execSQL("update mtl_transaction_lines_location set quantity = quantity + ? where id = ?",
+                    new Object[]{param.quantity, locationId});
+            //如果是移库，那么还需要修改接收累计数量
+            if (yk) {
+                db.execSQL("update mtl_transaction_lines_location set rec_quantity = rec_quantity + ? where id = ?",
+                        new Object[]{param.quantity, locationId});
+            }
         }
         return locationId;
     }
 
     /**
-     * 更新行的累计数量
+     * 更新行的累计数量。将TANS_LINES_LOCATION  中的全部查出来，然后更新TRANS_LINES表的quantity
      *
      * @param param
      */
@@ -573,10 +560,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         SQLiteDatabase db = getWritableDB();
         clearStringBuffer();
         sb.append(" SELECT IFNULL(SUM(T.QUANTITY), 0) AS A ")
-                .append(" FROM MTL_TRANSACTION_LINES_LOCATION T , MTL_TRANSACTION_LINES_SPLIT L")
-                .append(" WHERE T.TRANS_LINE_SPLIT_ID = L.ID ")
-                .append(" AND L.COMPLETE_411_K IS NULL ")
-                .append(" AND T.TRANS_LINE_ID = ?");
+                .append(" FROM MTL_TRANSACTION_LINES_LOCATION T ")
+                .append(" WHERE T.TRANS_LINE_ID = ?");
         Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.transLineId});
         sb.setLength(0);
         String totalQuantity = null;
@@ -584,16 +569,14 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             totalQuantity = cursor.getString(0);
         }
         cursor.close();
-        final float totalQuantityV = UiUtil.convertToFloat(totalQuantity, 0.0F);
-        final float newTotalQuantityV = UiUtil.convertToFloat(param.quantity, 0.0F);
-        final String quantity = String.valueOf(ArithUtil.add(totalQuantityV, newTotalQuantityV));
-        db.execSQL("update MTL_TRANSACTION_LINES_LOCATION set quantity =  ? where trans_line_id = ?",
-                new String[]{quantity, param.transLineId});
+
+        db.execSQL("update MTL_TRANSACTION_LINES set quantity =  ? where id = ?",
+                new String[]{totalQuantity, param.transLineId});
         db.close();
     }
 
     /**
-     * .更新拆分行的累计数量
+     * .更新拆分行的累计数量。将MTL_TRANSACTION_LINES_SPLIT表中某一行的quantity查出来，更新自己的quantity
      *
      * @param param
      */
@@ -601,8 +584,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         SQLiteDatabase db = getWritableDB();
         StringBuffer sb = new StringBuffer();
         sb.append(" SELECT SUM(QUANTITY) AS A ")
-                .append("FROM MTL_TRANSACTION_LINES_LOCATION T ")
-                .append(" WHERE T.TRANS_LINE_SPLIT_ID = ?");
+                .append("FROM MTL_TRANSACTION_LINES_SPLIT T ")
+                .append(" WHERE T.id = ?");
         String totalQuantity = null;
         Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.transLineSplitId});
         while (cursor.moveToNext()) {
@@ -615,19 +598,225 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         db.close();
     }
 
+    /**
+     * 删除整单缓存
+     *
+     * @param refNum
+     * @param transId
+     * @param refCodeId
+     * @param refType
+     * @param bizType
+     * @param userId
+     * @param companyCode
+     * @return
+     */
     @Override
-    public String deleteBusinessData(String refNum, String transId, String refCodeId, String refType, String bizType, String userId, String companyCode) {
-        return null;
+    public boolean deleteBusinessData(String refNum, String transId, String refCodeId, String refType,
+                                      String bizType, String userId, String companyCode) {
+        // 1.查头是否存在
+        // 条件
+        // 无参考：bizType、createdBy、
+        // 有参考：bizType、refType、refCodeId
+        if (TextUtils.isEmpty(bizType)) {
+            return false;
+        }
+        clearStringBuffer();
+        SQLiteDatabase db = getWritableDB();
+        List<String> headerIdList = new ArrayList<>();
+        String[] selections;
+        List<String> selectionList = new ArrayList<>();
+        sb.append("select distinct id from MTL_TRANSACTION_HEADERS ");
+        sb.append(" where biz_type = ? ");
+        selectionList.add(bizType);
+        switch (bizType) {
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "94":
+                if (!TextUtils.isEmpty(userId)) {
+                    sb.append(" and created_by = ? ");
+                    selectionList.add(userId);
+                }
+                break;
+            default:
+                if (!TextUtils.isEmpty(refType)) {
+                    sb.append(" and ref_type = ? ");
+                    selectionList.add(refType);
+                }
+                if (!TextUtils.isEmpty(refCodeId)) {
+                    sb.append(" and ref_code_id = ? ");
+                    selectionList.add(refCodeId);
+                }
+                break;
+        }
+
+        selections = new String[selectionList.size()];
+        selectionList.toArray(selections);
+        Cursor cursor = db.rawQuery(sb.toString(), selections);
+        while (cursor.moveToNext()) {
+            headerIdList.add(cursor.getString(0));
+        }
+        cursor.close();
+        clearStringBuffer();
+
+        if (headerIdList.size() > 0) {
+            // 清空所有暂存的数据
+            int iResult;
+            for (String headerId : headerIdList) {
+                iResult = -1;
+                // 删头
+                iResult = db.delete("MTL_TRANSACTION_HEADERS", "id = ?", new String[]{headerId});
+                if (iResult < 0) {
+                    return false;
+                }
+                // 删行
+                iResult = db.delete("MTL_TRANSACTION_LINES", "trans_id = ?", new String[]{headerId});
+                if (iResult < 0) {
+                    return false;
+                }
+                // 删行的拆分表
+                iResult = db.delete("MTL_TRANSACTION_LINES_SPLIT", "trans_id = ?", new String[]{headerId});
+                if (iResult < 0) {
+                    return false;
+                }
+                // 删仓位
+                iResult = db.delete("MTL_TRANSACTION_LINES_LOCATION", "trans_id = ?", new String[]{headerId});
+                if (iResult < 0) {
+                    return false;
+                }
+            }
+        }
+
+        db.close();
+        return true;
     }
 
     @Override
-    public String deleteBusinessDataByLineId(String businessType, String transLineId, String transId) {
-        return null;
+    public boolean deleteBusinessDataByLineId(String businessType, String transId, String transLineId) {
+        return false;
     }
 
     @Override
-    public String deleteBusinessDataByLocationId(String locationId, String transLineId, String transId) {
-        return null;
+    public boolean deleteBusinessDataByLocationId(String locationId, String transId, String transLineId) {
+        if (TextUtils.isEmpty(locationId)) {
+            return false;
+        }
+        if (TextUtils.isEmpty(transLineId)) {
+            return false;
+        }
+
+        //1. 先将对应仓位的缓存保存
+        SQLiteDatabase db = getWritableDB();
+        clearStringBuffer();
+        sb.append("select trans_id,trans_line_id,trans_line_split_id from MTL_TRANSACTION_LINES_LOCATION")
+                .append(" where id = ?");
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{locationId});
+        final LocationInfoEntity location = new LocationInfoEntity();
+        while (cursor.moveToNext()) {
+            location.transId = cursor.getString(0);
+            location.transLineId = cursor.getString(1);
+            location.transLineSplitId = cursor.getString(2);
+        }
+        clearStringBuffer();
+        cursor.close();
+
+        //2. 删除仓位
+        int iResult = db.delete("MTL_TRANSACTION_LINES_LOCATION", "id = ?", new String[]{locationId});
+        if (iResult < 0) {
+            return false;
+        }
+
+
+        //3. 查询该明细下是否存在子明细 不存在删除
+        sb.append("select id from MTL_TRANSACTION_LINES_LOCATION where trans_line_id = ?");
+        cursor = db.rawQuery(sb.toString(), new String[]{transLineId});
+        String lineLocId = null;
+        while (cursor.moveToNext()) {
+            lineLocId = cursor.getString(0);
+        }
+        cursor.close();
+
+        if (TextUtils.isEmpty(lineLocId)) {
+            // 如果该行下面的所有第三级缓存都删除完后，那么需要删除明细行里面的缓存
+            iResult = db.delete("MTL_TRANSACTION_LINES", "id = ?", new String[]{transLineId});
+            if (iResult < 0) {
+                return false;
+            }
+            // 删明细拆分表
+            iResult = db.delete("MTL_TRANSACTION_LINES_SPLIT", "trans_line_id = ?", new String[]{transLineId});
+            if (iResult < 0) {
+                return false;
+            }
+            // 如果所有的缓存明细行都删除完毕了，那么直接将缓存的抬头也删除
+            String lineId = null;
+            if (!TextUtils.isEmpty(transId)) {
+                cursor = db.rawQuery("select id from MTL_TRANSACTION_LINES where trans_id = ?", new String[]{transId});
+                while (cursor.moveToNext()) {
+                    lineId = cursor.getString(0);
+                }
+                cursor.close();
+
+                if (TextUtils.isEmpty(lineId)) {
+                    iResult = db.delete("MTL_TRANSACTION_HEADERS", "id = ?", new String[]{transId});
+                    if (iResult < 0) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            // 如果该行下还存在其他的第三级的缓存,那么修改行的累计数量
+            cursor = db.rawQuery("select id from MTL_TRANSACTION_LINES where id = ?",
+                    new String[]{transLineId});
+            cursor.close();
+            clearStringBuffer();
+            sb.append(" SELECT IFNULL(SUM(T.QUANTITY), 0) AS A ")
+                    .append(" FROM MTL_TRANSACTION_LINES_LOCATION T ")
+                    .append(" WHERE T.TRANS_LINE_ID = ?");
+            String totalQuantity = "0";
+            cursor = db.rawQuery(sb.toString(), new String[]{transLineId});
+            while (cursor.moveToNext()) {
+                totalQuantity = cursor.getString(0);
+            }
+            cursor.close();
+            db.execSQL("update MTL_TRANSACTION_LINES set quantity = ? where id = ?",
+                    new Object[]{totalQuantity, transId});
+            clearStringBuffer();
+
+            // 查询拆分表中是否有子明细 不存在删除
+            if (!TextUtils.isEmpty(location.transLineSplitId)) {
+                cursor = db.rawQuery("select id from MTL_TRANSACTION_LINES_LOCATION where trans_line_split_id = ?",
+                        new String[]{location.transLineSplitId});
+                String transSplitId = null;
+                while (cursor.moveToNext()) {
+                    transSplitId = cursor.getString(0);
+                }
+                cursor.close();
+                if (TextUtils.isEmpty(transSplitId)) {
+                    db.delete("MTL_TRANSACTION_LINES_SPLIT", "id = ?", new String[]{location.transLineSplitId});
+                } else {
+                    clearStringBuffer();
+                    sb.append(" SELECT SUM(QUANTITY) AS A ")
+                            .append("FROM MTL_TRANSACTION_LINES_LOCATION T ")
+                            .append(" WHERE T.TRANS_LINE_SPLIT_ID = ?");
+                    cursor = db.rawQuery(sb.toString(), new String[]{location.transLineSplitId});
+                    String quantity = "0";
+                    while (cursor.moveToNext()) {
+                        quantity = cursor.getString(0);
+                    }
+                    cursor.close();
+                    db.execSQL("update MTL_TRANSACTION_LINES_SPLIT set quantity = ? where id = ?",
+                            new Object[]{quantity, location.transLineSplitId});
+                }
+            }
+        }
+        db.close();
+        return true;
     }
 
     @Override

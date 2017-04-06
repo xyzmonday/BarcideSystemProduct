@@ -141,6 +141,7 @@ public class RefDetailEntity extends TreeNode {
     /*仓位信息*/
     public List<LocationInfoEntity> locationList;
 
+    public String refCodeId;
     public String lastFlag;
     /*单据行的额外字段数据*/
     public Map<String, Object> mapExt;

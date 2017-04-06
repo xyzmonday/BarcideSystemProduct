@@ -320,10 +320,10 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
         final InvEntity invEntity = mInvs.get(position);
         mCachedExtraLineMap = null;
         mCachedExtraLocationMap = null;
-        mPresenter.getInventoryInfo("04", mRefData.workId, invEntity.invId,
+        mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId, invEntity.invId,
                 mRefData.workCode, invEntity.invCode, "", getString(etMaterialNum),
                 CommonUtil.Obj2String(etMaterialNum.getTag()), "",
-                getString(etBatchFlag), "", "", "1", "");
+                getString(etBatchFlag), "", "", getInvType(), "");
     }
 
     /**
@@ -443,6 +443,12 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
             showMessage("物料编码为空");
             return false;
         }
+
+        if (spLocation.getSelectedItemPosition() <= 0) {
+            showMessage("请先选择下架仓位");
+            return false;
+        }
+
         if (TextUtils.isEmpty(getString(tvInvQuantity))) {
             showMessage("库存数量为空");
             return false;
@@ -587,4 +593,8 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
     public void networkConnectError(String retryAction) {
 
     }
+
+    protected abstract String getInvType();
+
+    protected abstract String getInventoryQueryType();
 }

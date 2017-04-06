@@ -107,6 +107,7 @@ public class ReferenceEntity {
     public String materialDesc;
     public String batchFlag;
     public String remark;
+    public boolean qmFlag;
 
     @Override
     public String toString() {

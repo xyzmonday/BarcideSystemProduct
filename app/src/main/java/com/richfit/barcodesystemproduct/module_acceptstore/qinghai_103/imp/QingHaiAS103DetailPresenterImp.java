@@ -193,6 +193,7 @@ public class QingHaiAS103DetailPresenterImp extends ASDetailPresenterImp {
             cachedEntity.materialId = node.materialId;
             cachedEntity.materialDesc = node.materialDesc;
             cachedEntity.materialGroup = node.materialGroup;
+            cachedEntity.unit = node.unit;
             cachedEntity.actQuantity = node.actQuantity;
             cachedEntity.workCode = node.workCode;
 

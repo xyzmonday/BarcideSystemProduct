@@ -63,11 +63,6 @@ public class LocalRepositoryImp implements ILocalRepository {
         this.mCheckServiceDao = checkServiceDao;
     }
 
-    @Override
-    public Flowable<String> deleteCollectionData(String refNum, String transId, String refCodeId, String refType, String bizType, String userId, String companyCode) {
-        return Flowable.just("删除成功");
-    }
-
 
     @Override
     public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkNum) {
@@ -321,7 +316,6 @@ public class LocalRepositoryImp implements ILocalRepository {
                 });
     }
 
-
     /**
      * 获取单据数据
      *
@@ -520,8 +514,109 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public Flowable<String> deleteCollectionDataSingle(String lineDeleteFlag, String transId, String transLineId, String locationId, String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
-        return null;
+    public Flowable<String> deleteCollectionDataSingle(String lineDeleteFlag, String transId, String transLineId, String locationId,
+                                                       String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
+
+        if (TextUtils.isEmpty(bizType)) {
+            return Flowable.error(new Throwable("删除失败"));
+        }
+
+        return Flowable.just(bizType)
+                .flatMap(businessType -> {
+                    boolean isDeleteSuccess = deleteCollectDataSingle(lineDeleteFlag, transId, transLineId,
+                            locationId, refType, businessType, refLineId, userId, position, companyCode);
+                    if (isDeleteSuccess) {
+                        return Flowable.error(new Throwable("删除失败"));
+                    } else {
+                        return Flowable.just("删除成功");
+                    }
+                });
+    }
+
+    private boolean deleteCollectDataSingle(String lineDeleteFlag, String transId, String transLineId, String locationId,
+                                            String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
+        boolean isDeleteSuccess;
+        switch (bizType) {
+            case "00":
+            case "01":
+                isDeleteSuccess = mInspectionServiceDao.deleteInspectionByLineId(refLineId);
+                break;
+            default:
+                isDeleteSuccess = "Y".equals(lineDeleteFlag) ? mBusinessServiceDao.deleteBusinessDataByLineId(bizType, transId, transLineId)
+                        : mBusinessServiceDao.deleteBusinessDataByLocationId(locationId, transId, transLineId);
+                break;
+        }
+        return isDeleteSuccess;
+    }
+
+    @Override
+    public Flowable<String> deleteCollectionData(String refNum, String transId, String refCodeId,
+                                                 String refType, String bizType, String userId,
+                                                 String companyCode) {
+
+        return Flowable.just(refNum)
+                .flatMap(recordNum -> {
+                    boolean isDeleteSuccess = deleteCollectionDataInner(recordNum, transId, refCodeId, refType,
+                            bizType, userId, companyCode);
+                    if (isDeleteSuccess) {
+                        return Flowable.just("删除成功");
+                    } else {
+                        return Flowable.error(new Throwable("删除失败"));
+                    }
+                });
+    }
+
+    private boolean deleteCollectionDataInner(String refNum, String transId, String refCodeId, String refType,
+                                              String bizType, String userId, String companyCode) {
+
+        if (TextUtils.isEmpty(bizType)) {
+            return false;
+        }
+        boolean isDeleteSuccess;
+        switch (bizType) {
+            case "00":
+            case "01":
+                isDeleteSuccess = mInspectionServiceDao.deleteInspectionByHeadId(refCodeId);
+                break;
+            case "11":// 采购入库-101
+            case "12":// 采购入库-103
+            case "13":// 采购入库-105(非必检)
+            case "19":// 委外入库
+            case "110":// 采购入库-105(青海必检)
+            case "21":// 销售出库
+            case "23":// 委外发料
+            case "24":// 其他出库-有参考
+            case "38":// UB 351
+            case "311":// UB 101
+            case "45":// UB 352
+            case "51":// 采购退货-161
+                isDeleteSuccess = mBusinessServiceDao.deleteBusinessData(refNum, transId, refCodeId, refType, bizType, userId, companyCode);
+                break;
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "71":// 代管料入库
+            case "72":// 代管料出库
+            case "73":// 代管料退库
+            case "74":// 代管料调拨
+            case "91":// 代管料入库-HRM
+            case "92":// 代管料出库-HRM
+            case "93":// 代管料退库-HRM
+            case "94":// 代管料调拨-HRM
+                isDeleteSuccess = mBusinessServiceDao.deleteBusinessData(refNum, transId, refCodeId, refType, bizType, userId, companyCode);
+                break;
+            default:
+                isDeleteSuccess = false;
+                break;
+        }
+        return isDeleteSuccess;
+
     }
 
     @Override

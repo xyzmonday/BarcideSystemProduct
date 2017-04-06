@@ -282,91 +282,43 @@ create table IF not exists MTL_PO_HEADERS
 
 create table IF not exists MTL_PO_LINES
 (
-  id                VARCHAR2(32) PRIMARY KEY NOT NULL,
-  po_id             VARCHAR2(32),
-  line_num          NUMBER(5),
-  work_id           VARCHAR2(32),
-  inv_id            VARCHAR2(32),
-  biz_type          TEXT,
-  ref_type          TEXT,
-  material_id       VARCHAR2(32),
-  material_num      VARCHAR2(18),
-  material_desc     VARCHAR2(200),
-  material_group    VARCHAR2(10),
-  order_quantity    NUMBER(13,3),
-  act_quantity      NUMBER(13,3),
-  price             NUMBER(13,2),
-  plan_num          VARCHAR2(32),
-  return_flag       VARCHAR2(10),
-  qm_flag           VARCHAR2(10),
-  unit              VARCHAR2(32),
-  unit_rate         NUMBER(13,3),
-  price_rate        NUMBER(13,3),
-  tax_rate          NUMBER(13,3),
-  status            VARCHAR2(10),
-  created_by        VARCHAR2(32),
-  creation_date     TEXT,
-  last_updated_by   VARCHAR2(32),
-  last_update_date  TEXT,
-  send_inv_id       VARCHAR2(32),
-  send_work_id      VARCHAR2(32),
-  send_act_quantity NUMBER(13,3),
-  act_quantity_103  NUMBER(13,3),
-  act_quantity_105  NUMBER(13,3),
-  is_return         VARCHAR2(1),
-  line_type         VARCHAR2(10)
-);
-
-create table IF not exists MTL_PO_HISTORY
-(
-  id               VARCHAR2(32) PRIMARY KEY NOT NULL,
-  po_id            VARCHAR2(32),
-  po_line_id       VARCHAR2(32),
-  po_num           VARCHAR2(10),
-  po_line_num      NUMBER(5),
-  transaction_type VARCHAR2(5),
-  mat_doc_year     NUMBER(4),
-  mat_doc          VARCHAR2(10),
-  mat_doc_item     NUMBER(4),
-  move_type        VARCHAR2(3),
-  ref_mat_doc_year NUMBER(4),
-  ref_mat_doc      VARCHAR2(10),
-  ref_mat_doc_item NUMBER(4),
-  shkzg            VARCHAR2(2),
-  act_quantity     NUMBER(13,3)
-);
-
-create table IF not exists MTL_PO_LINES_CUSTOM
-(
-  id               VARCHAR2(32) PRIMARY KEY NOT NULL,
-  po_id            VARCHAR2(32),
-  po_line_id       VARCHAR2(32),
-  act_quantity_ins NUMBER(13,3),
-  po_num           VARCHAR2(10),
-  po_line_num      NUMBER(5)
-);
-
-create table IF not exists MTL_INSPECTION_RESULT
-(
   id                   VARCHAR2(32) PRIMARY KEY NOT NULL,
-  ins_lot              VARCHAR2(12),
-  ins_lot_date         TEXT,
   po_id                VARCHAR2(32),
-  po_line_id           VARCHAR2(32),
-  po_num               VARCHAR2(10),
-  po_line_num          NUMBER(5),
-  material_id          VARCHAR2(32),
+  line_num             TEXT,
   work_id              VARCHAR2(32),
-  mat_doc              VARCHAR2(10),
-  mat_doc_item         NUMBER(6),
-  ins_lot_quantity     NUMBER(13,3),
-  zyjsl                NUMBER(13,3),
-  zdjsl                NUMBER(13,3),
-  qualified_quantity   NUMBER(13,3),
-  unqualified_quantity NUMBER(13,3),
+  inv_id               VARCHAR2(32),
+  biz_type             TEXT,
+  ref_type             TEXT,
+  material_id          VARCHAR2(32),
+  material_num         VARCHAR2(18),
+  material_desc        VARCHAR2(200),
+  material_group       VARCHAR2(10),
+  ref_doc              VARCHAR2(10),
+  ref_doc_item         NUMBER(6),
+  ins_lot              TEXT,
+  ins_lot_quantity     TEXT,
+  qualified_quantity   TEXT,
+  unqualified_quantity TEXT,
+  return_quantity      TEXT,
+  order_quantity       TEXT,
+  act_quantity         TEXT,
+  qm_flag              VARCHAR2(10),
+  unit                 VARCHAR2(32),
+  status               VARCHAR2(10),
   created_by           VARCHAR2(32),
-  creation_date        TEXT
+  creation_date        TEXT,
+  last_updated_by      VARCHAR2(32),
+  last_update_date     TEXT,
+  send_inv_id          VARCHAR2(32),
+  send_work_id         VARCHAR2(32),
+  send_act_quantity    TEXT,
+  act_quantity_103     TEXT,
+  act_quantity_105     TEXT,
+  line_num_105         TEXT,
+  is_return            VARCHAR2(1),
+  line_type            VARCHAR2(10)
 );
+
 
 create table IF not exists MTL_RESERVATION_LINES
 (
@@ -405,7 +357,7 @@ create table IF not exists MTL_TRANSACTION_HEADERS
 (
   id               VARCHAR2(32) PRIMARY KEY NOT NULL,
   trans_num        VARCHAR2(32),
-  voucher_date     TEXT,
+  voucher_date     DATE,
   ref_code_id      VARCHAR2(32),
   ref_type         VARCHAR2(5),
   trans_flag       VARCHAR2(5),
@@ -442,19 +394,15 @@ create table IF not exists MTL_TRANSACTION_HEADERS_CUSTOM
 
 create table IF not exists  MTL_TRANSACTION_LINES
 (
-  id                  VARCHAR2(32) PRIMARY KEY NOT NULL,
+  id                  VARCHAR2(32)  PRIMARY KEY NOT NULL,
   trans_id            VARCHAR2(32),
   ref_line_id         VARCHAR2(32),
+  ref_line_num        NUMBER(6),
   line_num            NUMBER(5),
-  sap_line_num        NUMBER(5),
   work_id             VARCHAR2(32),
   inv_id              VARCHAR2(32),
-  inv_type            VARCHAR2(32),
-  special_flag        VARCHAR2(32),
   rec_work_id         VARCHAR2(32),
   rec_inv_id          VARCHAR2(32),
-  rec_inv_type        VARCHAR2(32),
-  rec_special_flag    VARCHAR2(32),
   material_id         VARCHAR2(32),
   new_material_id     VARCHAR2(32),
   quantity            NUMBER(13,3),
@@ -465,15 +413,7 @@ create table IF not exists  MTL_TRANSACTION_LINES
   device_location     VARCHAR2(300),
   equi_location       VARCHAR2(300),
   detail_location     VARCHAR2(300),
-  created_by          VARCHAR2(32),
-  creation_date       TEXT,
-  last_updated_by     VARCHAR2(32),
-  last_update_date    TEXT,
   amount              NUMBER(13,2),
-  batch_num           VARCHAR2(32),
-  rec_batch_num       VARCHAR2(32),
-  ref_line_num        NUMBER(6),
-  special_num         VARCHAR2(30),
   ref_doc             VARCHAR2(10),
   ref_doc_item        NUMBER(5),
   return_quantity     NUMBER(13,3),
@@ -482,12 +422,15 @@ create table IF not exists  MTL_TRANSACTION_LINES
   decision_code       VARCHAR2(32),
   project_text        VARCHAR2(1000),
   ins_lot             VARCHAR2(32),
-  complete_411_k      VARCHAR2(5)
+  created_by          VARCHAR2(32),
+  creation_date       TEXT,
+  last_updated_by     VARCHAR2(32),
+  last_update_date    TEXT
 );
 
 create table IF not exists MTL_TRANSACTION_LINES_SPLIT
 (
-  id                  VARCHAR2(32)  PRIMARY KEY NOT NULL,
+  id                  VARCHAR2(32) PRIMARY KEY NOT NULL,
   trans_id            VARCHAR2(32),
   trans_line_id       VARCHAR2(32),
   ref_line_id         VARCHAR2(32),
@@ -510,9 +453,6 @@ create table IF not exists MTL_TRANSACTION_LINES_SPLIT
   act_quantity        NUMBER(13,3),
   unit                VARCHAR2(32),
   unit_rate           NUMBER(13,3),
-  device_location     VARCHAR2(300),
-  equi_location       VARCHAR2(300),
-  detail_location     VARCHAR2(300),
   amount              NUMBER(13,2),
   batch_num           VARCHAR2(32),
   rec_batch_num       VARCHAR2(32),
@@ -524,7 +464,6 @@ create table IF not exists MTL_TRANSACTION_LINES_SPLIT
   decision_code       VARCHAR2(32),
   project_text        VARCHAR2(1000),
   ins_lot             VARCHAR2(32),
-  complete_411_k      VARCHAR2(5),
   created_by          VARCHAR2(32),
   creation_date       TEXT,
   last_updated_by     VARCHAR2(32),
@@ -533,22 +472,20 @@ create table IF not exists MTL_TRANSACTION_LINES_SPLIT
 
 create table IF not exists MTL_TRANSACTION_LINES_LOCATION
 (
-  id                  VARCHAR2(32) PRIMARY KEY NOT NULL,
-  trans_id            VARCHAR2(32),
-  trans_line_id       VARCHAR2(32),
-  location            VARCHAR2(32),
-  batch_num           VARCHAR2(32),
-  quantity            NUMBER(13,3),
-  order_quantity      NUMBER(13,3),
-  rec_location        VARCHAR2(32),
-  rec_batch_num       VARCHAR2(32),
-  rec_quantity        NUMBER(13,3),
-  rec_order_quantity  NUMBER(13,3),
-  created_by          VARCHAR2(32),
-  creation_date       TEXT,
-  last_updated_by     VARCHAR2(32),
-  last_update_date    TEXT,
-  device_id           VARCHAR2(32),
-  rec_device_id       VARCHAR2(32),
-  trans_line_split_id VARCHAR2(32)
+   id                  VARCHAR2(32) PRIMARY KEY NOT NULL,
+   trans_id            VARCHAR2(32),
+   trans_line_id       VARCHAR2(32),
+   trans_line_split_id VARCHAR2(32),
+   location            VARCHAR2(32),
+   rec_location        VARCHAR2(32),
+   quantity            NUMBER(13,3),
+   order_quantity      NUMBER(13,3),
+   rec_quantity        NUMBER(13,3),
+   rec_order_quantity  NUMBER(13,3),
+   device_id           VARCHAR2(32),
+   rec_device_id       VARCHAR2(32),
+   created_by          VARCHAR2(32),
+   creation_date       TEXT,
+   last_updated_by     VARCHAR2(32),
+   last_update_date    TEXT
 );
