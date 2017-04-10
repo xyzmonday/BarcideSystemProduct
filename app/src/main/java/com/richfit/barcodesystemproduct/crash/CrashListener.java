@@ -11,7 +11,7 @@ public interface CrashListener {
      * 将崩溃日志传到目标层。比如服务器。
      * @param logFile
      */
-    void sendLogFileToTarget(Thread thread, Throwable ex, File logFile);
+    void sendLogFileToTarget(File logFile);
 
     /**
      * 响应系统崩溃，关闭app

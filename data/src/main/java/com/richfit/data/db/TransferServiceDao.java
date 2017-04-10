@@ -28,7 +28,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
     }
 
     /**
-     * 获取无仓库的整单缓存
+     * 获取无参考的整单缓存
      *
      * @param refCodeId
      * @param refType
@@ -369,14 +369,8 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 .append("RW.ORG_CODE AS REC_WORK_CODE,RW.ORG_NAME AS REC_WORK_NAME,")
                 .append("RI.ORG_CODE AS REC_INV_CODE,RI.ORG_NAME AS REC_INV_NAME,")
                 .append("T.INS_LOT,T.DECISION_CODE,T.PROJECT_TEXT,T.MOVE_CAUSE,")
-                .append("T.MOVE_CAUSE_DESC,T.RETURN_QUANTITY,T.REF_DOC,T.REF_DOC_ITEM,")
-                .append("T.REF_DOC || '_' || T.REF_DOC_ITEM AS LINE_NUM_105 ")
+                .append("T.MOVE_CAUSE_DESC,T.RETURN_QUANTITY,T.REF_DOC,T.REF_DOC_ITEM,T.line_num_105 ")
                 .append("FROM  MTL_TRANSACTION_LINES T ");
-        //二级单位的组织机构
-//        sb.append("  LEFT JOIN P_AUTH_ORG2 RW ON T.REC_WORK_ID = RW.ID")
-//                .append("  LEFT JOIN P_AUTH_ORG RI ON T.REC_INV_ID = RI.ID, ")
-//                .append("  P_AUTH_ORG2               W,")
-//                .append("  P_AUTH_ORG2               I,");
 
         sb.append("  LEFT JOIN P_AUTH_ORG RW ON T.REC_WORK_ID = RW.ORG_ID")
                 .append(" LEFT JOIN P_AUTH_ORG RI ON T.REC_INV_ID = RI.ORG_ID")
@@ -431,8 +425,6 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item.recInvId = cursor.getString(++index);
             item.materialId = cursor.getString(++index);
             item.totalQuantity = cursor.getString(++index);
-//            item.specialInvFlag = cursor.getString(++index);
-//            item.specialInvNum = cursor.getString(++index);
             item.workCode = cursor.getString(++index);
             item.workName = cursor.getString(++index);
             item.invCode = cursor.getString(++index);
@@ -450,6 +442,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item.refDoc = cursor.getString(++index);
             item.refDocItem = cursor.getInt(++index);
             item.lineNum105 = cursor.getString(++index);
+
             billDetailList.add(item);
         }
         cursor.close();
@@ -476,6 +469,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 locItem = new LocationInfoEntity();
                 locItem.id = cursor.getString(++index);
                 locItem.transId = cursor.getString(++index);
+                locItem.transLineId = cursor.getString(++index);
                 locItem.location = cursor.getString(++index);
                 locItem.batchFlag = cursor.getString(++index);
                 locItem.quantity = cursor.getString(++index);

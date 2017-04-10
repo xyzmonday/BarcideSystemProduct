@@ -6,14 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
-import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.IDSDetailPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.IDSDetailView;
+import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
+import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -180,8 +179,8 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                     //需要修改的字段
                     //上架仓位
                     bundle.putString(Global.EXTRA_LOCATION_KEY, node.location);
-                    bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY,node.specialInvFlag);
-                    bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY,node.specialInvNum);
+                    bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY, node.specialInvFlag);
+                    bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY, node.specialInvNum);
                     //实收数量
                     bundle.putString(Global.EXTRA_QUANTITY_KEY, node.quantity);
 
@@ -304,7 +303,7 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                 Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate,
                         transToSAPFlag, extraHeaderMap),
                         mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate,
-                                "08", extraHeaderMap).delay(Global.TURN_OWN_SUPPLIESD_ELAY, TimeUnit.MILLISECONDS))
+                                "08", extraHeaderMap))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
                             @Override
@@ -342,7 +341,6 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                         });
         addSubscriber(subscriber);
     }
-
 
     /**
      * 通过抬头获取的单据数据和缓存数据生成新的单据数据。

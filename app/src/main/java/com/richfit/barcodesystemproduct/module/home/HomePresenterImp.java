@@ -5,16 +5,16 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.MenuTreeHelper;
 import com.richfit.domain.bean.MenuNode;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
@@ -28,6 +28,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
 
 
     HomeContract.View mView;
+    String mMenuRootId;
 
     @Override
     protected void onStart() {
@@ -39,19 +40,32 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
         super(context);
     }
 
+    /**
+     * 获取所有的菜单信息，通过mode显示对应的菜单
+     *
+     * @param loginId
+     */
     @Override
     public void setupModule(final String loginId) {
         mView = getView();
+        final int mode = mRepository.isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
+        mMenuRootId = mRepository.isLocal() ? "local_mobile" : "mobile";
         Disposable subscriber =
-                mRepository.getMenuTreeInfo(loginId,-1)
-                        .filter(listMenu -> listMenu != null && listMenu.size() > 0)
-                        .map(listMenu -> initMenu(listMenu))
-                        .doOnNext(list -> mRepository.saveMenuInfo(list, loginId, -1))
+                Flowable.zip(mRepository.getMenuInfo(loginId, Global.ONLINE_MODE)
+                                .flatMap(list -> Flowable.just(wrapperMenuNodes(list, Global.ONLINE_MODE))),
+                        mRepository.getMenuInfo(loginId, Global.OFFLINE_MODE)
+                                .flatMap(list -> Flowable.just(wrapperMenuNodes(list, Global.OFFLINE_MODE))),
+                        (onLineMenus, offLineMenus) -> mergeMenuNodes(onLineMenus, offLineMenus))
+                        .filter(list -> list != null && list.size() > 0)
+                        .map(list -> convertDatas2Nodes(list, mode))
+                        .map(list -> mRepository.saveMenuInfo(list, loginId, mode))
+                        .map(list -> getSecondNodesByParentId(list))
+                        //从这里就需要过滤掉不要的节点
                         .compose(TransformerHelper.io2main())
-                        .subscribeWith(new ResourceSubscriber<List<MenuNode>>() {
+                        .subscribeWith(new ResourceSubscriber<ArrayList<MenuNode>>() {
 
                             @Override
-                            public void onNext(List<MenuNode> menuNodes) {
+                            public void onNext(ArrayList<MenuNode> menuNodes) {
                                 if (mView != null) {
                                     mView.initModulesSuccess(menuNodes);
                                 }
@@ -59,7 +73,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
 
                             @Override
                             public void onError(Throwable t) {
-                                if(mView != null) {
+                                if (mView != null) {
                                     mView.initModelsFail(t.getMessage());
                                 }
                             }
@@ -72,16 +86,50 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
         addSubscriber(subscriber);
     }
 
-    private List<MenuNode> initMenu(List<MenuNode> menuNodes) {
-        final String rootId = menuNodes.get(0).getId();
-        MenuTreeHelper.convertDatas2Nodes(menuNodes);
-        //生成icon
-        for (MenuNode sortedNode : menuNodes) {
-            if (!sortedNode.getParentId().equals(rootId))
-                continue;
-            sortedNode.setIcon(createModuleIcon(sortedNode.getFunctionCode()));
+    @Override
+    public void changeMode(String loginId, int mode) {
+        //1. 根据用户选择的模式，修改数据仓库的mode标识
+        mRepository.setLocal(Global.ONLINE_MODE == mode ? false : true);
+        //2. 调用setupModule，重新初始化Home界面
+        setupModule(loginId);
+    }
+
+    @Override
+    public void selectMode() {
+        mView = getView();
+        final int mode = mRepository.isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
+        mView.selectMode(mode);
+    }
+
+
+    private ArrayList<MenuNode> wrapperMenuNodes(ArrayList<MenuNode> list, int mode) {
+        ArrayList<MenuNode> menus = new ArrayList<>();
+        if (list == null)
+            return menus;
+        for (MenuNode menuNode : list) {
+            menuNode.setMode(mode);
+            menus.add(menuNode);
         }
-        return menuNodes;
+        return menus;
+    }
+
+    private ArrayList<MenuNode> mergeMenuNodes(ArrayList<MenuNode> onLineMenus, ArrayList<MenuNode> offLineMenus) {
+        ArrayList<MenuNode> menus = new ArrayList<>();
+        if ((onLineMenus == null || onLineMenus.size() == 0) && (offLineMenus == null || offLineMenus.size() == 0)) {
+            //如果两个菜单都不满足条件，那么返回
+            return menus;
+        }
+        if ((onLineMenus == null || onLineMenus.size() == 0)) {
+            //如果在线不存在
+            menus.addAll(offLineMenus);
+        }
+        if ((offLineMenus == null || offLineMenus.size() == 0)) {
+            //如果离线不存在
+            menus.addAll(onLineMenus);
+        }
+        menus.addAll(onLineMenus);
+        menus.addAll(offLineMenus);
+        return menus;
     }
 
     private int createModuleIcon(String moduleCode) {
@@ -118,5 +166,54 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
                 return R.mipmap.icon_module15;
         }
         return 0;
+    }
+
+    /**
+     * 将一般的数据转换为tree的数据结构
+     *
+     * @param datas
+     * @return
+     */
+    private ArrayList<MenuNode> convertDatas2Nodes(ArrayList<MenuNode> datas, int mode) {
+
+        /**
+         * 设置Node间的节点关系
+         */
+        for (int i = 0; i < datas.size(); i++) {
+            MenuNode n = datas.get(i);
+            if (n.getMode() != mode)
+                continue;
+            for (int j = i + 1; j < datas.size(); j++) {
+                MenuNode m = datas.get(j);
+                if (m.getParentId().equals(n.getId())) {
+                    n.getChildren().add(m);
+                    m.setParent(n);
+                } else if (m.getId().equals(n.getParentId())) {
+                    m.getChildren().add(n);
+                    n.setParent(m);
+                }
+            }
+            //为二级节点生成icon
+            if (!n.getParentId().equals(mMenuRootId))
+                continue;
+            n.setIcon(createModuleIcon(n.getFunctionCode()));
+        }
+        return datas;
+    }
+
+    /**
+     * 通过根节点id获取二级节点
+     *
+     * @param nodes
+     * @return
+     */
+    private ArrayList<MenuNode> getSecondNodesByParentId(ArrayList<MenuNode> nodes) {
+        ArrayList<MenuNode> menuNodes = new ArrayList<>();
+        for (MenuNode node : nodes) {
+            if (node.getParentId().equals(mMenuRootId)) {
+                menuNodes.add(node);
+            }
+        }
+        return menuNodes;
     }
 }

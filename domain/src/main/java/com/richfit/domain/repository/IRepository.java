@@ -7,6 +7,7 @@ import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
+import com.richfit.domain.bean.UserEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,15 @@ import io.reactivex.Flowable;
  */
 
 public interface IRepository {
+
+    /**
+     * 用户登录
+     *
+     * @param userName：登录名
+     * @param password：登录密码
+     */
+    Flowable<UserEntity> Login(String userName, String password);
+
     /**
      * 获取单据数据
      *
@@ -78,7 +88,7 @@ public interface IRepository {
                                                     String refLineId, String workId, String invId,
                                                     String recWorkId, String recInvId,
                                                     String materialNum, String batchFlag, String location,
-                                                    String refDoc,int refDocItem,String userId);
+                                                    String refDoc, int refDocItem, String userId);
 
 
     /**
@@ -181,5 +191,10 @@ public interface IRepository {
      */
     Flowable<String> transferCheckData(String checkId, String userId, String bizType);
 
+    Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location);
 
+    /**
+     * 获取用户操作的菜单列表
+     */
+    Flowable<ArrayList<MenuNode>> getMenuInfo(String loginId, int mode);
 }

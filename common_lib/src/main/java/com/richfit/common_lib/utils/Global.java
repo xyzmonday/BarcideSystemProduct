@@ -5,14 +5,6 @@ package com.richfit.common_lib.utils;
  */
 
 public class Global {
-    //青海勘探板块
-    public final static String BASE_URL = "http://11.11.47.29:8087/ktbk_middleware/MobileProcess/";
-    //庆阳炼化板块
-//    public final static String BASE_URL = "http://11.11.47.29:8092/lhbk_middleware/MobileProcess/";
-
-//    public final static String BASE_URL = "http://10.88.53.10:8080/middleware/MobileProcess/";
-    //        String BASE_URL = "http://10.88.9.155:8080/test/";
-//    String BASE_URL = "http://192.168.1.101:8080/test/";
 
     public final static String RETURN_SUCCESS_CODE = "S";
 
@@ -121,15 +113,17 @@ public class Global {
     public static final String SYNC_DATE_KEY = "syncDate";
 
     /*基础数据的key*/
-    public static final String id_Key = "id";
-    public static final String code_Key = "code";
-    public static final String name_Key = "name";
-    public static final String parentId_Key = "parentId";
-    public static final String orgLevel_Key = "orgLevel";
-    public static final String storageNum_Key = "storageNum";
-    public static final String sort_key = "sort";
-    public static final String value_key = "value";
-    public static final String sapUpdateDate_Key = "sapUpdateDate";
+    public static final String ID_KEY = "id";
+    public static final String CODE_KEY = "code";
+    public static final String NAME_KEY = "name";
+    public static final String PARENTID_KEY = "parentId";
+    public static final String ORGLEVEL_KEY = "orgLevel";
+    public static final String STORAGENUM_KEY = "storageNum";
+    public static final String SORT_KEY = "sort";
+    public static final String VALUE_KEY = "value";
+    public static final String SAPUPDATEDATE_KEY = "sapUpdateDate";
+    public static final String WORK_ID = "work_id";
+    public static final String INV_ID = "inv_id";
     public static final String EXTRA_LOCATION_LIST_KEY = "extra_location_list";
     public static final String EXTRA_REC_LOCATION_LIST_KEY = "extra_rec_location_list";
     public static final String EXTRA_BATCH_FLAG_KEY = "extra_batch_flag";
@@ -212,7 +206,4 @@ public class Global {
     public static final int LOCATION_POS = 0;
     public static final int MATERIAL_POS_L = 4;
     public static final int BATCHFALG_POS_L = 6;
-
-    /*寄售转自有的延时*/
-    public static final int TURN_OWN_SUPPLIESD_ELAY = 2000;
 }

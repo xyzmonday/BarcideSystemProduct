@@ -99,7 +99,8 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
             return;
         }
 
-        ResourceSubscriber<Boolean> subscriber = Flowable.just(configFileName)
+        ResourceSubscriber<Boolean> subscriber =
+                Flowable.just(configFileName)
                 .map(name -> LocalFileUtil.getStringFormAsset(mContext, name))
                 .map(json -> parseJson(json))
                 .flatMap(list -> mRepository.saveBizFragmentConfig(list))

@@ -242,17 +242,8 @@ public interface ILocalRepository extends IRepository {
      * @param loginId:登陆用户
      * @param mode:在线获取离线模式
      */
-    void saveMenuInfo(List<MenuNode> menus, String loginId, int mode);
+    ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode);
 
-    /**
-     * 读取主功能列表的菜单列表。注意这里不能用getMenuInfo接口，因为不管是在线还是离线都需要
-     * 先从接口获取菜单数据。
-     *
-     * @param loginId
-     * @param mode
-     * @return
-     */
-    Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId, int mode);
 
     /**
      * 保存单据数据到本地数据库

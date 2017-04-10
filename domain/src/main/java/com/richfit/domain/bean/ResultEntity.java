@@ -134,4 +134,6 @@ public class ResultEntity {
     public String companyCode;
     public String transLineId;
     public String transLineSplitId;
+    public String insId;
+    public String unit;
 }

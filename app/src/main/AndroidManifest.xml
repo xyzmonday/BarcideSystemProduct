@@ -76,4 +76,8 @@
         <service android:name=".service.InitializeService" />
     </application>
 
+    <meta-data
+        android:name = "CHANNEL"
+        android:value = "${CHANNEL}"
+        />
 </manifest>

@@ -453,7 +453,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
      */
     private void clearAllUI() {
         clearCommonUI(tvMaterialDesc, tvWork, tvActQuantity, etLocation, tvLocQuantity, etQuantity, tvLocQuantity,
-                tvTotalQuantity, cbSingle);
+                tvTotalQuantity, cbSingle,tvInsLostQuantity);
 
         //单据行
         if (mRefLineAdapter != null) {
@@ -505,7 +505,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
                  * 也可能没有批次。
                  */
                 for (LocationInfoEntity cachedItem : locationInfos) {
-                    //缓存和输入的都为空或者都不为空而且相等
+                    //缓存和输入的都为空或者都不为空而且相等,那么系统默认批次匹配
                     boolean isMatch;
 
                     isBatchValidate = mIsOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||

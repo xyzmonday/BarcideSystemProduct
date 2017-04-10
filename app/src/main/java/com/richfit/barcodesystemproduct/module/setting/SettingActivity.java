@@ -54,8 +54,8 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     SwitchView sbSupplier;
     @BindView(R.id.sb_cost_center)
     SwitchView sbCostCenter;
-//    @BindView(R.id.sb_warehouse)
-//    SwitchView sbWarehouse;
+    @BindView(R.id.sb_location)
+    SwitchView sbLocation;
     @BindView(R.id.sb_project_num)
     SwitchView sbProjectNum;
     @BindView(R.id.check_update_apk)
@@ -151,10 +151,19 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             mMessage += "项目编号;";
         }
 
+        if(sbLocation.isOpened()) {
+            task = new LoadBasicDataWrapper();
+            task.isByPage = true;
+            task.queryType = "CW";
+            requestParams.add(task);
+            mMessage += "仓位主数据";
+        }
+
         if (TextUtils.isEmpty(mMessage)) {
             showMessage("请您先选择要下载的数据");
             return;
         }
+
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("提示");

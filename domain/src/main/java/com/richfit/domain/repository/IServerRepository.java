@@ -6,7 +6,6 @@ import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.LoadDataTask;
-import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.RefNumEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
@@ -27,13 +26,7 @@ import io.reactivex.Flowable;
 
 public interface IServerRepository extends IRepository {
 
-    /**
-     * 用户登录
-     *
-     * @param userName：登录名
-     * @param password：登录密码
-     */
-    Flowable<UserEntity> Login(String userName, String password);
+
 
     /**
      * 下载额外字段的配置信息
@@ -157,7 +150,7 @@ public interface IServerRepository extends IRepository {
                                                      String location, String specialInvFlag, String specialInvNum,
                                                      String invType,String deviceId);
 
-    Flowable<String> getLocationInfo(String queryType, String workId, String invId,String storageNum, String location);
+
 
     /**
      * 获取最新的App的版本信息，用于更新
@@ -200,8 +193,5 @@ public interface IServerRepository extends IRepository {
      * @return
      */
     Flowable<ResultEntity> getDeviceInfo(String deviceId);
-    /**
-     * 获取用户操作的菜单列表
-     */
-    Flowable<ArrayList<MenuNode>> getMenuTreeInfo(String loginId, int mode);
+
 }

@@ -65,7 +65,8 @@ public class ASCollectPresenterImp extends BasePresenter<IASCollectView>
     }
 
     @Override
-    public void checkLocation(String queryType, String workId, String invId, String batchFlag, String location) {
+    public void checkLocation(String queryType, String workId, String invId, String batchFlag,
+                              String location) {
         mView = getView();
         if (TextUtils.isEmpty(workId) && mView != null) {
             mView.checkLocationFail("工厂为空");

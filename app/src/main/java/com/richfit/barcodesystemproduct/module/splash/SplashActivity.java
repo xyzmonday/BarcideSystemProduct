@@ -1,6 +1,5 @@
 package com.richfit.barcodesystemproduct.module.splash;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -54,16 +53,12 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
         setStatusBar(false);
         super.onCreate(savedInstanceState);
         Flowable.just(1)
-                .map(a->initAppConfig(getApplicationContext()))
+                .map(a -> UiUtil.getMacAddress())
                 .compose(TransformerHelper.io2main())
-                .subscribe(flag-> mPresenter.register());
+                .subscribe(macAddress -> Global.macAddress = macAddress, e -> {
+                }, () -> mPresenter.register());
     }
 
-    private boolean initAppConfig(Context context) {
-        Global.macAddress = UiUtil.getMacAddress();
-//        Global.serialNum = UiUtil.getDeviceId(context.getApplicationContext());
-        return true;
-    }
 
     /**
      * 跳转到登陆页面
@@ -81,6 +76,7 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
 
     /**
      * 用户未注册，提示用户注册。
+     *
      * @param message
      */
     @Override
@@ -110,6 +106,7 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
 
     /**
      * 同步时间成功
+     *
      * @param dateStr
      */
     @Override

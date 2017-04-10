@@ -22,10 +22,12 @@ import dagger.Provides;
 @Module(includes = {LocalApiModule.class, ServerApiModule.class})
 public class AppModule {
 
-    private Application mApp;
+    private final Application mApp;
+    private final String mBaseUrl;
 
-    public AppModule(Application app) {
+    public AppModule(Application app,String baseUrl) {
         this.mApp = app;
+        this.mBaseUrl = baseUrl;
     }
 
     @Provides
@@ -35,6 +37,10 @@ public class AppModule {
         return mApp.getApplicationContext();
     }
 
+    @Provides
+    public String provideBaseUrl() {
+        return mBaseUrl;
+    }
 
     @Provides
     @Singleton

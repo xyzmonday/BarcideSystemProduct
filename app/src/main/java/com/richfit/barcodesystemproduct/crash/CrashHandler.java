@@ -70,8 +70,6 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         //保存到服务器或者邮件
         if (mListener != null) {
             mListener.closeApp(thread, ex);
-//            mListener.sendLogFileToTarget(thread, ex, mLogFile);
         }
-
     }
 }

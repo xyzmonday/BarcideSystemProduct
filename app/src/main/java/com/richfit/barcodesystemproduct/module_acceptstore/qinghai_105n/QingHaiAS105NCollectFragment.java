@@ -33,9 +33,7 @@ public class QingHaiAS105NCollectFragment extends BaseASCollectFragment<ASCollec
     @Override
     public void initEvent() {
         super.initEvent();
-        etLocation.setOnRichEditTouchListener((view, location) -> {
-            getTransferSingle(getString(etBatchFlag), location);
-        });
+        etLocation.setOnRichEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
     }
 
     /**

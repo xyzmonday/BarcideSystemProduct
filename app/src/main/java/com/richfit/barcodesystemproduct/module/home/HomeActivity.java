@@ -2,13 +2,21 @@ package com.richfit.barcodesystemproduct.module.home;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.LinearLayout;
@@ -29,7 +37,7 @@ import com.richfit.common_lib.dialog.BasePopupWindow;
 import com.richfit.common_lib.dialog.SelectDialog;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.MenuTreeHelper;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 
 import java.util.ArrayList;
@@ -41,28 +49,31 @@ import butterknife.BindView;
  * 在线模式的功能主页面。该页面作为App的主页面，这里我们设置它的Activity返回栈为
  * SingleTask(栈内复用，只要栈内里面有那么在它之前的所有Activity全部销毁，HomeActivity回调
  * onNewIntent方法)
- *
+ * <p>
  * Created by monday on 2016/11/7.
  */
-public class
-HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View,
-        OnItemClickListener{
+public class HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View,
+        OnItemClickListener, NavigationView.OnNavigationItemSelectedListener,MultiItemTypeAdapter.OnItemClickListener {
 
     @BindView(R.id.modular_list)
     RecyclerView mRecycleView;
-
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
-
     @BindView(R.id.toolbar_title)
     TextView mToolbarTitle;
+    @BindView(R.id.home_drawer_layout)
+    DrawerLayout mDrawerLayout;
+    @BindView(R.id.nv_menu)
+    NavigationView mNavigationView;
+    TextView tvMode;
 
+    //主布局的功能适配器
     ModularAdapter mAdapter;
-
-    ArrayList<MenuNode> mMenuNodes;
-
+    ActionBarDrawerToggle mDrawerListener;
     Dialog mBottomSheetDialog;
     AlertView mAlertView;
+    //保存之前选择的MenuItem
+    MenuItem preSelectedMenuItem;
 
     private static final int[] MENUS_IMAGES = {
             R.mipmap.icon_submenu1,
@@ -80,7 +91,7 @@ HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View
 
     @Override
     protected int getContentId() {
-        return R.layout.activity_home;
+        return R.layout.activity_home2;
     }
 
     @Override
@@ -91,8 +102,7 @@ HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View
     @Override
     public void initData(Bundle savedInstanceState) {
         setUpToolBar();
-        mMenuNodes = new ArrayList<>();
-        //注意这里没有给出mode因为系统到Home页面的时候已经确定了该字段的值
+        setUpDrawerLayout();
         mPresenter.setupModule(Global.LOGIN_ID);
     }
 
@@ -108,6 +118,25 @@ HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View
 
     }
 
+    /**
+     * 设置抽屉布局
+     */
+    private void setUpDrawerLayout() {
+        //设置DrawerLayout最左边的icon（开关指示器）
+        mDrawerListener = new ActionBarDrawerToggle(
+                this, mDrawerLayout, mToolbar, R.string.open, R.string.close
+        );
+        mDrawerListener.syncState();
+        mDrawerLayout.addDrawerListener(mDrawerListener);
+        //设置导航栏NavigationView的点击事件
+        mNavigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
+    }
+
     @Override
     protected void initViews() {
         GridLayoutManager lm = new GridLayoutManager(this, 3);
@@ -115,71 +144,80 @@ HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View
         mRecycleView.addItemDecoration(new DividerGridItemDecoration(this));
         mAlertView = new AlertView("温馨提示", "您真的退出App吗?", "取消", new String[]{"确定"}, null,
                 this, AlertView.Style.Alert, this);
-
+        //获取NavigationView头布局里面的空间
+        View headerView = mNavigationView.getHeaderView(0);
+        tvMode = (TextView) headerView.findViewById(R.id.tv_mode);
+        mPresenter.selectMode();
     }
 
     /**
-     * 开始初始化九宫格的主功能展示界面
+     * 开始初始化九宫格的主功能展示界面。注意界面仅仅需要展示二级节点即可
      *
      * @param menuNodes
      */
     @Override
-    public void initModulesSuccess(List<MenuNode> menuNodes) {
-        mMenuNodes.clear();
-        mMenuNodes.addAll(menuNodes);
+    public void initModulesSuccess(ArrayList<MenuNode> menuNodes) {
         if (mAdapter == null) {
-            final String rootId = menuNodes.get(0).getId();
-
-            mAdapter = new ModularAdapter(this, R.layout.item_module, MenuTreeHelper.getNodesByLevel(menuNodes, rootId));
+            mAdapter = new ModularAdapter(this, R.layout.item_module,menuNodes);
             mRecycleView.setAdapter(mAdapter);
-
-            mAdapter.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
-                    MenuNode item = mAdapter.getItem(position);
-                    final List<MenuNode> bizMenuNodes = item.getChildren();
-                    if (bizMenuNodes != null && bizMenuNodes.size() == 1) {
-                        //如果第二级菜单自有一个（第二级菜单必须的个数必须大于等于1）
-                        final List<MenuNode> refMenuNodes = bizMenuNodes.get(0).getChildren();
-                        if (refMenuNodes != null && refMenuNodes.size() == 1) {
-                            //如果单据也只有一个，那么直接进入业务MainActivity
-                            toMain(Global.companyCode, item.getFunctionCode(),
-                                    bizMenuNodes.get(0).getBusinessType(),
-                                    refMenuNodes.get(0).getRefType(), bizMenuNodes.get(0).getCaption());
-                        } else if (refMenuNodes == null || refMenuNodes.size() == 0) {
-                            //如果没有第三级菜单，那么直接跳转
-                            toMain(Global.companyCode, item.getFunctionCode(),
-                                    bizMenuNodes.get(0).getBusinessType(),
-                                    "", bizMenuNodes.get(0).getCaption());
-                        } else {
-                            //如果有多个单据，那么直接操作第三级
-                            setupRefTypeDialog(bizMenuNodes.get(0), item.getFunctionCode());
-                        }
-                    } else if (bizMenuNodes == null || bizMenuNodes.size() == 0) {
-                        //没有第二级菜单.第三级菜单
-                        toMain(Global.companyCode, item.getFunctionCode(),
-                                item.getBusinessType(),
-                                "", item.getCaption());
-
-                    } else {
-                        //如果子菜单有多个，那么用户需要先操作子菜单
-                        setupBizTypeDialog(item);
-                    }
-                }
-
-                @Override
-                public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
-                    return false;
-                }
-            });
+            mAdapter.setOnItemClickListener(this);
         } else {
-            mAdapter.notifyDataSetChanged();
+            mAdapter.addAll(menuNodes);
         }
     }
 
     @Override
     public void initModelsFail(String message) {
         showMessage(message);
+    }
+
+    @Override
+    public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
+        MenuNode item = mAdapter.getItem(position);
+        final List<MenuNode> bizMenuNodes = item.getChildren();
+        if (bizMenuNodes != null && bizMenuNodes.size() == 1) {
+            //如果第二级菜单自有一个（第二级菜单必须的个数必须大于等于1）
+            final List<MenuNode> refMenuNodes = bizMenuNodes.get(0).getChildren();
+            if (refMenuNodes != null && refMenuNodes.size() == 1) {
+                //如果单据也只有一个，那么直接进入业务MainActivity
+                toMain(Global.companyCode, item.getFunctionCode(),
+                        bizMenuNodes.get(0).getBusinessType(),
+                        refMenuNodes.get(0).getRefType(), bizMenuNodes.get(0).getCaption());
+            } else if (refMenuNodes == null || refMenuNodes.size() == 0) {
+                //如果没有第三级菜单，那么直接跳转
+                toMain(Global.companyCode, item.getFunctionCode(),
+                        bizMenuNodes.get(0).getBusinessType(),
+                        "", bizMenuNodes.get(0).getCaption());
+            } else {
+                //如果有多个单据，那么直接操作第三级
+                setupRefTypeDialog(bizMenuNodes.get(0), item.getFunctionCode());
+            }
+        } else if (bizMenuNodes == null || bizMenuNodes.size() == 0) {
+            //没有第二级菜单.第三级菜单
+            toMain(Global.companyCode, item.getFunctionCode(),
+                    item.getBusinessType(),
+                    "", item.getCaption());
+
+        } else {
+            //如果子菜单有多个，那么用户需要先操作子菜单
+            setupBizTypeDialog(item);
+        }
+    }
+
+    @Override
+    public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
+        return false;
+    }
+
+    /**
+     * 设置初始菜单的选中状态
+     * @param mode
+     */
+    @Override
+    public void selectMode(int mode) {
+        mNavigationView.getMenu().getItem(mode).setChecked(true);
+        ColorStateList csl = AppCompatResources.getColorStateList(this,R.color.nav_menu_selector);
+        mNavigationView.setItemTextColor(csl);
     }
 
 
@@ -320,15 +358,9 @@ HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View
     }
 
     @Override
-    public void networkConnectError(String retryAction) {
-
-    }
-
-
-    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if(mAlertView == null) {
+            if (mAlertView == null) {
                 mAlertView = new AlertView("温馨提示", "您真的退出App吗?", "取消", new String[]{"确定"}, null,
                         this, AlertView.Style.Alert, this);
             }
@@ -352,11 +384,49 @@ HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View
         }
     }
 
+    /**
+     * 左侧菜单点击监听
+     *
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        if(preSelectedMenuItem != null) {
+            preSelectedMenuItem.setChecked(false);
+        }
+        item.setChecked(false);
+        switch (item.getItemId()) {
+            case R.id.online_mode:
+                item.setChecked(true);
+                tvMode.setText("您正在使用的是在线系统");
+                mPresenter.changeMode(Global.LOGIN_ID, Global.ONLINE_MODE);
+                break;
+            case R.id.offline_mode:
+                item.setChecked(true);
+                tvMode.setText("您正在使用的是离线系统");
+                mPresenter.changeMode(Global.LOGIN_ID, Global.OFFLINE_MODE);
+                break;
+        }
+        // 关闭导航菜单
+        mDrawerLayout.closeDrawers();
+        preSelectedMenuItem = item;
+        return  super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onDestroy() {
         if (mAlertView != null && mAlertView.isShowing()) {
             mAlertView.dismiss();
         }
+        if (mDrawerLayout != null) {
+            mDrawerLayout.removeDrawerListener(mDrawerListener);
+        }
+
+        if(mAdapter != null) {
+            mAdapter.setOnItemClickListener(null);
+        }
         super.onDestroy();
     }
+
 }

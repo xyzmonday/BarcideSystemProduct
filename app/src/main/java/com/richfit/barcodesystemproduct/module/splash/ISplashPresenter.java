@@ -11,6 +11,8 @@ import java.util.ArrayList;
 
 public interface ISplashPresenter extends IPresenter<ISplashView> {
 
+    void setLocalFlag(boolean isLocal);
+
     /**
      * 同步服务器时间
      */

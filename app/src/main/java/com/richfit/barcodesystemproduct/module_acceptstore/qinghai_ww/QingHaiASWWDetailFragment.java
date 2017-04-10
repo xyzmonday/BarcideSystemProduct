@@ -24,10 +24,12 @@ public class QingHaiASWWDetailFragment extends BaseASDetailFragment<ASDetailPres
     public List<BottomMenuEntity> provideDefaultBottomMenu() {
         List<BottomMenuEntity> menus = super.provideDefaultBottomMenu();
         menus.get(0).transToSapFlag = "01";
+        menus.get(1).transToSapFlag = "05";
+        if (mRefData == null) {
+            return menus;
+        }
         //如果全部是必检物资那么不需要上架
-        if (!mRefData.qmFlag)
-            menus.get(1).transToSapFlag = "05";
-        return menus.subList(0, 2);
+        return menus.subList(0, !mRefData.qmFlag ? 1 : 2);
     }
 
     /**

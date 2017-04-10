@@ -140,6 +140,8 @@ create table IF not exists BASE_LOCATION
   location          TEXT,
   storage_num       TEXT,
   created_by        TEXT,
+  work_id           TEXT,
+  inv_id            TEXT,
   creation_date     TEXT,
   last_updated_by   TEXT,
   last_update_date  TEXT,
@@ -193,10 +195,13 @@ create table IF not exists P_AUTH_ORG2
 create table IF not exists T_USER
 (
   login_id           VARCHAR2(32) PRIMARY KEY NOT NULL,
-  auth_orgs          TEXT,
   user_id            TEXT,
   last_login_date    INTEGER,
-  user_name          TEXT
+  user_name          TEXT,
+  company_id         TEXT,
+  company_code       TEXT,
+  auth_orgs          TEXT,
+  batch_flag          TEXT
 );
 
 create table IF not exists T_CONFIG
@@ -249,6 +254,67 @@ create table IF not exists T_HOME_MENUS
     tree_level       INTEGER
 );
 
+create table MTL_INSPECTION_HEADERS
+(
+  id                     VARCHAR2(32)  PRIMARY KEY NOT NULL,
+  inspection_num         VARCHAR2(30),
+  inspection_date        TEXT,
+  po_id                  VARCHAR2(32),
+  ins_flag               VARCHAR2(10),
+  workflow_id            VARCHAR2(32),
+  workflow_level         VARCHAR2(32),
+  approval_flag          VARCHAR2(10),
+  sap_gen_num            VARCHAR2(32),
+  edit_flag              VARCHAR2(10),
+  print_flag             VARCHAR2(10),
+  print_date             TEXT,
+  status                 VARCHAR2(10),
+  created_by             VARCHAR2(32),
+  creation_date          TEXT,
+  last_updated_by        VARCHAR2(32),
+  last_update_date       TEXT,
+  inspection_type        VARCHAR2(10),
+  inspection_instruction VARCHAR2(2000),
+  ref_opinion            VARCHAR2(2000),
+  arrival_date           TEXT,
+  quality_file           VARCHAR2(2000),
+  inspection_result      VARCHAR2(2000),
+  system_flag            VARCHAR2(32)
+);
+
+create table MTL_INSPECTION_LINES
+(
+  id                     VARCHAR2(32) PRIMARY KEY NOT NULL,
+  inspection_id          VARCHAR2(32),
+  line_num               NUMBER(5),
+  work_id                VARCHAR2(32),
+  inv_id                 VARCHAR2(32),
+  po_line_id             VARCHAR2(32),
+  arrival_date           TEXT,
+  material_id            VARCHAR2(32),
+  unit                   VARCHAR2(32),
+  unit_rate              NUMBER(13,3),
+  price_rate             NUMBER(13,3),
+  rec_quantity           NUMBER(13,3),
+  quantity               NUMBER(13,3),
+  qualified_quantity     NUMBER(13,3),
+  inspection_person      VARCHAR2(32),
+  inspection_date        TEXT,
+  inspection_instruction VARCHAR2(2000),
+  ref_opinion            VARCHAR2(2000),
+  process_result         VARCHAR2(2000),
+  status                 VARCHAR2(10),
+  remark                 VARCHAR2(2000),
+  created_by             VARCHAR2(32),
+  creation_date          TEXT,
+  last_updated_by        VARCHAR2(32),
+  last_update_date       TEXT,
+  quality_count          VARCHAR2(32),
+  other_count            VARCHAR2(32),
+  inspection_result      VARCHAR2(10)
+);
+
+
 
 create table IF not exists MTL_PO_HEADERS
 (
@@ -284,6 +350,7 @@ create table IF not exists MTL_PO_LINES
 (
   id                   VARCHAR2(32) PRIMARY KEY NOT NULL,
   po_id                VARCHAR2(32),
+  po_line_id           VARCHAR2(32),
   line_num             TEXT,
   work_id              VARCHAR2(32),
   inv_id               VARCHAR2(32),
@@ -318,7 +385,6 @@ create table IF not exists MTL_PO_LINES
   is_return            VARCHAR2(1),
   line_type            VARCHAR2(10)
 );
-
 
 create table IF not exists MTL_RESERVATION_LINES
 (
@@ -416,7 +482,7 @@ create table IF not exists  MTL_TRANSACTION_LINES
   amount              NUMBER(13,2),
   ref_doc             VARCHAR2(10),
   ref_doc_item        NUMBER(5),
-  return_quantity     NUMBER(13,3),
+  return_quantity     TEXT,
   move_cause          VARCHAR2(32),
   move_cause_desc     VARCHAR2(1000),
   decision_code       VARCHAR2(32),

@@ -120,8 +120,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
-                android:gravity="center_vertical"
                 android:background="@drawable/bg_setting_item"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="10dp">
 
@@ -162,8 +162,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
-                android:gravity="center_vertical"
                 android:background="@drawable/bg_setting_item"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="10dp">
 
@@ -185,13 +185,49 @@
 
             </LinearLayout>
 
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_setting_item"
-                android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@mipmap/icon_warehouse"
+                    android:padding="10dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="30dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:text="@string/basic_location"
+                    android:textColor="@color/black" />
+
+                <ch.ielse.view.SwitchView
+                    android:id="@+id/sb_location"
+                    android:layout_width="@dimen/len_60"
+                    android:layout_height="@dimen/len_32"
+                    android:layout_marginRight="10dip"
+                    android:gravity="center_horizontal"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:background="@drawable/bg_setting_item"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:padding="10dp">
 
                 <ImageView
@@ -226,8 +262,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
-                android:gravity="center_vertical"
                 android:background="@drawable/bg_setting_item"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="10dp">
 
@@ -256,12 +292,13 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
-                android:gravity="center_vertical"
                 android:background="@drawable/bg_setting_item"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="10dp">
 
@@ -289,47 +326,7 @@
                     android:textColor="@color/colorAccent"
                     android:textSize="12sp" />
 
-
             </LinearLayout>
-
-            <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginTop="1dp"-->
-                <!--android:gravity="center_vertical"-->
-                <!--android:background="@drawable/bg_setting_item"-->
-                <!--android:orientation="horizontal"-->
-                <!--android:padding="10dp">-->
-
-                <!--<ImageView-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:background="@mipmap/icon_warehouse"-->
-                    <!--android:padding="10dp"-->
-                    <!--tools:ignore="ContentDescription" />-->
-
-                <!--<TextView-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:layout_marginLeft="30dp"-->
-                    <!--android:layout_weight="1"-->
-                    <!--android:gravity="center_vertical"-->
-                    <!--android:text="@string/warehouse"-->
-                    <!--android:textColor="@color/black" />-->
-
-                <!--<ch.ielse.view.SwitchView-->
-                    <!--android:id="@+id/sb_warehouse"-->
-                    <!--android:layout_width="@dimen/len_60"-->
-                    <!--android:layout_height="@dimen/len_32"-->
-                    <!--android:layout_marginRight="10dip"-->
-                    <!--android:gravity="center_horizontal"-->
-                    <!--android:textColor="@color/colorAccent"-->
-
-
-                    <!--android:textSize="12sp" />-->
-
-            <!--</LinearLayout>-->
-
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

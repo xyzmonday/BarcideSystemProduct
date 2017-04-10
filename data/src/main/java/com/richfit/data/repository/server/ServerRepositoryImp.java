@@ -62,7 +62,7 @@ public class ServerRepositoryImp implements IServerRepository {
     }
 
     @Override
-    public Flowable<ArrayList<MenuNode>> getMenuTreeInfo(String loginId, int mode) {
+    public Flowable<ArrayList<MenuNode>> getMenuInfo(String loginId, int mode) {
         mRequestParam.clear();
         mRequestParam.put("loginId", loginId);
         mRequestParam.put("offLine", mode);
@@ -444,7 +444,7 @@ public class ServerRepositoryImp implements IServerRepository {
 
     @Override
     public Flowable<String> transferCollectionData(String transId, String bizType, String refType, String userId,
-                                                   String voucherDate,String transToSAPFlag, Map<String, Object> extraHeaderMap) {
+                                                   String voucherDate, String transToSAPFlag, Map<String, Object> extraHeaderMap) {
         mRequestParam.clear();
         mRequestParam.put("transId", transId);
         mRequestParam.put("businessType", bizType);
@@ -453,7 +453,6 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("userId", userId);
         mRequestParam.put("mapExHead", extraHeaderMap);
         mRequestParam.put("transToSAPFlag", transToSAPFlag);
-
         return mRequestApi.transferCollectionData(JsonUtil.map2Json(mRequestParam))
                 .compose(TransformerHelper.ListTransformer);
     }
@@ -526,13 +525,13 @@ public class ServerRepositoryImp implements IServerRepository {
     }
 
     @Override
-    public Flowable<String> getLocationInfo(String queryType, String workId, String invId,String storageNum, String location) {
+    public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
         mRequestParam.clear();
         mRequestParam.put("queryType", queryType);
         mRequestParam.put("workId", workId);
         mRequestParam.put("invId", invId);
         mRequestParam.put("location", CommonUtil.toUpperCase(location));
-        mRequestParam.put("storageNum",storageNum);
+        mRequestParam.put("storageNum", storageNum);
         return mRequestApi.getLocation(JsonUtil.map2Json(mRequestParam))
                 .compose(TransformerHelper.MapTransformer);
     }

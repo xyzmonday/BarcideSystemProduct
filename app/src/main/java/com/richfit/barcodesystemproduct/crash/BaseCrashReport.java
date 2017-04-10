@@ -6,8 +6,6 @@ package com.richfit.barcodesystemproduct.crash;
  */
 public abstract class BaseCrashReport implements CrashListener {
 
-
-
     /**
      * 系统默认的异常处理（默认情况下，系统会终止当前的异常程序）
      */

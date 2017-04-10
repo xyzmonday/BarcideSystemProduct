@@ -40,7 +40,7 @@ public class RetrofitModule {
      *
      * @return
      */
-    public static IRequestApi getRequestApiwithCacheConfig(Context context) {
+    public static IRequestApi getRequestApiwithCacheConfig(Context context,String baseUrl) {
 
         File httpCacheDirectory = new File(context.getCacheDir(), "responses");
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
@@ -57,7 +57,7 @@ public class RetrofitModule {
                 .cache(cache).build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Global.BASE_URL)
+                .baseUrl(baseUrl)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -115,7 +115,7 @@ public class RetrofitModule {
     /**
      * 一般网络请求 get/post/...
      */
-    public static IRequestApi getRequestApi(Context context) {
+    public static IRequestApi getRequestApi(Context context,String baseUrl) {
         if (request == null) {
             //拦截器
             Interceptor interceptor = new Interceptor() {
@@ -154,7 +154,7 @@ public class RetrofitModule {
                     .build();
 
             Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(Global.BASE_URL)
+                    .baseUrl(baseUrl)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .client(httpClient)
@@ -167,7 +167,7 @@ public class RetrofitModule {
     /**
      * 下载文件
      */
-    public static IRetrofitDownloadApi getDownloadApi() {
+    public static IRetrofitDownloadApi getDownloadApi(String baseUrl) {
         //打印拦截器
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -189,7 +189,7 @@ public class RetrofitModule {
                 .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Global.BASE_URL)
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(httpClient)
@@ -200,7 +200,7 @@ public class RetrofitModule {
     /**
      * 上传文件/图片
      */
-    public static IRetrofitUploadApi getUploadApi() {
+    public static IRetrofitUploadApi getUploadApi(String baseUrl) {
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .readTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS)
@@ -208,7 +208,7 @@ public class RetrofitModule {
                 .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Global.BASE_URL)
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(httpClient)

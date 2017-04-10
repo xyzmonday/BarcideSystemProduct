@@ -14,13 +14,39 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+
+        manifestPlaceholders = [CHANNEL: "qinghai"]
     }
     buildTypes {
         release {
-            minifyEnabled false
+            shrinkResources true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
+        debug {
+            shrinkResources true
+            minifyEnabled false
+        }
     }
+
+    productFlavors {
+        qingyang {
+            buildConfigField "String","SERVER_URL",'"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
+            buildConfigField "String","CONFIG_FILE_NAME",'"bizConfig_QingYang.json"'
+        }
+
+        qinghai {
+            buildConfigField "String","SERVER_URL",'"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
+            buildConfigField "String","CONFIG_FILE_NAME",'"bizConfig_QingHai.json"'
+        }
+    }
+
+    productFlavors.all{
+        flavor->flavor.manifestPlaceholders = [CHANNEL:name]
+    }
+
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

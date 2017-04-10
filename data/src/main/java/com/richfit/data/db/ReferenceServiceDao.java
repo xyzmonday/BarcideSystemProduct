@@ -85,6 +85,10 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 item.invCode = cursor.getString(++index);
                 item.invName = cursor.getString(++index);
                 item.refLineId = cursor.getString(++index);
+                final String lineId = cursor.getString(++index);
+                if (!TextUtils.isEmpty(lineId)) {
+                    item.refLineId = lineId;
+                }
                 item.refCodeId = cursor.getString(++index);
                 item.lineNum = cursor.getString(++index);
                 item.materialId = cursor.getString(++index);
@@ -97,9 +101,12 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 item.unit = cursor.getString(++index);
                 item.refDoc = cursor.getString(++index);
                 item.refDocItem = cursor.getInt(++index);
+                item.insLot = cursor.getString(++index);
                 item.insLotQuantity = cursor.getString(++index);
                 item.qualifiedQuantity = cursor.getString(++index);
                 item.unqualifiedQuantity = cursor.getString(++index);
+                item.returnQuantity = cursor.getString(++index);
+                item.lineNum105 = cursor.getString(++index);
                 billDetailList.add(item);
             }
             cursor.close();
@@ -209,42 +216,65 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
 
             //2. 处理明细
             final List<RefDetailEntity> list = refData.billDetailList;
-            Cursor cursor;
             if (list != null && list.size() > 0) {
+                Cursor cursor;
                 clearStringBuffer();
+
                 sb.append("insert into MTL_PO_LINES ");
-                sb.append("(id,po_id,line_num,work_id,inv_id,material_id,")
+                sb.append("(id,po_id,po_line_id,line_num,work_id,inv_id,material_id,")
                         .append("material_num,material_desc,material_group,")
                         .append("order_quantity,act_quantity,qm_flag,unit,")
                         .append("created_by,creation_date,")
                         .append("send_work_id,send_inv_id,")
                         .append("status,line_type,biz_type,ref_type,")
                         .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,qualified_quantity,")
-                        .append("unqualified_quantity,return_quantity)")
-                        .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                        .append("unqualified_quantity,return_quantity,line_num_105)")
+                        .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                //先将明细的行的主键查出来
+                StringBuffer lineSql = new StringBuffer();
+                lineSql.append("select id from MTL_PO_LINES where po_id = ? and biz_type = ? and ref_type = ?");
+                switch (bizType) {
+                    case "13":
+                        lineSql.append(" and line_num_105 = ?");
+                        break;
+                    default:
+                        lineSql.append(" and id = ?");
+                        break;
+                }
 
                 for (RefDetailEntity data : list) {
-
-                    String poLineId = "";
-                    //获取该行的行id(注意这里的查询条件)
-                    cursor = db.rawQuery("select id from MTL_PO_LINES where po_id = ? and id = ? and biz_type = ? and ref_type = ?",
-                            new String[]{poId, data.refLineId, bizType, refType});
-
+                    String poLineId = null;
+                    switch (bizType) {
+                        case "13":
+                            cursor = db.rawQuery(lineSql.toString(), new String[]{poId, bizType, refType, data.lineNum105});
+                            break;
+                        default:
+                            cursor = db.rawQuery(lineSql.toString(), new String[]{poId, bizType, refType, data.refLineId});
+                            break;
+                    }
                     while (cursor.moveToNext()) {
                         poLineId = cursor.getString(0);
                     }
                     cursor.close();
                     //注意这里需要将bizType和refType保存到单据数据中
                     if (TextUtils.isEmpty(poLineId)) {
-                        poLineId = data.refLineId;
-                        db.execSQL(sb.toString(), new Object[]{poLineId, poId,
+                        switch (bizType) {
+                            case "13":
+                                //对于105非必检，如果没有历史数据，那么需要自动生成一个主键
+                                poLineId = UiUtil.getUUID();
+                                break;
+                            default:
+                                poLineId = data.refLineId;
+                                break;
+                        }
+                        db.execSQL(sb.toString(), new Object[]{poLineId, poId, data.refLineId,
                                 data.lineNum, data.workId, data.invId, data.materialId, data.materialNum,
                                 data.materialDesc, data.materialGroup, data.orderQuantity, data.actQuantity,
                                 data.qmFlag, data.unit, refData.recordCreator, currentDate,
                                 data.workId, data.invId, "Y", data.lineType, bizType, refType,
                                 data.refDoc, data.refDocItem, data.insLot,
                                 data.insLotQuantity, data.qualifiedQuantity,
-                                data.unqualifiedQuantity,data.returnQuantity});//注意105必检将
+                                data.unqualifiedQuantity, data.returnQuantity, data.lineNum105});//注意105必检将
                     } else {
                         ContentValues cv = new ContentValues();
                         cv.put("last_updated_by", refData.recordCreator);
@@ -290,11 +320,11 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
         clearStringBuffer();
         sb.append("select L.work_id,WORG.org_code as work_code,WORG.org_name as work_name,")
                 .append("L.inv_id,IORG.org_code as inv_code,IORG.org_name as inv_name,")
-                .append("L.id,L.po_id,L.line_num,L.material_id,")
+                .append("L.id,L.po_id,L.po_line_id,L.line_num,L.material_id,")
                 .append("L.material_num,L.material_desc,L.material_group,")
                 .append("L.order_quantity,L.act_quantity,L.qm_flag,L.unit,")
-                .append("L.ref_doc,L.ref_doc_item,L.ins_lot_quantity,L.qualified_quantity,")
-                .append("L.unqualified_quantity,L.return_quantity ");
+                .append("L.ref_doc,L.ref_doc_item,L.ins_lot,L.ins_lot_quantity,L.qualified_quantity,")
+                .append("L.unqualified_quantity,L.return_quantity,L.line_num_105 ");
 
         //查询条件
         sb.append(" from MTL_PO_LINES L left join p_auth_org WORG on L.work_id = WORG.org_id ")

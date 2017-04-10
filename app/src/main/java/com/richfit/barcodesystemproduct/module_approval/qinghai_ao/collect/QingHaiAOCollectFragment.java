@@ -584,9 +584,12 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             result.refLineId = lineData.refLineId;
             result.businessType = mRefData.bizType;
             result.materialId = lineData.materialId;
+            result.unit = lineData.unit;
+            result.workId = lineData.workId;
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
             result.inspectionType = mRefData.inspectionType;
+            result.companyCode = Global.companyCode;
             result.inspectionPerson = Global.USER_ID;
             result.userId = Global.USER_ID;
             result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;

@@ -13,17 +13,7 @@ public class HttpCrashReport extends BaseCrashReport {
 
 
     @Override
-    public void sendLogFileToTarget(Thread thread, Throwable ex,final File logFile) {
+    public void sendLogFileToTarget(final File logFile) {
 
-    }
-
-    /**
-     * 删除崩溃日志文件
-     * @param file
-     */
-    private void deleteLogFile(final File file) {
-        if (file != null && file.exists()) {
-            file.delete();
-        }
     }
 }

@@ -3,7 +3,6 @@ package com.richfit.domain.repository;
 import android.support.annotation.NonNull;
 
 import com.richfit.domain.bean.BizFragmentConfig;
-import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.RowConfig;
@@ -31,6 +30,8 @@ public interface IBasicServiceDao {
      * @return
      */
     ArrayList<String> readUserInfo(String userName, String password);
+
+    UserEntity login(String userName,String password);
 
     /**
      * 保存用户登陆信息
@@ -187,7 +188,7 @@ public interface IBasicServiceDao {
      * @param loginId
      * @param mode
      */
-    void saveMenuInfo(List<MenuNode> menus, String loginId, int mode);
+    ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode);
 
     /**
      * 读取菜单信息
@@ -195,7 +196,16 @@ public interface IBasicServiceDao {
      * @param mode
      * @return
      */
-    ArrayList<MenuNode> readMenuInfo(String loginId, int mode);
+    ArrayList<MenuNode> getMenuInfo(String loginId, int mode);
 
-
+    /**
+     * 检查仓位是否存在
+     * @param queryType
+     * @param workId
+     * @param invId
+     * @param storageNum
+     * @param location
+     * @return
+     */
+    boolean getLocationInfo(String queryType, String workId, String invId, String storageNum, String location);
 }

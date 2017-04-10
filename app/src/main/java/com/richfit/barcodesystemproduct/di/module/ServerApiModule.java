@@ -22,8 +22,8 @@ public class ServerApiModule {
 
     @Provides
     @Singleton
-    public IRequestApi provideRequestApi(@ContextLife("Application") Context context) {
-        return RetrofitModule.getRequestApi(context);
+    public IRequestApi provideRequestApi(@ContextLife("Application") Context context,String baseUrl) {
+        return RetrofitModule.getRequestApi(context,baseUrl);
     }
 
     @Provides

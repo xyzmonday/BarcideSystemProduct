@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -286,7 +285,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
         RxSubscriber<String> subscriber = Flowable.concat(mRepository.transferCollectionData(transId, bizType, refType,
                 userId, voucherDate, transToSapFlag, extraHeaderMap),
                 mRepository.transferCollectionData(transId, bizType, refType,
-                        userId, voucherDate, "08", extraHeaderMap).delay(Global.TURN_OWN_SUPPLIESD_ELAY, TimeUnit.MILLISECONDS))
+                        userId, voucherDate, "08", extraHeaderMap))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在寄售转自有...") {
                     @Override

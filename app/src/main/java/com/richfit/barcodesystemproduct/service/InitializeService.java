@@ -4,6 +4,8 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 
+import com.richfit.barcodesystemproduct.crash.CrashManager;
+import com.richfit.barcodesystemproduct.crash.HttpCrashReport;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.data.cache.RxCache;
 
@@ -55,8 +57,8 @@ public class InitializeService extends IntentService {
     }
 
     private void initCrashManage() {
-//        CrashManager crashManager = CrashManager.getInstance();
-//        HttpCrashReport httpCrashReport = new HttpCrashReport();
-//        crashManager.init(getApplication(),httpCrashReport);
+        CrashManager crashManager = CrashManager.getInstance();
+        HttpCrashReport httpCrashReport = new HttpCrashReport();
+        crashManager.init(getApplication(),httpCrashReport);
     }
 }

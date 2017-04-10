@@ -7,11 +7,13 @@ import android.view.View;
 import android.widget.Button;
 
 import com.jakewharton.rxbinding.view.RxView;
+import com.richfit.barcodesystemproduct.BuildConfig;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.GUIUtils;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,20 +25,16 @@ import butterknife.BindView;
 
 public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implements WelcomeContract.View {
 
-    private final static String QINGHAI_FRAGMENT_CONFIG = "bizConfig_QingHai.json";
-    private final static String QINGYANG_FRAGMENT_CONFIG = "bizConfig_QingYang.json";
+    private final static String CONFIG_FILE_NAME = BuildConfig.CONFIG_FILE_NAME;
 
     @BindView(R.id.btn_online_mode)
     Button btnOnlineMode;
-
     @BindView(R.id.btn_offline_mode)
     Button btnOfflineMode;
-
     @BindView(R.id.reveal_view)
     View revealView;
 
     int mode;
-
 
     @Override
     protected int getContentId() {
@@ -50,19 +48,19 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
 
     @Override
     public void initEvent() {
-
+        L.e("CONFIG_FILE_NAME " + CONFIG_FILE_NAME);
         RxView.clicks(btnOnlineMode)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.ONLINE_MODE;
-                    mPresenter.loadFragmentConfig(Global.companyId, QINGHAI_FRAGMENT_CONFIG);
+                    mPresenter.loadFragmentConfig(Global.companyId, CONFIG_FILE_NAME);
                 });
 
         RxView.clicks(btnOfflineMode)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.OFFLINE_MODE;
-                    mPresenter.loadFragmentConfig(Global.companyId, QINGHAI_FRAGMENT_CONFIG);
+                    mPresenter.loadFragmentConfig(Global.companyId, CONFIG_FILE_NAME);
                 });
     }
 

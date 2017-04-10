@@ -37,7 +37,7 @@ public class CrashLogUtil {
         StringBuilder sb = new StringBuilder();
         if (context == null) {
             try {
-                cacheDir = "storage/emulated/0/Android/data/tinker.sample.android/cache/crash";
+                cacheDir = "storage/emulated/0/Android/data/com.richfit.barcodesystemproduct/cache/crash";
                 File file = new File(cacheDir, fileName);
                 if (!file.exists()) {
                     file.mkdirs();
@@ -69,8 +69,6 @@ public class CrashLogUtil {
                 e.printStackTrace();
             }
         }
-
-        L.e("崩溃日志的路径 = " + crashFile.getAbsolutePath());
         return crashFile;
     }
 
@@ -79,7 +77,7 @@ public class CrashLogUtil {
         StringBuilder sb = new StringBuilder();
         if (context == null) {
             try {
-                cacheDir = "storage/emulated/0/Android/data/tinker.sample.android/cache/crash";
+                cacheDir = "storage/emulated/0/Android/data/com.richfit.barcodesystemproduct/cache/crash";
                 File file = new File(cacheDir);
                 if (!file.exists()) {
                     file.mkdirs();

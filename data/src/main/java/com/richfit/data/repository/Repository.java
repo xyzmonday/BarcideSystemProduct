@@ -67,8 +67,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<ArrayList<MenuNode>> getMenuTreeInfo(String loginId, int mode) {
-        return mServerRepository.getMenuTreeInfo(loginId, isLocal ? Global.OFFLINE_MODE : Global.ONLINE_MODE);
+    public Flowable<ArrayList<MenuNode>> getMenuInfo(String loginId, int mode) {
+        return isLocal ? mLocalRepository.getMenuInfo(loginId, mode) : mServerRepository.getMenuInfo(loginId, mode);
     }
 
     @Override
@@ -237,7 +237,8 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
-        return mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, location);
+        return isLocal ? mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, location) :
+                mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, location);
     }
 
     @Override
@@ -451,13 +452,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public void saveMenuInfo(List<MenuNode> menus, String loginId, int mode) {
-        mLocalRepository.saveMenuInfo(menus, loginId, isLocal ? Global.OFFLINE_MODE : Global.ONLINE_MODE);
-    }
-
-    @Override
-    public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId, int mode) {
-        return mLocalRepository.readMenuInfo(loginId, isLocal ? Global.OFFLINE_MODE : Global.ONLINE_MODE);
+    public ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode) {
+       return mLocalRepository.saveMenuInfo(menus, loginId, mode);
     }
 
     @Override

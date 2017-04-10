@@ -1,15 +1,19 @@
 package com.richfit.barcodesystemproduct.module.splash.imp;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.barcodesystemproduct.module.home.HomeActivity;
 import com.richfit.barcodesystemproduct.module.splash.ISplashPresenter;
 import com.richfit.barcodesystemproduct.module.splash.ISplashView;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.LoadDataTask;
 
@@ -39,6 +43,20 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
     @Override
     public void onStart() {
         mTaskId = 0;
+    }
+
+    @Override
+    public void setLocalFlag(boolean isLocal) {
+        mRepository.setLocal(isLocal);
+        if (isLocal) {
+            L.e("===正在跳转到登陆页面");
+            //如果是本地，那么不在进行任何有关于网络的业务
+            //跳转到登陆页面
+            Intent intent = new Intent(mContext, HomeActivity.class);
+            AppCompatActivity activity = (AppCompatActivity) mContext;
+            activity.startActivity(intent);
+            activity.finish();
+        }
     }
 
     @Override

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/online_mode"
+        android:icon="@mipmap/icon_online_mode"
+        android:checkable="true"
+        android:title="在线模式"/>
+    <item
+        android:id="@+id/offline_mode"
+        android:icon="@mipmap/icon_offline_mode"
+        android:checkable="true"
+        android:title="离线模式"/>
+
+</menu>

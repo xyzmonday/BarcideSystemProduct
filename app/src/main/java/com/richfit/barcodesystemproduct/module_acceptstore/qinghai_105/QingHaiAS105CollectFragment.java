@@ -170,6 +170,36 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
         super.bindCommonCollectUI();
     }
 
+    @Override
+    public void onBindCache(RefDetailEntity cache, String batchFlag, String location) {
+        super.onBindCache(cache, batchFlag, location);
+        if (cache != null) {
+            etReturnQuantity.setText(cache.returnQuantity);
+            etProjectText.setText(cache.projectText);
+            etMoveCauseDesc.setText(cache.moveCauseDesc);
+            //决策代码和移动原因
+            setSelection(spMoveReason, getStringArray(R.array.move_reasons), cache.moveCause);
+            setSelection(spStrategyCode, getStringArray(R.array.strategy_codes), cache.decisionCode);
+        }
+    }
+
+    private void setSelection(Spinner sp, List<String> list, String key) {
+        if (sp == null || TextUtils.isEmpty(key) || list == null || list.size() == 0) {
+            return;
+        }
+        int pos = -1;
+        for (int i = 0, size = list.size(); i < size; i++) {
+            pos++;
+            //注意这里仅仅匹配的是code
+            if (key.equalsIgnoreCase(list.get(i).split("_")[0])) {
+                break;
+            }
+        }
+        if (pos >= 0) {
+            sp.setSelection(pos);
+        }
+    }
+
     /**
      * 检查数量是否合理。需要满足
      * 1. 退货交货数量 <= 不不合格量

@@ -11,6 +11,7 @@ import java.util.List;
 public class MenuNode {
     //该叶子的id
     private String id;
+    private int mode;
     //该叶子的父节点
     private String parentId;
     //节点名称
@@ -32,6 +33,13 @@ public class MenuNode {
     private MenuNode parent;
     private List<MenuNode> children = new ArrayList<>();
 
+    public int getMode() {
+        return mode;
+    }
+
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
 
     public String getId() {
         return id;

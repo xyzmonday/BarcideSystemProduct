@@ -101,6 +101,31 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
+    public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
+        return Flowable.just(workId)
+                .flatMap(id -> {
+                    if (mBasicServiceDao.getLocationInfo(queryType, id, invId, storageNum, location)) {
+                        return Flowable.just("仓位存在");
+                    } else {
+                        return Flowable.error(new Throwable("您输入的仓位不存在"));
+                    }
+                });
+    }
+
+    @Override
+    public Flowable<ArrayList<MenuNode>> getMenuInfo(String loginId, int mode) {
+        return Flowable.just(loginId)
+                .flatMap(id -> {
+                    ArrayList<MenuNode> list = mBasicServiceDao.getMenuInfo(id, mode);
+                    if (list == null || list.size() == 0) {
+                        return Flowable.error(new Throwable("未获取到用户菜单"));
+                    }
+                    return Flowable.just(list);
+                });
+
+    }
+
+    @Override
     public Flowable<ArrayList<String>> readUserInfo(String userName, String password) {
         UserEntity userEntity = new UserEntity();
         userEntity.userName = userName;
@@ -300,20 +325,14 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public void saveMenuInfo(List<MenuNode> menus, String loginId, int mode) {
-        mBasicServiceDao.saveMenuInfo(menus, loginId, mode);
+    public ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode) {
+       return mBasicServiceDao.saveMenuInfo(menus, loginId, mode);
     }
 
     @Override
-    public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId, int mode) {
-        return Flowable.just(loginId)
-                .flatMap(id -> {
-                    ArrayList<MenuNode> menuNodes = mBasicServiceDao.readMenuInfo(id, mode);
-                    if (menuNodes == null || menuNodes.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到菜单信息"));
-                    }
-                    return Flowable.just(menuNodes);
-                });
+    public Flowable<UserEntity> Login(String userName, String password) {
+        return Flowable.just(userName)
+                .flatMap(name -> Flowable.just(mBasicServiceDao.login(name, password)));
     }
 
     /**

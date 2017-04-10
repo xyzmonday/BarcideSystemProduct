@@ -91,7 +91,7 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
                 getStringArray(R.array.ref_type_list));
         spRefType.setAdapter(refTypeAdapter);
         //2.业务类型
-        mPresenter.readMenuInfo(Global.LOGIN_ID, -1);
+        mPresenter.readMenuInfo(Global.LOGIN_ID, Global.OFFLINE_MODE);
     }
 
 

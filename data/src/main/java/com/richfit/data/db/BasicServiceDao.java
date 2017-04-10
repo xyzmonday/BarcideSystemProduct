@@ -36,7 +36,7 @@ import javax.inject.Inject;
  * Created by monday on 2016/11/8.
  */
 
-public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
+public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
 
     @Inject
     public BasicServiceDao(@ContextLife("Application") Context context) {
@@ -107,23 +107,24 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
         //获取当前的时间
         final long lastLoginDate = System.currentTimeMillis();
         StringBuffer sb = new StringBuffer();
-        sb.append("INSERT OR REPLACE INTO T_USER(login_id,auth_orgs,user_id,last_login_date,user_name) ");
-        sb.append(" values(?,?,?,?,?)");
-        db.execSQL(sb.toString(), new Object[]{userEntity.loginId, userEntity.authOrgs,
-                userEntity.userId, lastLoginDate, userEntity.userName});
+        sb.append("INSERT OR REPLACE INTO T_USER(login_id,user_id,last_login_date,user_name,company_id,company_code,auth_orgs,batch_flag) ");
+        sb.append(" values(?,?,?,?,?,?,?,?)");
+        db.execSQL(sb.toString(), new Object[]{userEntity.loginId,
+                userEntity.userId, lastLoginDate, userEntity.userName, userEntity.companyId,
+                userEntity.companyCode, userEntity.authOrgs, userEntity.batchFlag});
         sb.setLength(0);
         db.close();
     }
 
     /**
-     * 读取一周之内登陆的用户信息
+     * 读取一周之内登陆的用户历史信息，用于在登陆的时候提示用户
      *
      * @return
      */
     @Override
     public ArrayList<String> readUserInfo(String userName, String password) {
         //注意这里如果用户没有登录过，那么返回一个空数组
-        ArrayList<String>  userList = new ArrayList<>();
+        ArrayList<String> userList = new ArrayList<>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -147,6 +148,35 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
             db.close();
         }
         return userList;
+    }
+
+    /**
+     * 离线登陆
+     *
+     * @param userName
+     * @param password
+     * @return
+     */
+    @Override
+    public UserEntity login(String userName, String password) {
+        SQLiteDatabase db = getWritableDB();
+        clearStringBuffer();
+        sb.append("select login_id,user_id,user_name,company_id,company_code,auth_orgs,batch_flag ")
+                .append("from T_USER where user_name = ?");
+        UserEntity user = new UserEntity();
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{userName});
+
+        while (cursor.moveToNext()) {
+            user.loginId = cursor.getString(0);
+            user.userId = cursor.getString(1);
+            user.userName = cursor.getString(2);
+            user.companyId = cursor.getString(3);
+            user.companyCode = cursor.getString(4);
+            user.authOrgs = cursor.getString(5);
+            user.batchFlag = cursor.getString(6);
+        }
+        db.close();
+        return user;
     }
 
     /**
@@ -188,7 +218,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
      */
     @Override
     public ArrayList<RowConfig> readExtraConfigInfo(String companyId, String bizType, String refType,
-                                                             String configType) {
+                                                    String configType) {
         ArrayList<RowConfig> configs = new ArrayList<>();
         if (TextUtils.isEmpty(bizType)) {
             return configs;
@@ -235,6 +265,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
 
     /**
      * 读取页面配置信息
+     *
      * @param bizFragmentConfigs
      * @return
      */
@@ -380,10 +411,10 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                 if (isCWFirst) {
                     db.execSQL("delete from " + tableName);
                 }
-                sql.append("INSERT INTO ")
+                sql.append("INSERT OR REPLACE INTO")
                         .append(tableName)
-                        .append(" (id,storage_num,location,sap_update_date)")
-                        .append(" VALUES (?,?,?,?)");
+                        .append(" (id,storage_num,work_id,inv_id,location,sap_update_date)")
+                        .append(" VALUES (?,?,?,?,?,?)");
 
                 break;
             case 1:
@@ -491,18 +522,20 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     if (!isCWFirst) {
                         for (int i = start; i < end; i++) {
                             item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                            db.execSQL("INSERT OR REPLACE INTO BASE_LOCATION(id,location,storage_num,sap_update_date) " +
-                                    "values(?,?,?,?)", new Object[]{item.get(Global.id_Key), item.get(Global.code_Key),
-                                    item.get(Global.storageNum_Key), item.get(Global.sapUpdateDate_Key)});
+                            db.execSQL(sql, new Object[]{item.get(Global.ID_KEY), item.get(Global.CODE_KEY),
+                                    CommonUtil.Obj2String(item.get(Global.WORK_ID)),
+                                    CommonUtil.Obj2String(item.get(Global.INV_ID)),
+                                    item.get(Global.STORAGENUM_KEY),
+                                    item.get(Global.SAPUPDATEDATE_KEY)});
                         }
                     } else {
                         //仓位
                         for (int i = start; i < end; i++) {
                             item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                            stmt.bindString(1, item.get(Global.id_Key).toString());
-                            stmt.bindString(2, item.get(Global.storageNum_Key).toString());
-                            stmt.bindString(3, item.get(Global.code_Key).toString());
-                            stmt.bindString(4, item.get(Global.sapUpdateDate_Key).toString());
+                            stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                            stmt.bindString(2, item.get(Global.STORAGENUM_KEY).toString());
+                            stmt.bindString(3, item.get(Global.CODE_KEY).toString());
+                            stmt.bindString(4, item.get(Global.SAPUPDATEDATE_KEY).toString());
                             stmt.execute();
                             stmt.clearBindings();
                         }
@@ -513,12 +546,12 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     //组织机构
                     for (int i = start; i < end; i++) {
                         item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                        stmt.bindString(1, item.get(Global.id_Key).toString());
-                        stmt.bindString(2, item.get(Global.code_Key).toString());
-                        stmt.bindString(3, item.get(Global.name_Key).toString());
-                        stmt.bindString(4, item.get(Global.orgLevel_Key).toString());
-                        stmt.bindString(5, item.get(Global.parentId_Key).toString());
-                        stmt.bindString(6, CommonUtil.Obj2String(item.get(Global.storageNum_Key)));
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(3, item.get(Global.NAME_KEY).toString());
+                        stmt.bindString(4, item.get(Global.ORGLEVEL_KEY).toString());
+                        stmt.bindString(5, item.get(Global.PARENTID_KEY).toString());
+                        stmt.bindString(6, CommonUtil.Obj2String(item.get(Global.STORAGENUM_KEY)));
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -527,9 +560,9 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     //料组
                     for (int i = start; i < end; i++) {
                         item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                        stmt.bindString(1, item.get(Global.id_Key).toString());
-                        stmt.bindString(2, item.get(Global.code_Key).toString());
-                        stmt.bindString(3, item.get(Global.name_Key).toString());
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(3, item.get(Global.NAME_KEY).toString());
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -539,10 +572,10 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     //成本中心
                     for (int i = start; i < end; i++) {
                         item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                        stmt.bindString(1, item.get(Global.id_Key).toString());
-                        stmt.bindString(2, item.get(Global.parentId_Key).toString());
-                        stmt.bindString(3, item.get(Global.code_Key).toString());
-                        stmt.bindString(4, item.get(Global.name_Key).toString());
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.PARENTID_KEY).toString());
+                        stmt.bindString(3, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(4, item.get(Global.NAME_KEY).toString());
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -551,9 +584,9 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     //巡检点
                     for (int i = start; i < end; i++) {
                         item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                        stmt.bindString(1, item.get(Global.id_Key).toString());
-                        stmt.bindString(2, item.get(Global.code_Key).toString());
-                        stmt.bindString(3, item.get(Global.name_Key).toString());
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(3, item.get(Global.NAME_KEY).toString());
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -562,10 +595,10 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     //供应商
                     for (int i = start; i < end; i++) {
                         item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                        stmt.bindString(1, item.get(Global.id_Key).toString());
-                        stmt.bindString(2, item.get(Global.parentId_Key).toString());
-                        stmt.bindString(3, item.get(Global.code_Key).toString());
-                        stmt.bindString(4, item.get(Global.name_Key).toString());
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.PARENTID_KEY).toString());
+                        stmt.bindString(3, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(4, item.get(Global.NAME_KEY).toString());
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -574,11 +607,11 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
                     //额外字段字典表
                     for (int i = start; i < end; i++) {
                         item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                        stmt.bindString(1, item.get(Global.id_Key).toString());
-                        stmt.bindString(2, item.get(Global.code_Key).toString());
-                        stmt.bindString(3, item.get(Global.name_Key).toString());
-                        stmt.bindLong(4, Long.valueOf(item.get(Global.sort_key).toString()));
-                        stmt.bindString(5, item.get(Global.value_key).toString());
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(3, item.get(Global.NAME_KEY).toString());
+                        stmt.bindLong(4, Long.valueOf(item.get(Global.SORT_KEY).toString()));
+                        stmt.bindString(5, item.get(Global.VALUE_KEY).toString());
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -706,7 +739,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
      */
     @Override
     public boolean checkWareHouseNum(final String sendWorkId, final String sendInvCode,
-                                              final String recWorkId, final String recInvCode, int flag) {
+                                     final String recWorkId, final String recInvCode, int flag) {
         SQLiteDatabase db = getReadableDB();
         try {
             String sendStorageNum = getStorageNum(db, sendWorkId, sendInvCode, flag);
@@ -851,7 +884,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
      * @param workCode:工厂编码
      */
     @Override
-    public  ArrayList<SimpleEntity> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
+    public ArrayList<SimpleEntity> getProjectNumList(String workCode, String keyWord, int defaultItemNum, int flag) {
         ArrayList<SimpleEntity> list = new ArrayList<>();
         if (TextUtils.isEmpty(workCode))
             return list;
@@ -1032,20 +1065,21 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
         return list;
     }
 
-    public void saveMenuInfo(List<MenuNode> menus, String loginId, int mode) {
-        if (menus == null || menus.size() == 0)
-            return;
-        if (TextUtils.isEmpty(loginId) || mode < 0 || mode > 1)
-            return;
+    /**
+     * 保存所有的菜单信息
+     *
+     * @param menus
+     * @param loginId
+     * @param mode
+     */
+    public ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode) {
         SQLiteDatabase db = getWritableDB();
-
         //先删除历史的菜单
-        db.delete("T_HOME_MENUS", "login_id = ? and mode = ?", new String[]{loginId, String.valueOf(mode)});
-
+        db.delete("T_HOME_MENUS", "login_id = ?", new String[]{loginId});
         //插入一行
-        ContentValues cv;
+        ContentValues cv =  new ContentValues();
         for (MenuNode menu : menus) {
-            cv = new ContentValues();
+            cv.clear();
             cv.put("id", menu.getId());
             cv.put("parent_id", menu.getParentId());
             cv.put("biz_type", menu.getBusinessType());
@@ -1053,29 +1087,47 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
             cv.put("caption", menu.getCaption());
             cv.put("functionCode", menu.getFunctionCode());
             cv.put("login_id", loginId);
-            cv.put("mode", mode);
+            cv.put("mode", menu.getMode());
             cv.put("tree_level", menu.getLevel());
             db.insert("T_HOME_MENUS", null, cv);
         }
         db.close();
+        return menus;
     }
 
+    /**
+     * 查询出所有的菜单信息
+     *
+     * @param loginId
+     * @param mode
+     * @return
+     */
     @Override
-    public ArrayList<MenuNode> readMenuInfo(String loginId, int mode) {
+    public ArrayList<MenuNode> getMenuInfo(String loginId, int mode) {
         ArrayList<MenuNode> list = new ArrayList<>();
         if (TextUtils.isEmpty(loginId) || mode < 0 || mode > 1) {
             return list;
         }
         SQLiteDatabase db = getWritableDB();
         Cursor cursor = null;
+        clearStringBuffer();
         try {
-            cursor = db.rawQuery("select biz_type, caption from T_HOME_MENUS where login_id = ? and mode = ? and tree_level = ?"
-                    , new String[]{loginId, String.valueOf(mode), String.valueOf(2)});
+            sb.append("select id,parent_id,biz_type,ref_type,caption,functionCode,tree_level ");
+            sb.append(" from T_HOME_MENUS where login_id = ? and mode = ?");
+            cursor = db.rawQuery(sb.toString(), new String[]{loginId,String.valueOf(mode)});
+            clearStringBuffer();
             MenuNode item;
+            int index;
             while (cursor.moveToNext()) {
                 item = new MenuNode();
-                item.setBusinessType(cursor.getString(0));
-                item.setCaption(cursor.getString(1));
+                index = -1;
+                item.setId(cursor.getString(++index));
+                item.setParentId(cursor.getString(++index));
+                item.setBusinessType(cursor.getString(++index));
+                item.setRefType(cursor.getString(++index));
+                item.setCaption(cursor.getString(++index));
+                item.setFunctionCode(cursor.getString(++index));
+                item.setLevel(cursor.getInt(++index));
                 list.add(item);
             }
         } catch (Exception e) {
@@ -1088,5 +1140,55 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao{
             db.close();
         }
         return list;
+    }
+
+    @Override
+    public boolean getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
+        SQLiteDatabase db = getWritableDB();
+        clearStringBuffer();
+        String[] selections;
+        List<String> selectionList = new ArrayList<>();
+        if (TextUtils.isEmpty(storageNum)) {
+            // 如果仓库号为空 则先查询库存地点是否启用了WM
+            Cursor cursor = db.rawQuery("select storage_code from p_auth_org where org_id = ? ", new String[]{invId});
+            String storageCode = null;
+            while (cursor.moveToNext()) {
+                storageCode = cursor.getString(0);
+            }
+            cursor.close();
+            sb.append(" select count(*) from BASE_LOCATION where ");
+            if (TextUtils.isEmpty(storageCode)) {
+                selectionList.add(workId);
+                selectionList.add(invId);
+                selectionList.add(location);
+                sb.append(" work_id = ? and inv_id = ? and location = ?");
+
+            } else {
+                selectionList.add(storageCode);
+                selectionList.add(location);
+                sb.append(" storage_num = ? and location = ?");
+            }
+        } else {
+            // 如果传入的是仓库号 表示启用了WM 直接根据仓库号查询
+            selectionList.add(storageNum);
+            selectionList.add(location);
+            sb.append(" storage_num = ? and location = ?");
+        }
+
+        selections = new String[selectionList.size()];
+        selectionList.toArray(selections);
+        Cursor cursor = db.rawQuery(sb.toString(), selections);
+        int result = 0;
+        while (cursor.moveToNext()) {
+            result = cursor.getInt(0);
+        }
+        clearStringBuffer();
+        cursor.close();
+        if (result == 0)
+            return false;
+        else if (result == 1)
+            return true;
+        else
+            return false;
     }
 }

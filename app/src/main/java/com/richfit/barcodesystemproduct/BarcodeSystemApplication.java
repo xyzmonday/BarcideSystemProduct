@@ -18,10 +18,11 @@ import com.squareup.leakcanary.RefWatcher;
  */
 
 public class BarcodeSystemApplication extends Application {
-    private static final String TAG = "yff";
-    private static BarcodeSystemApplication app;
+    private  static BarcodeSystemApplication app;
     private static AppComponent mAppComponent;
     private static RefWatcher mRefWatcher;
+//    private final static String baseUrl = BuildConfig.SERVER_URL;
+    private final static String baseUrl = "http://10.88.53.10:8080/ktbk/MobileProcess/";
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -36,7 +37,7 @@ public class BarcodeSystemApplication extends Application {
         //初始化自己的全局配置
         app = this;
         mAppComponent = DaggerAppComponent.builder()
-                .appModule(new AppModule(this))
+                .appModule(new AppModule(this,baseUrl))
                 .build();
         BlockCanary.install(this, new AppBlockCanaryContext()).start();
         InitializeService.start(this);

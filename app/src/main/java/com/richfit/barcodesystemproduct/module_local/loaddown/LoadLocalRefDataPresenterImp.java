@@ -102,7 +102,7 @@ public class LoadLocalRefDataPresenterImp extends BasePresenter<LoadLocalRefData
     @Override
     public void readMenuInfo(String loginId, int mode) {
         mView = getView();
-        ResourceSubscriber<ArrayList<MenuNode>> subscriber = mRepository.readMenuInfo(loginId, mode)
+        ResourceSubscriber<ArrayList<MenuNode>> subscriber = mRepository.getMenuInfo(loginId, mode)
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new ResourceSubscriber<ArrayList<MenuNode>>() {
                     @Override

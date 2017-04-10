@@ -50,49 +50,50 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
             return;
         }
 
-        ResourceSubscriber<UserEntity> subscriber = mRepository.Login(userName, password)
-                .doOnNext(userEntity -> mRepository.saveUserInfo(userEntity))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<UserEntity>(mContext, "正在登陆...") {
-                    @Override
-                    public void _onNext(UserEntity userInfo) {
-                        Global.LOGIN_ID = userInfo.loginId;
-                        Global.USER_ID = userInfo.userId;
-                        Global.USER_NAME = userInfo.userName;
-                        Global.companyId = userInfo.companyId;
-                        Global.companyCode = userInfo.companyCode;
-                        Global.authOrg = userInfo.authOrgs;
-                        Global.batchFlag = "Y".equals(userInfo.batchFlag) ? true : false;
-                    }
+        ResourceSubscriber<UserEntity> subscriber =
+                mRepository.Login(userName, password)
+                        .doOnNext(userEntity -> mRepository.saveUserInfo(userEntity))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<UserEntity>(mContext, "正在登陆...") {
+                            @Override
+                            public void _onNext(UserEntity userInfo) {
+                                Global.LOGIN_ID = userInfo.loginId;
+                                Global.USER_ID = userInfo.userId;
+                                Global.USER_NAME = userInfo.userName;
+                                Global.companyId = userInfo.companyId;
+                                Global.companyCode = userInfo.companyCode;
+                                Global.authOrg = userInfo.authOrgs;
+                                Global.batchFlag = "Y".equals(userInfo.batchFlag) ? true : false;
+                            }
 
-                    @Override
-                    public void _onNetWorkConnectError(String message) {
-                        if (mView != null) {
-                            mView.networkConnectError(message);
-                        }
-                    }
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onCommonError(String message) {
-                        if (mView != null) {
-                            mView.loginFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.loginFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onServerError(String code, String msg) {
-                        if (mView != null) {
-                            mView.loginFail(msg);
-                        }
-                    }
+                            @Override
+                            public void _onServerError(String code, String msg) {
+                                if (mView != null) {
+                                    mView.loginFail(msg);
+                                }
+                            }
 
-                    @Override
-                    public void _onComplete() {
-                        if (mView != null) {
-                            mView.toHome();
-                        }
-                    }
-                });
+                            @Override
+                            public void _onComplete() {
+                                if (mView != null) {
+                                    mView.toHome();
+                                }
+                            }
+                        });
 
         addSubscriber(subscriber);
     }

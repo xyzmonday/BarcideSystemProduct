@@ -134,7 +134,148 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
     }
 
     @Override
-    public boolean uploadInspectionDataSingle(ResultEntity result) {
+    public boolean uploadInspectionDataSingle(ResultEntity param) {
+        // 1.头表
+        String insId = saveInspectionHeader(param);
+        param.insId = insId;
+        // 2.行表
+        String insLineId = saveInspectionLine(param);
         return false;
+    }
+
+    /**
+     * 保存验收抬头
+     *
+     * @return
+     */
+    private String saveInspectionHeader(ResultEntity param) {
+        clearStringBuffer();
+        SQLiteDatabase db = getWritableDB();
+        String insId = null;
+        sb.append("select distinct id from MTL_INSPECTION_HEADERS H where H.po_id = ? ");
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.refCodeId});
+
+        while (cursor.moveToNext()) {
+            insId = cursor.getString(0);
+        }
+        clearStringBuffer();
+        cursor.close();
+
+        final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
+        ContentValues cv = new ContentValues();
+        if (TextUtils.isEmpty(insId)) {
+            //如果为空那么插入一条
+            insId = UiUtil.getUUID();
+            cv.put("id", insId);
+            cv.put("po_id", param.refCodeId);
+            cv.put("inspection_date", currentDate);
+            cv.put("ins_flag", "1");
+            cv.put("workflow_level", "0");
+            cv.put("approval_flag", "1");
+            cv.put("edit_flag", "N");
+            cv.put("print_flag", "N");
+            cv.put("status", "Y");
+            cv.put("inspection_type", param.inspectionType);
+            cv.put("system_flag", "1");
+            cv.put("system_flag", "1");
+            cv.put("arrival_date", currentDate);
+            //保存成功系统生成的验收单号
+            cv.put("inspection_num", "");
+            cv.put("created_by", param.userId);
+            cv.put("creation_date", currentDate);
+            db.insert("MTL_INSPECTION_HEADERS", null, cv);
+        } else {
+            cv.put("created_by", param.userId);
+            cv.put("creation_date", currentDate);
+            db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{insId});
+        }
+        db.close();
+        return insId;
+    }
+
+    private String saveInspectionLine(ResultEntity param) {
+        String insLineId = null;
+        String insId = param.insId;
+        clearStringBuffer();
+        SQLiteDatabase db = getWritableDB();
+
+        sb.append("select id from MTL_INSPECTION_LINES where ")
+                .append("inspection_id = ? and po_line_id = ?");
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{insId, param.refLineId});
+        while (cursor.moveToNext()) {
+            insLineId = cursor.getString(0);
+        }
+        clearStringBuffer();
+        cursor.close();
+        final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
+        ContentValues cv = new ContentValues();
+        if (TextUtils.isEmpty(insLineId)) {
+            insLineId = UiUtil.getUUID();
+            cv.put("id", insLineId);
+            cv.put("inspection_id", insId);
+            cv.put("po_line_id", param.refLineId);
+            cv.put("material_id", param.materialId);
+            cv.put("inspection_person", param.userId);
+            cv.put("inspection_date", currentDate);
+            cv.put("inspection_result", param.inspectionResult);
+            cv.put("status", "Y");
+            cv.put("unit", param.unit);
+            cv.put("work_id", param.workId);
+            cv.put("inv_id", param.invId);
+            cv.put("created_by", param.userId);
+            cv.put("creation_date", currentDate);
+            cv.put("quantity", param.quantity);
+            switch (param.companyCode) {
+                case "20N0":
+                case "20A0":
+                    // 青海的收货数量 和 合格数量 单独赋值
+                    cv.put("qualified_quantity", param.qualifiedQuantity);
+                    break;
+                case "8200":
+                    //庆阳
+                default:
+                    break;
+            }
+            db.insert("MTL_INSPECTION_LINES", null, cv);
+        } else {
+            sb.append("update MTL_INSPECTION_LINES set created_by = ?,creation_date = ?,inspection_date = ?");
+            if ("Y".equalsIgnoreCase(param.modifyFlag)) {
+                // 修改
+                sb.append(",quantity = ?");
+                switch (param.companyCode) {
+                    case "20N0":
+                    case "20A0":
+                        //青海
+                        sb.append(",qualified_quantity = ?");
+                        sb.append(" where id = ?");
+                        db.execSQL(sb.toString(), new Object[]{param.userId, currentDate, currentDate,
+                                param.quantity, param.qualifiedQuantity, insLineId});
+                        break;
+                    case "8200":
+                        //庆阳
+                    default:
+                        break;
+                }
+            } else {
+                // 累加
+                switch (param.companyCode) {
+                    case "20N0":
+                    case "20A0":
+                        //青海
+                        sb.append(",quantity = quantity + ? and qualified_quantity = qualified_quantity + ?")
+                                .append(" where id = ?");
+                        db.execSQL(sb.toString(), new Object[]{param.userId, currentDate, currentDate,
+                                param.quantity, param.qualifiedQuantity, insLineId});
+                        break;
+                    case "8200":
+                        //庆阳
+                    default:
+                        break;
+                }
+            }
+        }
+        db.close();
+        return insLineId;
+
     }
 }

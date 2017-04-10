@@ -70,7 +70,7 @@ public class LoginActivity extends BaseActivity<LoginPresenterImp> implements Lo
     @Override
     public void initData(Bundle savedInstanceState) {
         mPresenter.readUserInfos();
-//        mPresenter.uploadCrashLogFiles();
+        mPresenter.uploadCrashLogFiles();
     }
 
     @Override
