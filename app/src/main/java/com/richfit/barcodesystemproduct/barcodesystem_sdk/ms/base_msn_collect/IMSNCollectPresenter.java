@@ -31,6 +31,7 @@ public interface IMSNCollectPresenter extends IPresenter<IMSNCollectView> {
                                String invId, String recWorkId, String recInvId, String batchFlag,
                                String refDoc, int refDocItem);
 
+    void checkLocation(String queryType, String workId, String invId, String batchFlag, String location);
     /**
      * 获取库存信息
      *

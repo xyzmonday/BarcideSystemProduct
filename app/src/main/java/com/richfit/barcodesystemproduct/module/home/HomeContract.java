@@ -16,13 +16,12 @@ public interface HomeContract {
         void initModulesSuccess(ArrayList<MenuNode> modules);
         void initModelsFail(String message);
 
-        void selectMode(int mode);
     }
 
     interface Presenter extends IPresenter<View> {
         /*初始化每一个模块的基本配置*/
         void setupModule(String loginId);
         void changeMode(String loginId,int mode);
-        void selectMode();
+
     }
 }

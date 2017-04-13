@@ -7,6 +7,7 @@ package com.richfit.domain.bean;
 
 public class BizFragmentConfig {
     public String id;
+    public int mode;
     public String fragmentTag;
     public String bizType;
     public String refType;

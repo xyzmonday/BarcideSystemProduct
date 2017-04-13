@@ -29,7 +29,7 @@ public class QingHaiASWWDetailFragment extends BaseASDetailFragment<ASDetailPres
             return menus;
         }
         //如果全部是必检物资那么不需要上架
-        return menus.subList(0, !mRefData.qmFlag ? 1 : 2);
+        return menus.subList(0, mRefData.qmFlag ? 1 : 2);
     }
 
     /**

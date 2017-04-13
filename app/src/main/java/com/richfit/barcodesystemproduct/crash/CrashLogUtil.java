@@ -101,7 +101,6 @@ public class CrashLogUtil {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        L.e("崩溃日志的缓存目录 = " + dir.getAbsolutePath());
         return dir;
     }
 
@@ -114,6 +113,9 @@ public class CrashLogUtil {
      * delete and returns "false".
      */
     public static boolean deleteCashLogDir(File dir) {
+        if(dir == null) {
+            return false;
+        }
         if (dir.isDirectory()) {
             String[] children = dir.list();
             for (int i = 0; i < children.length; i++) {
@@ -141,15 +143,12 @@ public class CrashLogUtil {
 
     public static void writeCrashLog(File crashFile, Throwable ex) {
         if (crashFile == null) {
-            L.d("SD不可用，不能够保存异常信息日志");
             return;
         }
         if (crashFile == null) {
-            L.d("日志文件为空");
             return;
         }
         if (!crashFile.isFile()) {
-            L.d("为找到日志文件");
             return;
         }
         //保存崩溃信息

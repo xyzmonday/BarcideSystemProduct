@@ -78,6 +78,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     private String mSpecialInvFlag;
     private String mSpecialInvNum;
 
+
     @Override
     protected int getContentId() {
         return R.layout.fragment_base_dsn_edit;
@@ -105,8 +106,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
                     //库存数量
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
                     //获取缓存
-                    loadLocationQuantity(mInventoryDatas.get(position).location,
-                            getString(tvBatchFlag), mInventoryDatas.get(position).invQuantity);
+                    loadLocationQuantity(position);
                 });
     }
 
@@ -145,7 +145,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         //获取缓存信息
         mPresenter.getTransferInfoSingle(mRefData.bizType, materialNum,
                 Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
-                mRefData.recInvId, batchFlag,"",-1);
+                mRefData.recInvId, batchFlag, "", -1);
     }
 
     @Override
@@ -166,7 +166,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId,
                 CommonUtil.Obj2String(tvInv.getTag()), mRefData.workCode, getString(tvInv),
                 "", getString(tvMaterialNum), tvMaterialNum.getTag().toString(),
-                "", getString(tvBatchFlag),"","",getInvType(),"");
+                "", getString(tvBatchFlag), "", "", getInvType(), "");
     }
 
     @Override
@@ -194,6 +194,8 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         String locationCombine = null;
         if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
             locationCombine = mSelectedLocation + mSpecialInvFlag + mSpecialInvNum;
+        } else {
+            locationCombine = mSelectedLocation;
         }
 
         int pos = -1;
@@ -205,8 +207,11 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
                 break;
             }
         }
-        if (pos >= 0 && pos < list.size())
+        if (pos >= 0 && pos < list.size()) {
             spLocation.setSelection(pos);
+        } else {
+            spLocation.setSelection(0);
+        }
     }
 
     @Override
@@ -217,9 +222,13 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     /**
      * 用户选择发出仓位，匹配该仓位上的仓位数量
      */
-    private void loadLocationQuantity(String location, String batchFlag, String invQuantity) {
+    private void loadLocationQuantity(int position) {
+        final String locationCombine = mInventoryDatas.get(position).locationCombine;
+        final String batchFlag = mInventoryDatas.get(position).batchFlag;
+        final String invQuantity = mInventoryDatas.get(position).invQuantity;
+
         tvInvQuantity.setText(invQuantity);
-        if (TextUtils.isEmpty(location)) {
+        if (TextUtils.isEmpty(locationCombine)) {
             showMessage("发出仓位为空");
             return;
         }
@@ -236,7 +245,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
                     if (!TextUtils.isEmpty(batchFlag)) {
-                        if (location.equalsIgnoreCase(locationInfo.location)
+                        if (locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                                 && batchFlag.equalsIgnoreCase(locationInfo.batchFlag)) {
                             locQuantity = locationInfo.quantity;
                             mExtraLocationMap = locationInfo.mapExt;
@@ -244,7 +253,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
                             break;
                         }
                     } else {
-                        if (location.equalsIgnoreCase(locationInfo.location)) {
+                        if (locationCombine.equalsIgnoreCase(locationInfo.locationCombine)) {
                             locQuantity = locationInfo.quantity;
                             mExtraLocationMap = locationInfo.mapExt;
                             mExtraLineMap = detail.mapExt;
@@ -282,7 +291,6 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     }
 
 
-
     @Override
     public boolean checkCollectedDataBeforeSave() {
 
@@ -297,7 +305,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
             return false;
         }
 
-        if(spLocation.getSelectedItemPosition() <= 0) {
+        if (spLocation.getSelectedItemPosition() <= 0) {
             showMessage("请先选择下架仓位");
             return false;
         }
@@ -391,7 +399,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
             case Global.RETRY_LOAD_SINGLE_CACHE_ACTION:
                 mPresenter.getTransferInfoSingle(mRefData.bizType, getString(tvMaterialNum),
                         Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
-                        mRefData.recInvId, getString(tvBatchFlag),"",-1);
+                        mRefData.recInvId, getString(tvBatchFlag), "", -1);
                 break;
             case Global.RETRY_SAVE_COLLECTION_DATA_ACTION:
                 saveCollectedData();
@@ -401,6 +409,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     }
 
     protected abstract String getInvType();
+
     protected abstract String getInventoryQueryType();
 
 }

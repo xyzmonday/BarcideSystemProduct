@@ -38,32 +38,32 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         implements IMSNEditView {
 
     @BindView(R.id.tv_material_num)
-    TextView tvMaterialNum;
+    protected TextView tvMaterialNum;
     @BindView(R.id.tv_material_desc)
     TextView tvMaterialDesc;
     @BindView(R.id.tv_material_group)
     TextView tvMaterialGroup;
     @BindView(R.id.tv_send_inv)
-    TextView tvSendInv;
+    protected TextView tvSendInv;
     @BindView(R.id.et_quantity)
-    EditText etQuantity;
+    protected EditText etQuantity;
     @BindView(R.id.sp_send_location)
     Spinner spSendLoc;
     @BindView(R.id.tv_send_batch_flag)
-    TextView tvSendBatchFlag;
+    protected TextView tvSendBatchFlag;
     @BindView(R.id.tv_inv_quantity)
     TextView tvInvQuantity;
     @BindView(R.id.tv_location_quantity)
-    TextView tvLocQuantity;
+    protected TextView tvLocQuantity;
     @BindView(R.id.et_rec_location)
     protected EditText etRecLoc;
     @BindView(R.id.tv_rec_batch_flag)
-    TextView tvRecBatchFlag;
+    protected TextView tvRecBatchFlag;
 
-    String mLocationId;
+    protected String mLocationId;
     String mQuantity;
     /*修改前的发出仓位*/
-    String mSendLocation;
+    protected String mSendLocation;
     /*修改前的其他子节点的发出仓位列表*/
     ArrayList<String> mSendLocations;
     ArrayList<String> mRecLocations;
@@ -71,13 +71,13 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     private List<InventoryEntity> mInventoryDatas;
     private LocationAdapter mSendLocAdapter;
     /*缓存的历史仓位数量*/
-    private List<RefDetailEntity> mHistoryDetailList;
+    protected List<RefDetailEntity> mHistoryDetailList;
     /*缓存的仓位级别的额外字段*/
     Map<String, Object> mExtraLocationMap;
     /*缓存的行级别的额外字段*/
     Map<String, Object> mExtraLineMap;
-    private String mSpecialInvFlag;
-    private String mSpecialInvNum;
+    protected String mSpecialInvFlag;
+    protected String mSpecialInvNum;
     protected boolean isWareHouseSame;
 
     @Override
@@ -102,13 +102,12 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         //选择下架仓位，刷新库存并且请求缓存
         RxAdapterView
                 .itemSelections(spSendLoc)
-                .filter(position -> position > 0 && isValidatedSendLocation())
+                .filter(position -> position >= 0 && isValidatedSendLocation())
                 .subscribe(position -> {
                     //库存数量
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
                     //获取缓存
-                    loadLocationQuantity(mInventoryDatas.get(position).location,
-                            getString(tvSendBatchFlag), mInventoryDatas.get(position).invQuantity);
+                    loadLocationQuantity(position);
                 });
     }
 
@@ -154,6 +153,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             etRecLoc.setEnabled(false);
         }
         tvRecBatchFlag.setText(recBatchFlag);
+
         //获取缓存信息
         mPresenter.getTransferInfoSingle(mRefData.bizType, materialNum,
                 Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
@@ -162,16 +162,18 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
 
     @Override
     public void onBindCommonUI(ReferenceEntity refData, String batchFlag) {
-        RefDetailEntity data = refData.billDetailList.get(0);
-        //刷新UI
-        tvMaterialNum.setTag(data.materialId);
-        tvMaterialDesc.setText(data.materialDesc);
-        tvMaterialGroup.setText(data.materialGroup);
-        tvSendBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag :
-                batchFlag);
-        tvRecBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag :
-                batchFlag);
-        mHistoryDetailList = refData.billDetailList;
+        if (refData != null) {
+            RefDetailEntity data = refData.billDetailList.get(0);
+            //刷新UI
+            tvMaterialNum.setTag(data.materialId);
+            tvMaterialDesc.setText(data.materialDesc);
+            tvMaterialGroup.setText(data.materialGroup);
+            tvSendBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag :
+                    batchFlag);
+            tvRecBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag :
+                    batchFlag);
+            mHistoryDetailList = refData.billDetailList;
+        }
     }
 
     @Override
@@ -205,11 +207,15 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             spSendLoc.setSelection(0);
             return;
         }
+
         String locationCombine = null;
         if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
             locationCombine = mSendLocation + mSpecialInvFlag + mSpecialInvNum;
+        } else {
+            locationCombine = mSendLocation;
         }
 
+        //自动匹配已经选中的发出仓位
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
@@ -219,8 +225,11 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
                 break;
             }
         }
-        if (pos >= 0 && pos < list.size())
+        if (pos >= 0 && pos < list.size()) {
             spSendLoc.setSelection(pos);
+        } else {
+            spSendLoc.setSelection(0);
+        }
     }
 
     @Override
@@ -231,9 +240,15 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     /**
      * 用户选择发出仓位，匹配该仓位上的仓位数量
      */
-    private void loadLocationQuantity(String location, String batchFlag, String invQuantity) {
+    private void loadLocationQuantity(int position) {
+
+        final String invQuantity = mInventoryDatas.get(position).invQuantity;
+        final String locationCombine = mInventoryDatas.get(position).locationCombine;
+        final String batchFlag = mInventoryDatas.get(position).batchFlag;
+
         tvInvQuantity.setText(invQuantity);
-        if (TextUtils.isEmpty(location)) {
+
+        if (TextUtils.isEmpty(locationCombine)) {
             showMessage("发出仓位为空");
             return;
         }
@@ -252,7 +267,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
                     if (!TextUtils.isEmpty(batchFlag)) {
-                        if (location.equalsIgnoreCase(locationInfo.location)
+                        if (locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                                 && batchFlag.equalsIgnoreCase(locationInfo.batchFlag)) {
                             locQuantity = locationInfo.quantity;
                             recLocation = locationInfo.recLocation;
@@ -262,7 +277,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
                             break;
                         }
                     } else {
-                        if (location.equalsIgnoreCase(locationInfo.location)) {
+                        if (locationCombine.equalsIgnoreCase(locationInfo.locationCombine)) {
                             locQuantity = locationInfo.quantity;
                             recLocation = locationInfo.recLocation;
                             recBatchFlag = locationInfo.recBatchFlag;
@@ -306,7 +321,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         return true;
     }
 
-    private boolean isValidatedRecLocation(String recLocation) {
+    protected boolean isValidatedRecLocation(String recLocation) {
         if (mRecLocations == null || mRecLocations.size() == 0)
             return true;
         for (String location : mRecLocations) {

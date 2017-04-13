@@ -63,17 +63,17 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     @BindView(R.id.tv_act_move_quantity)
     TextView tvActQuantity;
     @BindView(R.id.et_send_batch_flag)
-    EditText etSendBatchFlag;
+    protected EditText etSendBatchFlag;
     @BindView(R.id.sp_send_inv)
-    Spinner spSendInv;
+    protected  Spinner spSendInv;
     @BindView(R.id.sp_send_location)
-    Spinner spSendLoc;
+    protected Spinner spSendLoc;
     @BindView(R.id.tv_inv_quantity)
     TextView tvInvQuantity;
     @BindView(R.id.tv_location_quantity)
-    TextView tvLocQuantity;
+    protected TextView tvLocQuantity;
     @BindView(R.id.et_quantity)
-    EditText etQuantity;
+    protected  EditText etQuantity;
     @BindView(R.id.cb_single)
     CheckBox cbSingle;
     @BindView(R.id.tv_total_quantity)
@@ -91,19 +91,20 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     private List<String> mRefLines;
     ArrayAdapter<String> mRefLineAdapter;
     /*库存地点*/
-    private List<InvEntity> mInvDatas;
+    protected List<InvEntity> mInvDatas;
     private InvAdapter mInvAdapter;
     /*库存信息*/
     private List<InventoryEntity> mInventoryDatas;
     private LocationAdapter mLocationAdapter;
     /*当前操作的明细行号*/
-    private String mSelectedRefLineNum;
+    protected String mSelectedRefLineNum;
     /*缓存的批次*/
-    private String mCachedBatchFlag;
+    protected String mCachedBatchFlag;
     /*缓存的仓位级别的额外字段*/
-    private Map<String, Object> mCachedExtraLocationMap;
+    protected Map<String, Object> mCachedExtraLocationMap;
     /*批次一致性检查*/
     protected boolean isBatchValidate = true;
+    protected boolean isLocationChecked = false;
     /**
      * 处理扫描
      *
@@ -190,6 +191,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
 
         /*库存地点，选择库存地点加载库存数据*/
         RxAdapterView.itemSelections(spSendInv)
+                .filter(a->spSendLoc.isEnabled())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 //注意工厂和库存地点必须使用行里面的
@@ -414,6 +416,17 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     @Override
     public void loadInventoryFail(String message) {
         showMessage(message);
+    }
+
+    @Override
+    public void checkLocationFail(String message) {
+        showMessage(message);
+        isLocationChecked = false;
+    }
+
+    @Override
+    public void checkLocationSuccess(String batchFlag, String location) {
+        isLocationChecked = true;
     }
 
     /**

@@ -3,12 +3,11 @@ package com.richfit.barcodesystemproduct.module.login;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.barcodesystemproduct.crash.CrashLogUtil;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ResultEntity;
@@ -129,7 +128,7 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
     @Override
     public void uploadCrashLogFiles() {
         mView = getView();
-        final File crashLogFileDir = CrashLogUtil.getCrashLogFileDir(BarcodeSystemApplication.getAppContext());
+        final File crashLogFileDir = CrashLogUtil.getCrashLogFileDir(mContext.getApplicationContext());
         ResourceSubscriber<String> subscriber = Flowable.just(crashLogFileDir)
                 .map((Function<File, List<ResultEntity>>) dir -> {
                     final ArrayList<ResultEntity> results = new ArrayList<>();
@@ -137,12 +136,14 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
                         return results;
                     }
 
-                    File[] files = dir.listFiles();
+                    File[] files = dir.listFiles(crashFile -> crashFile != null && crashFile.getName().endsWith(".txt"));
 
                     if (files == null || files.length == 0) {
                         return results;
                     }
                     for (File file : files) {
+                        if (file == null || file.length() == 0)
+                            continue;
                         ResultEntity result = new ResultEntity();
                         result.imagePath = file.getAbsolutePath();
                         result.transFileToServer = "DEBUG";

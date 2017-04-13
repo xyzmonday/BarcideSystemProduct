@@ -257,10 +257,10 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
+    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode) {
         return Flowable.just(bizType)
                 .flatMap(type -> {
-                    ArrayList<BizFragmentConfig> fragmentConfigs = mBasicServiceDao.readBizFragmentConfig(type, refType, fragmentType);
+                    ArrayList<BizFragmentConfig> fragmentConfigs = mBasicServiceDao.readBizFragmentConfig(type, refType, fragmentType,mode);
                     if (fragmentConfigs == null || fragmentConfigs.size() == 0) {
                         return Flowable.error(new Throwable("未获取到配置信息"));
                     }
@@ -326,7 +326,7 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode) {
-       return mBasicServiceDao.saveMenuInfo(menus, loginId, mode);
+        return mBasicServiceDao.saveMenuInfo(menus, loginId, mode);
     }
 
     @Override
@@ -353,7 +353,7 @@ public class LocalRepositoryImp implements ILocalRepository {
 
         return Flowable.just(bizType)
                 .flatMap(type -> Flowable.just(getReferenceInfoInner(refNum, refType, type, moveType, refLineId, userId)))
-                .flatMap(refData -> processReferenceError(refData, "未获取到单据数据"));
+                .flatMap(refData -> processReferenceError(refData, bizType, "未获取到单据数据"));
     }
 
     private ReferenceEntity getReferenceInfoInner(String refNum, String refType, String bizType,
@@ -406,6 +406,12 @@ public class LocalRepositoryImp implements ILocalRepository {
         }
     }
 
+    @Override
+    public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId) {
+        return Flowable.just(loginId)
+                .map(id -> mBasicServiceDao.readMenuInfo(id));
+    }
+
 
     /**
      * 获取单条缓存
@@ -420,7 +426,7 @@ public class LocalRepositoryImp implements ILocalRepository {
         return Flowable.just(bizType)
                 .flatMap(type -> Flowable.just(getTransferInfoInner(recordNum, refCodeId, type,
                         refType, userId, workId, invId, recWorkId, recInvId)))
-                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+                .flatMap(refData -> processReferenceError(refData, bizType, "未获取到缓存"));
     }
 
     private ReferenceEntity getTransferInfoInner(String recordNum, String refCodeId, String businessType,
@@ -479,7 +485,7 @@ public class LocalRepositoryImp implements ILocalRepository {
                 .flatMap(type -> Flowable.just(getTransferInfoSingleInner(refCodeId, refType,
                         type, refLineId, workId, invId, recWorkId, recInvId, materialNum, "", "", refDoc, refDocItem,
                         userId)))
-                .flatMap(refData -> processReferenceError(refData, "未获取到缓存"));
+                .flatMap(refData -> processReferenceError(refData, bizType, "未获取到缓存"));
     }
 
     private ReferenceEntity getTransferInfoSingleInner(String refCodeId, String refType, String bizType, String refLineId, String workId, String invId, String recWorkId, String recInvId, String materialNum,
@@ -542,9 +548,9 @@ public class LocalRepositoryImp implements ILocalRepository {
 
         return Flowable.just(bizType)
                 .flatMap(businessType -> {
-                    boolean isDeleteSuccess = deleteCollectDataSingle(lineDeleteFlag, transId, transLineId,
+                    boolean isDeleteSuccess = deleteCollectDataSingleInner(lineDeleteFlag, transId, transLineId,
                             locationId, refType, businessType, refLineId, userId, position, companyCode);
-                    if (isDeleteSuccess) {
+                    if (!isDeleteSuccess) {
                         return Flowable.error(new Throwable("删除失败"));
                     } else {
                         return Flowable.just("删除成功");
@@ -552,7 +558,7 @@ public class LocalRepositoryImp implements ILocalRepository {
                 });
     }
 
-    private boolean deleteCollectDataSingle(String lineDeleteFlag, String transId, String transLineId, String locationId,
+    private boolean deleteCollectDataSingleInner(String lineDeleteFlag, String transId, String transLineId, String locationId,
                                             String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
         boolean isDeleteSuccess;
         switch (bizType) {
@@ -705,10 +711,21 @@ public class LocalRepositoryImp implements ILocalRepository {
      * @param refData
      * @return
      */
-    protected Flowable<ReferenceEntity> processReferenceError(ReferenceEntity refData, final String errorMsg) {
-        if (refData == null || refData.billDetailList == null || refData.billDetailList.size() == 0) {
-            return Flowable.error(new Throwable(errorMsg));
+    protected Flowable<ReferenceEntity> processReferenceError(ReferenceEntity refData, final String bizType,
+                                                              final String errorMsg) {
+        switch (bizType) {
+            //针对验收处理
+            case "01":
+                if (refData == null || refData.billDetailList == null) {
+                    return Flowable.error(new Throwable(errorMsg));
+                }
+                return Flowable.just(refData);
+
+            default:
+                if (refData == null || refData.billDetailList == null || refData.billDetailList.size() == 0) {
+                    return Flowable.error(new Throwable(errorMsg));
+                }
+                return Flowable.just(refData);
         }
-        return Flowable.just(refData);
     }
 }

@@ -34,8 +34,9 @@ public class WWCComponentPresenterImp extends MainPresenterImp {
                                  String lineNum, int currentPageIndex) {
 
         mView = getView();
+        final int mode = isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
         ResourceSubscriber<MainPagerViewAdapter> subscriber =
-                mRepository.readBizFragmentConfig(bizType, refType, 1)
+                mRepository.readBizFragmentConfig(bizType, refType, 1,mode)
                         .filter(bizFragmentConfigs -> bizFragmentConfigs != null && bizFragmentConfigs.size() > 0)
                         .flatMap(bizFragmentConfigs -> Flowable.fromIterable(bizFragmentConfigs))
                         .map(config -> {

@@ -143,9 +143,6 @@ public abstract class BaseMSNHeaderFragment extends BaseFragment<MSNHeaderPresen
                 .filter(workId -> !TextUtils.isEmpty(workId))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(workId -> mPresenter.getRecInvsByWorkId(workId,getOrgFlag()));
-
-        mPresenter.deleteCollectionData("",mBizType,Global.USER_ID,mCompanyCode);
-
     }
 
     @Override
@@ -168,6 +165,19 @@ public abstract class BaseMSNHeaderFragment extends BaseFragment<MSNHeaderPresen
 
     @Override
     public void readConfigsComplete() {
+        mPresenter.deleteCollectionData("",mBizType,Global.USER_ID,mCompanyCode);
+    }
+
+    @Override
+    public void deleteCacheSuccess(String message) {
+        showMessage(message);
+        //获取发出工厂列表
+        mPresenter.getWorks(getOrgFlag());
+    }
+
+    @Override
+    public void deleteCacheFail(String message) {
+        showMessage(message);
         //获取发出工厂列表
         mPresenter.getWorks(getOrgFlag());
     }
@@ -202,15 +212,6 @@ public abstract class BaseMSNHeaderFragment extends BaseFragment<MSNHeaderPresen
         showMessage(message);
     }
 
-    @Override
-    public void deleteCacheSuccess(String message) {
-        showMessage(message);
-    }
-
-    @Override
-    public void deleteCacheFail(String message) {
-        showMessage(message);
-    }
 
     @Override
     public void _onPause() {

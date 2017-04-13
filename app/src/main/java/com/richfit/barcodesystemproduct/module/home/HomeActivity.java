@@ -37,7 +37,6 @@ import com.richfit.common_lib.dialog.BasePopupWindow;
 import com.richfit.common_lib.dialog.SelectDialog;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 
 import java.util.ArrayList;
@@ -48,12 +47,13 @@ import butterknife.BindView;
 /**
  * 在线模式的功能主页面。该页面作为App的主页面，这里我们设置它的Activity返回栈为
  * SingleTask(栈内复用，只要栈内里面有那么在它之前的所有Activity全部销毁，HomeActivity回调
- * onNewIntent方法)
+ * onNewIntent方法)。
+ * 注意在跳转到Home页面之前，系统需要确定用户选择的模式，如果用户没有选择那么默认选择的是在线模式。
  * <p>
  * Created by monday on 2016/11/7.
  */
 public class HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View,
-        OnItemClickListener, NavigationView.OnNavigationItemSelectedListener,MultiItemTypeAdapter.OnItemClickListener {
+        OnItemClickListener, NavigationView.OnNavigationItemSelectedListener, MultiItemTypeAdapter.OnItemClickListener {
 
     @BindView(R.id.modular_list)
     RecyclerView mRecycleView;
@@ -76,17 +76,10 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     MenuItem preSelectedMenuItem;
 
     private static final int[] MENUS_IMAGES = {
-            R.mipmap.icon_submenu1,
-            R.mipmap.icon_submenu2,
-            R.mipmap.icon_submenu3,
-            R.mipmap.icon_submenu4,
-            R.mipmap.icon_submenu5,
-            R.mipmap.icon_submenu6,
-            R.mipmap.icon_submenu7,
-            R.mipmap.icon_submenu8,
-            R.mipmap.icon_submenu9,
-            R.mipmap.icon_submenu10,
-            R.mipmap.icon_submenu11
+            R.mipmap.icon_submenu1, R.mipmap.icon_submenu2, R.mipmap.icon_submenu3,
+            R.mipmap.icon_submenu4, R.mipmap.icon_submenu5, R.mipmap.icon_submenu6,
+            R.mipmap.icon_submenu7, R.mipmap.icon_submenu8, R.mipmap.icon_submenu9,
+            R.mipmap.icon_submenu10, R.mipmap.icon_submenu11
     };
 
     @Override
@@ -103,6 +96,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     public void initData(Bundle savedInstanceState) {
         setUpToolBar();
         setUpDrawerLayout();
+        //这里开始加载用户菜单，显示的是在跳转Home页面之前用户选择的模式下的二级菜单
         mPresenter.setupModule(Global.LOGIN_ID);
     }
 
@@ -110,12 +104,11 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
      * 设置toolbar
      */
     private void setUpToolBar() {
-        mToolbarTitle.setGravity(Gravity.CENTER);
+        mToolbarTitle.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
         mToolbarTitle.setText("条码系统");
         setSupportActionBar(mToolbar);
         getSupportActionBar().setHomeButtonEnabled(false); //设置返回键可用
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
     }
 
     /**
@@ -123,9 +116,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
      */
     private void setUpDrawerLayout() {
         //设置DrawerLayout最左边的icon（开关指示器）
-        mDrawerListener = new ActionBarDrawerToggle(
-                this, mDrawerLayout, mToolbar, R.string.open, R.string.close
-        );
+        mDrawerListener = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.open, R.string.close);
         mDrawerListener.syncState();
         mDrawerLayout.addDrawerListener(mDrawerListener);
         //设置导航栏NavigationView的点击事件
@@ -147,7 +138,11 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
         //获取NavigationView头布局里面的空间
         View headerView = mNavigationView.getHeaderView(0);
         tvMode = (TextView) headerView.findViewById(R.id.tv_mode);
-        mPresenter.selectMode();
+        //设置菜单的初始状态
+        final int mode = mPresenter.isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
+        mNavigationView.getMenu().getItem(mode).setChecked(true);
+        ColorStateList csl = AppCompatResources.getColorStateList(this, R.color.nav_menu_selector);
+        mNavigationView.setItemTextColor(csl);
     }
 
     /**
@@ -157,8 +152,12 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
      */
     @Override
     public void initModulesSuccess(ArrayList<MenuNode> menuNodes) {
+        if (menuNodes == null || menuNodes.size() == 0) {
+            showMessage("您不具有该模式下的权限");
+            return;
+        }
         if (mAdapter == null) {
-            mAdapter = new ModularAdapter(this, R.layout.item_module,menuNodes);
+            mAdapter = new ModularAdapter(this, R.layout.item_module, menuNodes);
             mRecycleView.setAdapter(mAdapter);
             mAdapter.setOnItemClickListener(this);
         } else {
@@ -208,18 +207,6 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
         return false;
     }
-
-    /**
-     * 设置初始菜单的选中状态
-     * @param mode
-     */
-    @Override
-    public void selectMode(int mode) {
-        mNavigationView.getMenu().getItem(mode).setChecked(true);
-        ColorStateList csl = AppCompatResources.getColorStateList(this,R.color.nav_menu_selector);
-        mNavigationView.setItemTextColor(csl);
-    }
-
 
     /**
      * 创建底部自子菜单功能列表对话框（PopUpWindow）
@@ -392,7 +379,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
      */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if(preSelectedMenuItem != null) {
+        if (preSelectedMenuItem != null) {
             preSelectedMenuItem.setChecked(false);
         }
         item.setChecked(false);
@@ -411,7 +398,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
         // 关闭导航菜单
         mDrawerLayout.closeDrawers();
         preSelectedMenuItem = item;
-        return  super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -423,7 +410,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
             mDrawerLayout.removeDrawerListener(mDrawerListener);
         }
 
-        if(mAdapter != null) {
+        if (mAdapter != null) {
             mAdapter.setOnItemClickListener(null);
         }
         super.onDestroy();

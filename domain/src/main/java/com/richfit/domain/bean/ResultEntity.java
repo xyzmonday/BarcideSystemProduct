@@ -136,4 +136,5 @@ public class ResultEntity {
     public String transLineSplitId;
     public String insId;
     public String unit;
+    public String insLineId;
 }

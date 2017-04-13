@@ -99,13 +99,103 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         db.close();
     }
 
+    /**
+     * 删除验收的整单缓存
+     *
+     * @param refCodeId
+     * @return
+     */
     @Override
     public boolean deleteInspectionByHeadId(String refCodeId) {
-        return false;
+        // 删除头表
+        SQLiteDatabase db = getWritableDB();
+        int iResult = -1;
+        String id = null;
+        //仅仅删除ins_flag = 1的缓存
+        Cursor cursor = db.rawQuery("select id from MTL_INSPECTION_HEADERS where po_id = ? and ins_flag = ?",
+                new String[]{refCodeId, "1"});
+        while (cursor.moveToNext()) {
+            id = cursor.getString(0);
+        }
+        cursor.close();
+        if (TextUtils.isEmpty(id))
+            return false;
+        iResult = db.delete("MTL_INSPECTION_HEADERS", "id = ?", new String[]{id});
+        if (iResult < 0)
+            return false;
+
+        // 删除行表
+        //在删除行表之前将所有的单据行id保存起来用于删除图片
+        ArrayList<String> refLineIds = new ArrayList<>();
+        cursor = db.rawQuery("select po_line_id from MTL_INSPECTION_LINES where inspection_id =?",
+                new String[]{id});
+        while (cursor.moveToNext()) {
+            refLineIds.add(cursor.getString(0));
+        }
+        cursor.close();
+        iResult = db.delete("MTL_INSPECTION_LINES", "inspection_id = ?", new String[]{id});
+        if (iResult < 0)
+            return false;
+
+        // 删除扩展表
+        iResult = db.delete("MTL_INSPECTION_LINES_CUSTOM", "inspection_id = ?", new String[]{id});
+        if (iResult < 0)
+            return false;
+
+        // 删除照片
+        if (refLineIds.size() > 0) {
+            for (String refLineId : refLineIds) {
+                db.delete("MTL_IMAGES", "ref_line_id = ?", new String[]{refLineId});
+            }
+        }
+        db.close();
+        return true;
     }
 
     @Override
     public boolean deleteInspectionByLineId(String refLineId) {
+        SQLiteDatabase db = getWritableDB();
+        String id = null;
+        //缓存抬头表id
+        String insId = null;
+        Cursor cursor = db.rawQuery("select id,inspection_id from MTL_INSPECTION_LINES where po_line_id = ?",
+                new String[]{refLineId});
+        while (cursor.moveToNext()) {
+            id = cursor.getString(0);
+            insId = cursor.getString(1);
+        }
+        cursor.close();
+
+        if (TextUtils.isEmpty(id))
+            return false;
+        int iResult = -1;
+        // 删除行
+        iResult = db.delete("MTL_INSPECTION_LINES", "id = ?", new String[]{id});
+        if (iResult < 0)
+            return false;
+        // 删除扩展表
+        iResult = db.delete("MTL_INSPECTION_LINES_CUSTOM", "inspection_line_id = ?", new String[]{id});
+        if (iResult < 0)
+            return false;
+        // 删除照片
+        db.delete("MTL_IMAGES", "ref_line_id = ?", new String[]{refLineId});
+
+        // 查头里面是否还有其他行 没有其他行的话 把头删除
+        if (!TextUtils.isEmpty(insId)) {
+            int count = -1;
+            cursor = db.rawQuery("select count(*) as count from MTL_INSPECTION_LINES where inspection_id = ?",
+                    new String[]{insId});
+            while (cursor.moveToNext()) {
+                count = cursor.getInt(0);
+            }
+            cursor.close();
+            if (count == 0) {
+                iResult = db.delete("MTL_INSPECTION_HEADERS", "id = ?", new String[]{insId});
+                if (iResult < 0)
+                    return false;
+            }
+        }
+        db.close();
         return false;
     }
 
@@ -135,12 +225,29 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
 
     @Override
     public boolean uploadInspectionDataSingle(ResultEntity param) {
+        boolean customBoolean = false;// 标识是否更新扩展表
+        switch (param.businessType) {
+            case "00":
+                break;
+            case "01":
+                // 青海的验收需要更新扩展表
+                customBoolean = true;
+                break;
+            default:
+                break;
+        }
+
         // 1.头表
         String insId = saveInspectionHeader(param);
         param.insId = insId;
         // 2.行表
         String insLineId = saveInspectionLine(param);
-        return false;
+        param.insLineId = insLineId;
+        if (customBoolean) {
+            // 3.扩展表
+            saveInspectionCustom(param);
+        }
+        return true;
     }
 
     /**
@@ -152,8 +259,8 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         clearStringBuffer();
         SQLiteDatabase db = getWritableDB();
         String insId = null;
-        sb.append("select distinct id from MTL_INSPECTION_HEADERS H where H.po_id = ? ");
-        Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.refCodeId});
+        sb.append("select distinct id from MTL_INSPECTION_HEADERS H where H.po_id = ? and H.ins_flag = ? ");
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.refCodeId, "1"});
 
         while (cursor.moveToNext()) {
             insId = cursor.getString(0);
@@ -168,15 +275,14 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             insId = UiUtil.getUUID();
             cv.put("id", insId);
             cv.put("po_id", param.refCodeId);
-            cv.put("inspection_date", currentDate);
             cv.put("ins_flag", "1");
+            cv.put("inspection_date", currentDate);
             cv.put("workflow_level", "0");
             cv.put("approval_flag", "1");
             cv.put("edit_flag", "N");
             cv.put("print_flag", "N");
             cv.put("status", "Y");
             cv.put("inspection_type", param.inspectionType);
-            cv.put("system_flag", "1");
             cv.put("system_flag", "1");
             cv.put("arrival_date", currentDate);
             //保存成功系统生成的验收单号
@@ -193,6 +299,12 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         return insId;
     }
 
+    /**
+     * 保存验收行
+     *
+     * @param param
+     * @return
+     */
     private String saveInspectionLine(ResultEntity param) {
         String insLineId = null;
         String insId = param.insId;
@@ -217,6 +329,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             cv.put("material_id", param.materialId);
             cv.put("inspection_person", param.userId);
             cv.put("inspection_date", currentDate);
+            cv.put("line_num", param.refLineNum);
             cv.put("inspection_result", param.inspectionResult);
             cv.put("status", "Y");
             cv.put("unit", param.unit);
@@ -238,7 +351,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             }
             db.insert("MTL_INSPECTION_LINES", null, cv);
         } else {
-            sb.append("update MTL_INSPECTION_LINES set created_by = ?,creation_date = ?,inspection_date = ?");
+            sb.append("update MTL_INSPECTION_LINES set inspection_result = ?,created_by = ?,creation_date = ?,inspection_date = ?");
             if ("Y".equalsIgnoreCase(param.modifyFlag)) {
                 // 修改
                 sb.append(",quantity = ?");
@@ -248,7 +361,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                         //青海
                         sb.append(",qualified_quantity = ?");
                         sb.append(" where id = ?");
-                        db.execSQL(sb.toString(), new Object[]{param.userId, currentDate, currentDate,
+                        db.execSQL(sb.toString(), new Object[]{param.inspectionResult, param.userId, currentDate, currentDate,
                                 param.quantity, param.qualifiedQuantity, insLineId});
                         break;
                     case "8200":
@@ -262,9 +375,9 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                     case "20N0":
                     case "20A0":
                         //青海
-                        sb.append(",quantity = quantity + ? and qualified_quantity = qualified_quantity + ?")
+                        sb.append(",quantity = quantity + ? , qualified_quantity = qualified_quantity + ?")
                                 .append(" where id = ?");
-                        db.execSQL(sb.toString(), new Object[]{param.userId, currentDate, currentDate,
+                        db.execSQL(sb.toString(), new Object[]{param.inspectionResult, param.userId, currentDate, currentDate,
                                 param.quantity, param.qualifiedQuantity, insLineId});
                         break;
                     case "8200":
@@ -276,6 +389,38 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         }
         db.close();
         return insLineId;
+    }
+
+    /**
+     * 保存验收扩展表
+     *
+     * @param param
+     */
+    private void saveInspectionCustom(ResultEntity param) {
+        //1. 扩展信息->每次删除 重新插入
+        SQLiteDatabase db = getReadableDB();
+        db.delete("MTL_INSPECTION_LINES_CUSTOM", "inspection_id = ? and inspection_line_id = ?",
+                new String[]{param.insId, param.insLineId});
+        ContentValues cv = new ContentValues();
+        cv.put("id", UiUtil.getUUID());
+        cv.put("inspection_id", param.insId);
+        cv.put("inspection_line_id", param.insLineId);
+        cv.put("random_quantity", param.randomQuantity);
+        cv.put("rust_quantity", param.rustQuantity);
+        cv.put("damaged_quantity", param.damagedQuantity);
+        cv.put("bad_quantity", param.badQuantity);
+        cv.put("other_quantity", param.otherQuantity);
+        cv.put("z_package", param.sapPackage);
+        cv.put("qm_num", param.qmNum);
+        cv.put("certificate", param.certificate);
+        cv.put("instructions", param.instructions);
+        cv.put("qm_certificate", param.qmCertificate);
+        cv.put("claim_num", param.claimNum);
+        cv.put("manufacturer", param.manufacturer);
+        cv.put("inspection_quantity", param.inspectionQuantity);
+        db.insert("MTL_INSPECTION_LINES_CUSTOM", null, cv);
+        cv.clear();
+        db.close();
 
     }
 }

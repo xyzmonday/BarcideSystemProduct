@@ -66,6 +66,46 @@ public class MSCollectPresenterImp extends BasePresenter<IMSCollectView>
     }
 
     @Override
+    public void checkLocation(String queryType, String workId, String invId, String batchFlag,
+                              String location) {
+        mView = getView();
+        if (TextUtils.isEmpty(workId) && mView != null) {
+            mView.checkLocationFail("工厂为空");
+            return;
+        }
+
+        if (TextUtils.isEmpty(invId) && mView != null) {
+            mView.checkLocationFail("库存地点为空");
+            return;
+        }
+
+        ResourceSubscriber<String> subscriber =
+                mRepository.getLocationInfo(queryType, workId, invId,"", location)
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<String>() {
+                            @Override
+                            public void onNext(String s) {
+
+                            }
+
+                            @Override
+                            public void onError(Throwable t) {
+                                if (mView != null) {
+                                    mView.checkLocationFail(t.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                if (mView != null) {
+                                    mView.checkLocationSuccess(batchFlag, location);
+                                }
+                            }
+                        });
+        addSubscriber(subscriber);
+    }
+
+    @Override
     public void getInventoryInfo(String queryType, String workId, String invId, String workCode, String invCode, String storageNum,
                                  String materialNum, String materialId, String location, String batchFlag,
                                  String specialInvFlag, String specialInvNum, String invType, String deviceId) {

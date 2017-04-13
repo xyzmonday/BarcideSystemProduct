@@ -9,6 +9,7 @@ import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.utils.Global;
 
 import javax.inject.Inject;
 
@@ -35,8 +36,9 @@ public class MainPresenterImp extends BasePresenter<MainContract.View>
                                  String lineNum, int currentPageIndex) {
 
         mView = getView();
+        final int mode = isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
         ResourceSubscriber<MainPagerViewAdapter> subscriber =
-                mRepository.readBizFragmentConfig(bizType, refType, 1)
+                mRepository.readBizFragmentConfig(bizType, refType, 1, mode)
                         .filter(bizFragmentConfigs -> bizFragmentConfigs != null && bizFragmentConfigs.size() > 0)
                         .flatMap(bizFragmentConfigs -> Flowable.fromIterable(bizFragmentConfigs))
                         .map(config -> BaseFragment.findFragment(fragmentManager,

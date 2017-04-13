@@ -48,7 +48,8 @@ public interface IMSCollectView extends BaseView {
      */
     void showInvs(ArrayList<InvEntity> list);
 
-
+    void checkLocationFail(String message);
+    void checkLocationSuccess(String batchFlag, String location);
     /**
      * 显示库存
      *
@@ -74,4 +75,5 @@ public interface IMSCollectView extends BaseView {
     void saveCollectedDataSuccess();
 
     void saveCollectedDataFail(String message);
+
 }

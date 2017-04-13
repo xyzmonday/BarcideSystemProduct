@@ -104,14 +104,8 @@ create table IF not exists BASE_MATERIAL_CODE
   material_group    TEXT,
   unit              TEXT,
   status            TEXT,
-  created_by        TEXT,
-  creation_date     TEXT,
-  last_updated_by   TEXT,
-  last_update_date  TEXT,
   old_material_num  TEXT,
-  material_type     TEXT,
-  sap_creation_date TEXT,
-  sap_update_date   TEXT
+  material_type     TEXT
 );
 
 
@@ -237,6 +231,7 @@ create table IF not exists T_FRAGMENT_CONFIGS
     biz_type         TEXT,
     ref_type         TEXT,
     tab_title        TEXT,
+    mode             INTEGER,
     fragment_type    INTEGER,
     class_name       TEXT
 );
@@ -286,10 +281,10 @@ create table MTL_INSPECTION_LINES
 (
   id                     VARCHAR2(32) PRIMARY KEY NOT NULL,
   inspection_id          VARCHAR2(32),
+  po_line_id             VARCHAR2(32),
   line_num               NUMBER(5),
   work_id                VARCHAR2(32),
   inv_id                 VARCHAR2(32),
-  po_line_id             VARCHAR2(32),
   arrival_date           TEXT,
   material_id            VARCHAR2(32),
   unit                   VARCHAR2(32),
@@ -314,7 +309,25 @@ create table MTL_INSPECTION_LINES
   inspection_result      VARCHAR2(10)
 );
 
-
+create table MTL_INSPECTION_LINES_CUSTOM
+(
+  id                  VARCHAR2(32) PRIMARY KEY NOT NULL,
+  inspection_id       VARCHAR2(32),
+  inspection_line_id  VARCHAR2(32),
+  random_quantity     NUMBER(13,3),
+  rust_quantity       NUMBER(13,3),
+  damaged_quantity    NUMBER(13,3),
+  bad_quantity        NUMBER(13,3),
+  other_quantity      NUMBER(13,3),
+  z_package           VARCHAR2(2),
+  qm_num              VARCHAR2(120),
+  certificate         VARCHAR2(1),
+  instructions        VARCHAR2(1),
+  qm_certificate      VARCHAR2(1),
+  claim_num           VARCHAR2(50),
+  manufacturer        VARCHAR2(120),
+  inspection_quantity NUMBER(13,3)
+);
 
 create table IF not exists MTL_PO_HEADERS
 (
@@ -423,7 +436,7 @@ create table IF not exists MTL_TRANSACTION_HEADERS
 (
   id               VARCHAR2(32) PRIMARY KEY NOT NULL,
   trans_num        VARCHAR2(32),
-  voucher_date     DATE,
+  voucher_date     TEXT,
   ref_code_id      VARCHAR2(32),
   ref_type         VARCHAR2(5),
   trans_flag       VARCHAR2(5),
@@ -464,7 +477,7 @@ create table IF not exists  MTL_TRANSACTION_LINES
   trans_id            VARCHAR2(32),
   ref_line_id         VARCHAR2(32),
   ref_line_num        NUMBER(6),
-  line_num            NUMBER(5),
+  line_num            INTEGER,
   work_id             VARCHAR2(32),
   inv_id              VARCHAR2(32),
   rec_work_id         VARCHAR2(32),

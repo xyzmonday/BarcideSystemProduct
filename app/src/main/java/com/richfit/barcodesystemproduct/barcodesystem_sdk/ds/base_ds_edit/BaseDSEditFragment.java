@@ -101,7 +101,7 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
                     //获取缓存
                     mPresenter.getTransferInfoSingle(mRefData.refCodeId, mRefData.refType,
-                            mRefData.bizType, mRefLineId, getString(tvBatchFlag), mSelectedLocation,
+                            mRefData.bizType, mRefLineId, getString(tvBatchFlag), mInventoryDatas.get(position).locationCombine,
                             "", -1, Global.USER_ID);
                 });
     }
@@ -140,7 +140,6 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
         mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);
         mLocationId = bundle.getString(Global.EXTRA_LOCATION_ID_KEY);
 
-
         if (mRefData != null) {
             /*单据数据中的库存地点不一定有，而且用户可以录入新的库存地点，所以只有子节点的库存地点才是正确的*/
             final RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
@@ -159,7 +158,8 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt, false);
             bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap, false);
             //下载库存
-            loadInventoryInfo(lineData.workId, lineData.workCode, invId, invCode, lineData.materialId, "", batchFlag);
+            loadInventoryInfo(lineData.workId, lineData.workCode, invId, invCode,
+                    lineData.materialId, "", batchFlag);
         }
     }
 
@@ -173,8 +173,7 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
      * @param batchFlag
      */
     protected void loadInventoryInfo(String workId, String workCode, String invId, String invCode,
-                                     String materialId, String
-                                             location, String batchFlag) {
+                                     String materialId, String location, String batchFlag) {
         //检查批次，库存地点等字段
         if (TextUtils.isEmpty(workId)) {
             showMessage("工厂为空");
@@ -205,11 +204,12 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             return;
         }
 
-        String locationCombine = null;
+        String locationCombine;
         if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
             locationCombine = mSelectedLocation + mSpecialInvFlag + mSpecialInvNum;
+        } else {
+            locationCombine = mSelectedLocation;
         }
-
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
@@ -219,8 +219,11 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
                 break;
             }
         }
-        if (pos >= 0 && pos < list.size())
+        if (pos >= 0 && pos < list.size()) {
             spLocation.setSelection(pos);
+        } else {
+            spLocation.setSelection(0);
+        }
     }
 
     @Override
@@ -243,8 +246,8 @@ public abstract class BaseDSEditFragment extends BaseFragment<DSEditPresenterImp
             tvLocQuantity.setText("0");
             //匹配每一个缓存
             for (LocationInfoEntity info : locationInfos) {
-                if (location.equalsIgnoreCase(info.location) &&
-                        batchFlag.equalsIgnoreCase(info.batchFlag)) {
+                if (mIsOpenBatchManager ? location.equalsIgnoreCase(info.locationCombine) &&
+                        batchFlag.equalsIgnoreCase(info.batchFlag) : location.equalsIgnoreCase(info.locationCombine)) {
                     tvLocQuantity.setText(info.quantity);
                     break;
                 }

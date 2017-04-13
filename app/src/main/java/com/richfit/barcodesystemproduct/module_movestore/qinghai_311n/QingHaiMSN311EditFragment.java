@@ -13,14 +13,14 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp.M
 public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresenterImp> {
 
     @Override
-    public void initData() {
-        etRecLoc.setEnabled(false);
-        super.initData();
+    public void initInjector() {
+        mFragmentComponent.inject(this);
     }
 
     @Override
-    public void initInjector() {
-        mFragmentComponent.inject(this);
+    public void initData() {
+        etRecLoc.setEnabled(false);
+        super.initData();
     }
 
     @Override

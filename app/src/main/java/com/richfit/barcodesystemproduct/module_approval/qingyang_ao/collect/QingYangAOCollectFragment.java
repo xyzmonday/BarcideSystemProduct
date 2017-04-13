@@ -503,6 +503,7 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
             result.refCodeId = mRefData.refCodeId;
             result.refLineId = lineData.refLineId;
             result.businessType = mRefData.bizType;
+            result.companyCode = Global.companyCode;
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
             result.inspectionType = mRefData.inspectionType;

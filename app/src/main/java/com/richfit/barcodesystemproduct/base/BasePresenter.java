@@ -7,10 +7,10 @@ import android.text.TextUtils;
 
 import com.richfit.common_lib.IInterface.IPresenter;
 import com.richfit.common_lib.basetreerv.RecycleTreeViewHelper;
-import com.richfit.common_lib.rxutils.RxManager;
 import com.richfit.common_lib.rxutils.SimpleRxBus;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.data.repository.Repository;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -47,17 +47,10 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
 
     /*presenter持有View层的实例引用。为了防止内存泄露采用弱应用的形式保存*/
     private Reference<T> mViewRef;
-
     protected Context mContext;
-
     private CompositeDisposable mCompositeDisposable;
-
     @Inject
     protected Repository mRepository;
-
-    @Inject
-    protected RxManager mRxManager;
-
     @Inject
     protected SimpleRxBus mSimpleRxBus;
 
@@ -80,6 +73,10 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
 
     }
 
+    public boolean isLocal() {
+        return mRepository.isLocal();
+    }
+
     //解除view与presenter的绑定
     @Override
     public void detachView() {
@@ -87,7 +84,6 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
             mViewRef.clear();
             mViewRef = null;
         }
-        mRxManager.unRegister();
         unSubscribe();
     }
 
@@ -289,6 +285,7 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
         if (TextUtils.isEmpty(refLineId))
             return Flowable.error(new Throwable("该行的行Id不存在,请检查该单据是否正确"));
         List<RefDetailEntity> list = refData.billDetailList;
+        L.e("refLineId = " + refLineId);
         for (RefDetailEntity entity : list) {
             if (refLineId.equals(entity.refLineId))
                 return Flowable.just(entity);

@@ -4,9 +4,9 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -57,7 +57,7 @@ public class LoadLocalRefDataPresenterImp extends BasePresenter<LoadLocalRefData
         RxSubscriber<ReferenceEntity> subscriber =
                 mRepository.getReference(refNum, refType, bizType, moveType, refLineId, userId)
                         .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
-                        .doOnNext(refData -> mRepository.saveReferenceInfo(refData,bizType,refType))
+                        .doOnNext(refData -> mRepository.saveReferenceInfo(refData, bizType, refType))
                         .compose(TransformerHelper.io2main())
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext, "正在获取单据数据...") {
@@ -102,28 +102,30 @@ public class LoadLocalRefDataPresenterImp extends BasePresenter<LoadLocalRefData
     @Override
     public void readMenuInfo(String loginId, int mode) {
         mView = getView();
-        ResourceSubscriber<ArrayList<MenuNode>> subscriber = mRepository.getMenuInfo(loginId, mode)
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<ArrayList<MenuNode>>() {
-                    @Override
-                    public void onNext(ArrayList<MenuNode> menuNodes) {
-                        if (mView != null) {
-                            mView.readMenuInfoSuccess(menuNodes);
-                        }
-                    }
+        ResourceSubscriber<ArrayList<MenuNode>> subscriber =
+                mRepository.readMenuInfo(loginId)
+                        .filter(list -> list != null && list.size() > 0)
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<ArrayList<MenuNode>>() {
+                            @Override
+                            public void onNext(ArrayList<MenuNode> menuNodes) {
+                                if (mView != null) {
+                                    mView.readMenuInfoSuccess(menuNodes);
+                                }
+                            }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        if (mView != null) {
-                            mView.readMenuInfoFail(t.getMessage());
-                        }
-                    }
+                            @Override
+                            public void onError(Throwable t) {
+                                if (mView != null) {
+                                    mView.readMenuInfoFail(t.getMessage());
+                                }
+                            }
 
-                    @Override
-                    public void onComplete() {
+                            @Override
+                            public void onComplete() {
 
-                    }
-                });
+                            }
+                        });
         addSubscriber(subscriber);
     }
 }

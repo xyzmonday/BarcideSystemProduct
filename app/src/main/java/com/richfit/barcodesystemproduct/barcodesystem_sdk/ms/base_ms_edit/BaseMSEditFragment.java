@@ -105,7 +105,7 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
                     //获取缓存
                     mPresenter.getTransferInfoSingle(mRefData.refCodeId, mRefData.refType,
-                            mRefData.bizType, mRefLineId, getString(tvBatchFlag), mSelectedLocation
+                            mRefData.bizType, mRefLineId, getString(tvBatchFlag),mInventoryDatas.get(position).locationCombine
                             , "", -1, Global.USER_ID);
                 });
     }
@@ -143,6 +143,7 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
         mLocations = bundle.getStringArrayList(Global.EXTRA_LOCATION_LIST_KEY);
         mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);
         mLocationId = bundle.getString(Global.EXTRA_LOCATION_ID_KEY);
+
         if (mRefData != null) {
             /*单据数据中的库存地点不一定有，而且用户可以录入新的库存地点，所以只有子节点的库存地点才是正确的*/
             final RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
@@ -206,11 +207,15 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             spLocation.setSelection(0);
             return;
         }
-        String locationCombine = null;
+
+        String locationCombine;
         if (!TextUtils.isEmpty(mSpecialInvFlag) && !TextUtils.isEmpty(mSpecialInvNum)) {
             locationCombine = mSelectedLocation + mSpecialInvFlag + mSpecialInvNum;
+        } else {
+            locationCombine = mSelectedLocation;
         }
 
+        //系统自动选择用户选中的仓位
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
@@ -220,9 +225,13 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
                 break;
             }
         }
-        if (pos >= 0 && pos < list.size())
+        if (pos >= 0 && pos < list.size()) {
             spLocation.setSelection(pos);
+        } else {
+            spLocation.setSelection(0);
+        }
     }
+
 
     @Override
     public void loadInventoryFail(String message) {
@@ -244,8 +253,8 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             tvLocQuantity.setText("0");
             //匹配每一个缓存
             for (LocationInfoEntity info : locationInfos) {
-                if (location.equalsIgnoreCase(info.location) &&
-                        batchFlag.equalsIgnoreCase(info.batchFlag)) {
+                if (mIsOpenBatchManager ? location.equalsIgnoreCase(info.locationCombine) &&
+                        batchFlag.equalsIgnoreCase(info.batchFlag) : location.equalsIgnoreCase(info.locationCombine)) {
                     tvLocQuantity.setText(info.quantity);
                     break;
                 }
@@ -266,7 +275,7 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             return false;
         }
 
-        if(TextUtils.isEmpty(getString(tvInvQuantity))) {
+        if (TextUtils.isEmpty(getString(tvInvQuantity))) {
             showMessage("请先获取库存");
             return false;
         }

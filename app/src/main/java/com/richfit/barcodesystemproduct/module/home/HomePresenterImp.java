@@ -26,9 +26,10 @@ import io.reactivex.subscribers.ResourceSubscriber;
 public class HomePresenterImp extends BasePresenter<HomeContract.View>
         implements HomeContract.Presenter {
 
-
     HomeContract.View mView;
-    String mMenuRootId;
+    //parentId为0对应的Id;
+    String mOnLineMenuRootId;
+    String mOffLineMenuRootId;
 
     @Override
     protected void onStart() {
@@ -48,8 +49,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
     @Override
     public void setupModule(final String loginId) {
         mView = getView();
-        final int mode = mRepository.isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
-        mMenuRootId = mRepository.isLocal() ? "local_mobile" : "mobile";
+        final int mode = isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
         Disposable subscriber =
                 Flowable.zip(mRepository.getMenuInfo(loginId, Global.ONLINE_MODE)
                                 .flatMap(list -> Flowable.just(wrapperMenuNodes(list, Global.ONLINE_MODE))),
@@ -59,8 +59,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
                         .filter(list -> list != null && list.size() > 0)
                         .map(list -> convertDatas2Nodes(list, mode))
                         .map(list -> mRepository.saveMenuInfo(list, loginId, mode))
-                        .map(list -> getSecondNodesByParentId(list))
-                        //从这里就需要过滤掉不要的节点
+                        .map(list -> getSecondNodesByParentId(list, mode))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new ResourceSubscriber<ArrayList<MenuNode>>() {
 
@@ -94,12 +93,6 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
         setupModule(loginId);
     }
 
-    @Override
-    public void selectMode() {
-        mView = getView();
-        final int mode = mRepository.isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
-        mView.selectMode(mode);
-    }
 
 
     private ArrayList<MenuNode> wrapperMenuNodes(ArrayList<MenuNode> list, int mode) {
@@ -119,16 +112,14 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
             //如果两个菜单都不满足条件，那么返回
             return menus;
         }
-        if ((onLineMenus == null || onLineMenus.size() == 0)) {
-            //如果在线不存在
-            menus.addAll(offLineMenus);
-        }
-        if ((offLineMenus == null || offLineMenus.size() == 0)) {
-            //如果离线不存在
+        if ((onLineMenus != null && onLineMenus.size() > 0)) {
             menus.addAll(onLineMenus);
+            mOnLineMenuRootId = onLineMenus.get(0).getId();
         }
-        menus.addAll(onLineMenus);
-        menus.addAll(offLineMenus);
+        if ((offLineMenus != null || offLineMenus.size() > 0)) {
+            menus.addAll(offLineMenus);
+            mOffLineMenuRootId = offLineMenus.get(0).getId();
+        }
         return menus;
     }
 
@@ -181,6 +172,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
          */
         for (int i = 0; i < datas.size(); i++) {
             MenuNode n = datas.get(i);
+            //这里过滤掉了不是本次模式显示的节点
             if (n.getMode() != mode)
                 continue;
             for (int j = i + 1; j < datas.size(); j++) {
@@ -194,7 +186,13 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
                 }
             }
             //为二级节点生成icon
-            if (!n.getParentId().equals(mMenuRootId))
+            if ((mode == Global.ONLINE_MODE &&
+                    !TextUtils.isEmpty(mOnLineMenuRootId) &&
+                    !n.getParentId().equals(mOnLineMenuRootId)))
+                continue;
+            if ((mode == Global.OFFLINE_MODE &&
+                    !TextUtils.isEmpty(mOffLineMenuRootId) &&
+                    !n.getParentId().equals(mOffLineMenuRootId)))
                 continue;
             n.setIcon(createModuleIcon(n.getFunctionCode()));
         }
@@ -207,10 +205,11 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
      * @param nodes
      * @return
      */
-    private ArrayList<MenuNode> getSecondNodesByParentId(ArrayList<MenuNode> nodes) {
+    private ArrayList<MenuNode> getSecondNodesByParentId(ArrayList<MenuNode> nodes, int mode) {
         ArrayList<MenuNode> menuNodes = new ArrayList<>();
+        final String rootId = mode == Global.ONLINE_MODE ? mOnLineMenuRootId : mOffLineMenuRootId;
         for (MenuNode node : nodes) {
-            if (node.getParentId().equals(mMenuRootId)) {
+            if (node.getParentId().equals(rootId)) {
                 menuNodes.add(node);
             }
         }

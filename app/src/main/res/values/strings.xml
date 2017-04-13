@@ -36,7 +36,7 @@
     <string name="act_return_quantity">应退数量</string>
     <string name="location_quantity">仓位数量</string>
     <string name="return_quantity">实退数量</string>
-    <string name="special_inv_flag">库存标识</string>
+    <string name="special_inv_flag">特殊库存标识</string>
     <string name="act_rec_quantity">应收数量</string>
     <string name="rec_quantity">实收数量</string>
     <string name="total_quantity">累计数量</string>

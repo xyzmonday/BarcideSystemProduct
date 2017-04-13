@@ -34,14 +34,13 @@ public class QingHaiMSN311HeaderFragment extends BaseMSNHeaderFragment {
 
     @Override
     public void initEvent() {
-        /*选择日期*/
+
         etTransferDate.setOnRichEditTouchListener((view, text) ->
                 DateChooseHelper.chooseDateForEditText(mActivity, etTransferDate, Global.GLOBAL_DATE_PATTERN_TYPE1));
-        //发出工厂
+
         RxAdapterView.itemSelections(spSendWork)
                 .filter(position -> position.intValue() > 0)
                 .subscribe(position -> mPresenter.getSendInvsByWorkId(mSendWorks.get(position.intValue()).workId, getOrgFlag()));
-        mPresenter.deleteCollectionData("", mBizType, Global.USER_ID, mCompanyCode);
     }
 
     /**

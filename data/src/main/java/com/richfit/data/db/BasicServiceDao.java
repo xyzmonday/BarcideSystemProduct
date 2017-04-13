@@ -285,6 +285,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             cv.put("biz_type", bizFragmentConfig.bizType);
             cv.put("ref_type", bizFragmentConfig.refType);
             cv.put("tab_title", bizFragmentConfig.tabTitle);
+            cv.put("mode", bizFragmentConfig.mode);
             cv.put("class_name", bizFragmentConfig.className);
             db.insert("T_FRAGMENT_CONFIGS", null, cv);
         }
@@ -411,7 +412,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                 if (isCWFirst) {
                     db.execSQL("delete from " + tableName);
                 }
-                sql.append("INSERT OR REPLACE INTO")
+                sql.append("INSERT OR REPLACE INTO ")
                         .append(tableName)
                         .append(" (id,storage_num,work_id,inv_id,location,sap_update_date)")
                         .append(" VALUES (?,?,?,?,?,?)");
@@ -522,10 +523,11 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                     if (!isCWFirst) {
                         for (int i = start; i < end; i++) {
                             item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
-                            db.execSQL(sql, new Object[]{item.get(Global.ID_KEY), item.get(Global.CODE_KEY),
+                            db.execSQL(sql, new Object[]{item.get(Global.ID_KEY),
+                                    item.get(Global.STORAGENUM_KEY),
                                     CommonUtil.Obj2String(item.get(Global.WORK_ID)),
                                     CommonUtil.Obj2String(item.get(Global.INV_ID)),
-                                    item.get(Global.STORAGENUM_KEY),
+                                    item.get(Global.CODE_KEY),
                                     item.get(Global.SAPUPDATEDATE_KEY)});
                         }
                     } else {
@@ -534,8 +536,10 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                             item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
                             stmt.bindString(1, item.get(Global.ID_KEY).toString());
                             stmt.bindString(2, item.get(Global.STORAGENUM_KEY).toString());
-                            stmt.bindString(3, item.get(Global.CODE_KEY).toString());
-                            stmt.bindString(4, item.get(Global.SAPUPDATEDATE_KEY).toString());
+                            stmt.bindString(3, CommonUtil.Obj2String(item.get(Global.WORK_ID)));
+                            stmt.bindString(4, CommonUtil.Obj2String(item.get(Global.INV_ID)));
+                            stmt.bindString(5, item.get(Global.CODE_KEY).toString());
+                            stmt.bindString(6, item.get(Global.SAPUPDATEDATE_KEY).toString());
                             stmt.execute();
                             stmt.clearBindings();
                         }
@@ -933,45 +937,61 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
      * @return
      */
     @Override
-    public ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
+    public ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType,
+                                                              int fragmentType, int mode) {
         ArrayList<BizFragmentConfig> bizFragmentConfigs = new ArrayList<>();
         if (TextUtils.isEmpty(bizType)) {
             return bizFragmentConfigs;
         }
         SQLiteDatabase db = getWritableDB();
+        String[] selections;
+        ArrayList<String> selectionList = new ArrayList<>();
+        clearStringBuffer();
         Cursor cursor = null;
+        sb.append("select id,fragment_tag,biz_type,ref_type,tab_title,fragment_type,class_name ")
+                .append("from T_FRAGMENT_CONFIGS where biz_type = ? ");
+        selectionList.add(bizType);
         try {
             if (fragmentType < 0) {
+                sb.append(" and fragment_type = -1 ");
                 if (TextUtils.isEmpty(refType)) {
-                    cursor = db.rawQuery("select * from T_FRAGMENT_CONFIGS where biz_type = ? and fragment_type = -1 order by fragment_type",
-                            new String[]{bizType});
+                    sb.append(" and mode = ? ");
+                    selectionList.add(String.valueOf(mode));
                 } else {
-                    cursor = db.rawQuery("select * from T_FRAGMENT_CONFIGS where biz_type = ? and ref_type = ? and fragment_type = -1 order by fragment_type",
-                            new String[]{bizType, refType});
+                    sb.append("and mode = ? and ref_type = ?");
+                    selectionList.add(String.valueOf(mode));
+                    selectionList.add(refType);
                 }
             } else {
+                sb.append(" and fragment_type >= 0 ");
                 if (TextUtils.isEmpty(refType)) {
-                    cursor = db.rawQuery("select * from T_FRAGMENT_CONFIGS where biz_type = ? and fragment_type >= 0 order by fragment_type ",
-                            new String[]{bizType});
+                    sb.append(" and mode = ? ");
+                    selectionList.add(String.valueOf(mode));
                 } else {
-                    cursor = db.rawQuery("select * from T_FRAGMENT_CONFIGS where biz_type = ? and ref_type = ? and fragment_type >= 0 order by fragment_type ",
-                            new String[]{bizType, refType});
+                    sb.append("and mode = ? and ref_type = ?");
+                    selectionList.add(String.valueOf(mode));
+                    selectionList.add(refType);
                 }
             }
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    BizFragmentConfig config = new BizFragmentConfig();
-                    config.id = cursor.getString(0);
-                    config.fragmentTag = cursor.getString(1);
-                    config.bizType = cursor.getString(2);
-                    config.refType = cursor.getString(3);
-                    config.tabTitle = cursor.getString(4);
-                    config.fragmentType = cursor.getInt(5);
-                    config.className = cursor.getString(6);
-                    bizFragmentConfigs.add(config);
-                }
-
+            sb.append(" order by fragment_type");
+            selections = new String[selectionList.size()];
+            selectionList.toArray(selections);
+            cursor = db.rawQuery(sb.toString(), selections);
+            int index;
+            BizFragmentConfig config;
+            while (cursor.moveToNext()) {
+                index = -1;
+                config = new BizFragmentConfig();
+                config.id = cursor.getString(++index);
+                config.fragmentTag = cursor.getString(++index);
+                config.bizType = cursor.getString(++index);
+                config.refType = cursor.getString(++index);
+                config.tabTitle = cursor.getString(++index);
+                config.fragmentType = cursor.getInt(++index);
+                config.className = cursor.getString(++index);
+                bizFragmentConfigs.add(config);
             }
+            clearStringBuffer();
         } catch (Exception e) {
             e.printStackTrace();
             return bizFragmentConfigs;
@@ -1077,7 +1097,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         //先删除历史的菜单
         db.delete("T_HOME_MENUS", "login_id = ?", new String[]{loginId});
         //插入一行
-        ContentValues cv =  new ContentValues();
+        ContentValues cv = new ContentValues();
         for (MenuNode menu : menus) {
             cv.clear();
             cv.put("id", menu.getId());
@@ -1114,7 +1134,61 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         try {
             sb.append("select id,parent_id,biz_type,ref_type,caption,functionCode,tree_level ");
             sb.append(" from T_HOME_MENUS where login_id = ? and mode = ?");
-            cursor = db.rawQuery(sb.toString(), new String[]{loginId,String.valueOf(mode)});
+            cursor = db.rawQuery(sb.toString(), new String[]{loginId, String.valueOf(mode)});
+            clearStringBuffer();
+            MenuNode item;
+            int index;
+            while (cursor.moveToNext()) {
+                item = new MenuNode();
+                index = -1;
+                item.setId(cursor.getString(++index));
+                item.setParentId(cursor.getString(++index));
+                item.setBusinessType(cursor.getString(++index));
+                item.setRefType(cursor.getString(++index));
+                item.setCaption(cursor.getString(++index));
+                item.setFunctionCode(cursor.getString(++index));
+                item.setLevel(cursor.getInt(++index));
+                list.add(item);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+        return list;
+    }
+
+    /**
+     * 读取离线模式下该用户的所有业务类型，注意这里仅仅需要查询的二级菜单l
+     *
+     * @param loginId
+     * @return
+     */
+    @Override
+    public ArrayList<MenuNode> readMenuInfo(String loginId) {
+        ArrayList<MenuNode> list = new ArrayList<>();
+        SQLiteDatabase db = getWritableDB();
+        Cursor cursor = null;
+        clearStringBuffer();
+        try {
+            //1. 查询离线根节点的id
+            String rootId = null;
+            cursor = db.rawQuery("select id from T_HOME_MENUS where parent_id = ? and biz_type = ?", new String[]{
+                    "0", "local_mobile"});
+            while (cursor.moveToNext()) {
+                rootId = cursor.getString(0);
+            }
+            if (TextUtils.isEmpty(rootId)) {
+                return list;
+            }
+
+            sb.append("select id,parent_id,biz_type,ref_type,caption,functionCode,tree_level ");
+            sb.append(" from T_HOME_MENUS where login_id = ? and biz_type != ? and parent_id != ? and mode = ? and ref_type is null");
+            cursor = db.rawQuery(sb.toString(), new String[]{loginId, "local_mobile", rootId, "1"});
             clearStringBuffer();
             MenuNode item;
             int index;

@@ -131,8 +131,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         String[] selections;
 
         //1.获取抬头id是否存在，如果存在则跟新，否者新增一条
-        sb.append("select id from mtl_transaction_headers H where H.biz_type = ? ");
+        sb.append("select id from mtl_transaction_headers H where H.biz_type = ? and trans_flag = ? ");
         selectionsList.add(param.businessType);
+        selectionsList.add("0");
         switch (param.businessType) {
             case "16":// 其他入库-无参考
             case "25":// 其他出库-无参考
@@ -285,7 +286,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("rec_work_id", param.recWorkId);
             cv.put("rec_inv_id", param.recInvId);
             cv.put("rec_inv_id", param.invType);
-            cv.put("rec_batch_flag", param.recBatchFlag);
         }
 
         if ("110".equals(param.businessType)) {
@@ -396,7 +396,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cv.put("special_flag", param.specialInvFlag);
         cv.put("special_num", param.specialInvNum);
         cv.put("ref_line_id", param.refLineId);
-        cv.put("batch_num", !TextUtils.isEmpty(param.batchFlag) ? param.batchFlag : null);
+        cv.put("batch_num", param.batchFlag);
         cv.put("ref_line_num", param.refLineNum);
         cv.put("ref_doc", param.refDoc);
         if (param.refDocItem != null) {
@@ -418,7 +418,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("rec_work_id", param.recWorkId);
             cv.put("rec_inv_id", param.recInvId);
             cv.put("inv_type", param.invType);
-            cv.put("rec_batch_flag", param.recBatchFlag);
+            cv.put("rec_batch_num", param.recBatchFlag);
         }
 
         if (TextUtils.isEmpty(transLineSplitId)) {
@@ -628,6 +628,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         sb.append("select distinct id from MTL_TRANSACTION_HEADERS ");
         sb.append(" where biz_type = ? ");
         selectionList.add(bizType);
+        //注意这里的缓存标识
+        sb.append(" and trans_flag = ?");
+        selectionList.add("0");
         switch (bizType) {
             case "16":// 其他入库-无参考
             case "25":// 其他出库-无参考
@@ -665,6 +668,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cursor.close();
         clearStringBuffer();
 
+        //如果没有数据，那么也默认是删除成功
         if (headerIdList.size() > 0) {
             // 清空所有暂存的数据
             int iResult;
@@ -704,6 +708,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
 
     @Override
     public boolean deleteBusinessDataByLocationId(String locationId, String transId, String transLineId) {
+
         if (TextUtils.isEmpty(locationId)) {
             return false;
         }
@@ -732,7 +737,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             return false;
         }
 
-
         //3. 查询该明细下是否存在子明细 不存在删除
         sb.append("select id from MTL_TRANSACTION_LINES_LOCATION where trans_line_id = ?");
         cursor = db.rawQuery(sb.toString(), new String[]{transLineId});
@@ -756,7 +760,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             // 如果所有的缓存明细行都删除完毕了，那么直接将缓存的抬头也删除
             String lineId = null;
             if (!TextUtils.isEmpty(transId)) {
-                cursor = db.rawQuery("select id from MTL_TRANSACTION_LINES where trans_id = ?", new String[]{transId});
+                cursor = db.rawQuery("select id from MTL_TRANSACTION_LINES where trans_id = ?",
+                        new String[]{transId});
                 while (cursor.moveToNext()) {
                     lineId = cursor.getString(0);
                 }

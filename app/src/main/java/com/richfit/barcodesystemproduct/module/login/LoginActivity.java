@@ -60,7 +60,7 @@ public class LoginActivity extends BaseActivity<LoginPresenterImp> implements Lo
                         etUsername.showDropDown();
                     }
                 });
-
+//
 //        RxView.clicks(btnLogin)
 //                .subscribe(a -> {
 //                    throw new RuntimeException("自定义异常");

@@ -92,27 +92,6 @@
                 android:text="@string/richfit_barcodesystem_login"
                 android:textColor="@android:color/black" />
         </LinearLayout>
-
-        <!--<RelativeLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginLeft="20dp"-->
-            <!--android:layout_marginTop="10dp"-->
-            <!--android:layout_marginRight="20dp"-->
-            <!--android:orientation="horizontal">-->
-
-            <!--<TextView-->
-                <!--android:id="@+id/tv_register"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_alignParentRight="true"-->
-                <!--android:gravity="right|center_vertical"-->
-                <!--android:text="@string/richfit_barcodesystem_new_user"-->
-                <!--android:textColor="@color/colorPrimary"-->
-                <!--android:textSize="15sp" />-->
-
-        <!--</RelativeLayout>-->
-
     </LinearLayout>
 
     <TextView

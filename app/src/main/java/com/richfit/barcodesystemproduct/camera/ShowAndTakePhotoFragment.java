@@ -129,13 +129,6 @@ public class ShowAndTakePhotoFragment extends BaseFragment<ShowAndTakePhotoPrese
         }
         mPresenter.readImagesFromLocal(mRefNum, mRefLineNum, mRefLineId, mTakePhotoType,
                 mImageDir, mBizType, mRefType, isLocal);
-//        if (!TextUtils.isEmpty(mImageDir) && !TextUtils.isEmpty(mRefLineId)) {
-//            mPresenter.readImagesFromLocal(mRefNum, mRefLineNum, mRefLineId, mTakePhotoType,
-//                    mImageDir, mBizType, mRefType, isLocal);
-//        } else if (!TextUtils.isEmpty(mImageDir) && TextUtils.isEmpty(mRefLineId)) {
-//            mPresenter.readImagesFromLocal(mRefNum, mRefLineNum, mRefLineId, mTakePhotoType,
-//                    mImageDir, mBizType, mRefType, isLocal);
-//        }
     }
 
     @Override

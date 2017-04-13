@@ -2,6 +2,7 @@ package com.richfit.data.repository;
 
 import android.support.annotation.NonNull;
 
+import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
@@ -232,13 +233,13 @@ public class Repository implements ILocalRepository, IServerRepository {
                                                             String location, String specialInvFlag, String specialInvNum,
                                                             String invType, String deviceId) {
         return mServerRepository.getInventoryInfo(queryType, workId, invId, workCode, invCode, storageNum, materialNum, materialId, materialGroup,
-                materialDesc, batchFlag, location, specialInvFlag, specialInvNum, invType, deviceId);
+                materialDesc, CommonUtil.toUpperCase(batchFlag), CommonUtil.toUpperCase(location), specialInvFlag, specialInvNum, invType, deviceId);
     }
 
     @Override
     public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
-        return isLocal ? mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, location) :
-                mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, location);
+        return isLocal ? mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location)) :
+                mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location));
     }
 
     @Override
@@ -306,9 +307,9 @@ public class Repository implements ILocalRepository, IServerRepository {
                                                            String workId, String invId, String recWorkId, String recInvId,
                                                            String materialNum, String batchFlag, String location, String refDoc, int refDocItem, String userId) {
         return isLocal ? mLocalRepository.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
-                workId, invId, recWorkId, recInvId, materialNum, batchFlag, location, refDoc, refDocItem, userId)
+                workId, invId, recWorkId, recInvId, materialNum, CommonUtil.toUpperCase(batchFlag), CommonUtil.toUpperCase(location), refDoc, refDocItem, userId)
                 : mServerRepository.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
-                workId, invId, recWorkId, recInvId, materialNum, batchFlag, location, refDoc, refDocItem, userId);
+                workId, invId, recWorkId, recInvId, materialNum, CommonUtil.toUpperCase(batchFlag), CommonUtil.toUpperCase(location), refDoc, refDocItem, userId);
     }
 
 
@@ -337,14 +338,14 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<List<InventoryEntity>> getCheckTransferInfoSingle(String checkId, String materialId, String materialNum, String location, String bizType) {
-        return isLocal ? mLocalRepository.getCheckTransferInfoSingle(checkId, materialId, materialNum, location, bizType)
-                : mServerRepository.getCheckTransferInfoSingle(checkId, materialId, materialNum, location, bizType);
+        return isLocal ? mLocalRepository.getCheckTransferInfoSingle(checkId, materialId, materialNum, CommonUtil.toUpperCase(location), bizType)
+                : mServerRepository.getCheckTransferInfoSingle(checkId, materialId, materialNum, CommonUtil.toUpperCase(location), bizType);
     }
 
     @Override
     public Flowable<ReferenceEntity> getCheckTransferInfo(String checkId, String materialNum, String location, String isPageQuery, int pageNum, int pageSize, String bizType) {
-        return isLocal ? mLocalRepository.getCheckTransferInfo(checkId, materialNum, location, isPageQuery, pageNum, pageSize, bizType)
-                : mServerRepository.getCheckTransferInfo(checkId, materialNum, location, isPageQuery, pageNum, pageSize, bizType);
+        return isLocal ? mLocalRepository.getCheckTransferInfo(checkId, materialNum, CommonUtil.toUpperCase(location), isPageQuery, pageNum, pageSize, bizType)
+                : mServerRepository.getCheckTransferInfo(checkId, materialNum, CommonUtil.toUpperCase(location), isPageQuery, pageNum, pageSize, bizType);
     }
 
     @Override
@@ -411,8 +412,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType) {
-        return mLocalRepository.readBizFragmentConfig(bizType, refType, fragmentType);
+    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode) {
+        return mLocalRepository.readBizFragmentConfig(bizType, refType, fragmentType,mode);
     }
 
     @Override
@@ -459,6 +460,11 @@ public class Repository implements ILocalRepository, IServerRepository {
     @Override
     public void saveReferenceInfo(ReferenceEntity refData, String bizType, String refType) {
         mLocalRepository.saveReferenceInfo(refData, bizType, refType);
+    }
+
+    @Override
+    public Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId) {
+        return mLocalRepository.readMenuInfo(loginId);
     }
 
     @Override

@@ -144,6 +144,7 @@ public class QingYangAOEditFragment extends BaseFragment<ApprovalOtherEditPresen
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
             result.inspectionPerson = Global.USER_ID;
+            result.companyCode = Global.companyCode;
             result.userId = Global.USER_ID;
             result.invId = tvInv.getTag() != null ? tvInv.getTag().toString() : "";
             result.modifyFlag = "Y";

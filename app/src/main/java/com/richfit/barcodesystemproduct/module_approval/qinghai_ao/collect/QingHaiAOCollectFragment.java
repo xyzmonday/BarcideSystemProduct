@@ -329,7 +329,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
         tvOrderQuantity.setText(lineData.orderQuantity);
         //应收数量
         tvActQuantity.setText(lineData.actQuantity);
-
         //默认
         //实收数量
         etQuantity.setText(lineData.actQuantity);
@@ -588,6 +587,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             result.workId = lineData.workId;
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
+            result.refLineNum = lineData.lineNum;
             result.inspectionType = mRefData.inspectionType;
             result.companyCode = Global.companyCode;
             result.inspectionPerson = Global.USER_ID;

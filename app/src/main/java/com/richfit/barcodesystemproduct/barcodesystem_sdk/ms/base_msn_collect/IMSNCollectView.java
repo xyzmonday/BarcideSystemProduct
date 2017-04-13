@@ -43,6 +43,8 @@ public interface IMSNCollectView extends BaseView {
     void saveCollectedDataSuccess();
     void saveCollectedDataFail(String message);
 
+    void checkLocationFail(String message);
+    void checkLocationSuccess(String batchFlag, String location);
     /**
      * 检查ERP仓库号是否一致
      */

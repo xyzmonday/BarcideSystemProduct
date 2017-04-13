@@ -159,7 +159,7 @@ public interface ILocalRepository extends IRepository {
      * @param refType
      * @return
      */
-    Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType);
+    Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode);
 
     /**
      * 验收抬头界面删除该单据的所有缓存图片
@@ -252,5 +252,12 @@ public interface ILocalRepository extends IRepository {
      * @param refType:单据类型
      */
     void saveReferenceInfo(ReferenceEntity refData,String bizType,String refType);
+
+    /**
+     * 读取离线模式中该用户可操作的业务类型列表
+     * @param loginId
+     * @return
+     */
+    Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId);
 
 }

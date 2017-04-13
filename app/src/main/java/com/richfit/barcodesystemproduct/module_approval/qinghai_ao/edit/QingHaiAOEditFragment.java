@@ -310,6 +310,7 @@ public class QingHaiAOEditFragment extends BaseFragment<QingHaiAOEditPresenterIm
             result.refLineId = lineData.refLineId;
             result.materialId = lineData.materialId;
             result.businessType = mRefData.bizType;
+            result.companyCode = Global.companyCode;
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
             result.inspectionType = mRefData.inspectionType;
@@ -337,7 +338,7 @@ public class QingHaiAOEditFragment extends BaseFragment<QingHaiAOEditPresenterIm
             //包装情况
             result.sapPackage = String.valueOf(spSapPackage.getSelectedItemPosition() + 1);
             //质检单号
-            result.qmNum = getString(etQmNum);
+             result.qmNum = getString(etQmNum);
             //索赔单号
             result.claimNum = getString(etClaimNum);
             //合格证

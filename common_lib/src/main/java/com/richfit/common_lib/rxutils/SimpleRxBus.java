@@ -32,11 +32,7 @@ public class SimpleRxBus {
     // 单例RxBus
     public static SimpleRxBus getInstance() {
         if (instance == null) {
-            synchronized (SimpleRxBus.class) {
-                if (instance == null) {
-                    instance = new SimpleRxBus();
-                }
-            }
+            instance = new SimpleRxBus();
         }
         return instance;
     }

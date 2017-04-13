@@ -162,7 +162,7 @@ public interface IBasicServiceDao {
      * @param fragmentType
      * @return
      */
-    ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType);
+    ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode);
 
 
     /**
@@ -197,6 +197,13 @@ public interface IBasicServiceDao {
      * @return
      */
     ArrayList<MenuNode> getMenuInfo(String loginId, int mode);
+
+    /**
+     * 读取该用户离线模式的所有业务类型
+     * @param loginId
+     * @return
+     */
+    ArrayList<MenuNode> readMenuInfo(String loginId);
 
     /**
      * 检查仓位是否存在

@@ -66,17 +66,17 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     @BindView(R.id.tv_send_inv_name)
     protected TextView tvSendInvName;
     @BindView(R.id.sp_send_inv)
-    Spinner spSendInv;
+    protected Spinner spSendInv;
     @BindView(R.id.tv_send_location_name)
     protected TextView tvSendLocName;
     @BindView(R.id.sp_send_location)
     protected Spinner spSendLoc;
     @BindView(R.id.tv_inv_quantity)
-    TextView tvInvQuantity;
+    protected TextView tvInvQuantity;
     @BindView(R.id.tv_location_quantity)
-    TextView tvLocQuantity;
+    protected TextView tvLocQuantity;
     @BindView(R.id.et_quantity)
-    EditText etQuantity;
+    protected EditText etQuantity;
     @BindView(R.id.cb_single)
     protected CheckBox cbSingle;
     @BindView(R.id.et_rec_location)
@@ -110,6 +110,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
 
     /*新增设备Id*/
     protected String mDeviceId;
+    protected boolean isLocationChecked = false;
 
 
     @Override
@@ -197,6 +198,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
 
         //库存地点。选择库存地点获取库存
         RxAdapterView.itemSelections(spSendInv)
+                .filter(a -> spSendLoc.isEnabled())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(position -> {
                     //1. 加载库存
@@ -305,6 +307,17 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         etRecBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag :
                 batchFlag);
         mHistoryDetailList = refData.billDetailList;
+    }
+
+    @Override
+    public void checkLocationFail(String message) {
+        showMessage(message);
+        isLocationChecked = false;
+    }
+
+    @Override
+    public void checkLocationSuccess(String batchFlag, String location) {
+        isLocationChecked = true;
     }
 
     @Override
@@ -595,7 +608,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             return false;
         }
 
-        if(spSendInv.getSelectedItemPosition() <= 0) {
+        if (spSendInv.getSelectedItemPosition() <= 0) {
             showMessage("请先选择发出库位");
             return false;
         }

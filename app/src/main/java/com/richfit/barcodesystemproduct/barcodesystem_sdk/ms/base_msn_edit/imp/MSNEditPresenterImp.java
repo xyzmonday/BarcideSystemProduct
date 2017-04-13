@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
@@ -131,9 +132,16 @@ public class MSNEditPresenterImp extends BasePresenter<IMSNEditView>
     @Override
     public void uploadCollectionDataSingle(ResultEntity result) {
         mView = getView();
+        Flowable<String> flowable;
+        //这里-1表示离线模式
+        if (isLocal()) {
+            flowable = Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, "", result.location),
+                    mRepository.uploadCollectionDataSingle(result));
+        } else {
+            flowable = mRepository.uploadCollectionDataSingle(result);
+        }
         ResourceSubscriber<String> subscriber =
-                mRepository.uploadCollectionDataSingle(result)
-                        .compose(TransformerHelper.io2main())
+                flowable.compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {
                             @Override
                             public void _onNext(String s) {

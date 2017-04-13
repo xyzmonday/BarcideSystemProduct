@@ -7,13 +7,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.barcodesystemproduct.module.main.MainActivity;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.detail.ICNDetailPresenter;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.detail.ICNDetailView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -215,7 +216,6 @@ public class CNDetailPresenterImp extends BasePresenter<ICNDetailView>
         if (MainActivity.class.isInstance(mContext)) {
             MainActivity activity = (MainActivity) mContext;
             activity.showFragmentByPosition(position);
-            mRxManager.post(Global.CLEAR_HEADER_UI, true);
         }
     }
 }

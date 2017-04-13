@@ -5,7 +5,7 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.BizFragmentConfig;
 
 import javax.inject.Inject;
@@ -40,7 +40,8 @@ public class EditPresenterImp extends BasePresenter<IEditContract.View>
             mView.initEditFragmentFail("fragmentType有误");
             return;
         }
-        addSubscriber(mRepository.readBizFragmentConfig(bizType, refType, fragmentType)
+        final int mode = isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
+        addSubscriber(mRepository.readBizFragmentConfig(bizType, refType, fragmentType, mode)
                 .filter(bizFragmentConfigs -> bizFragmentConfigs != null && bizFragmentConfigs.size() > 0)
                 .flatMap(bizFragmentConfigs -> Flowable.fromIterable(bizFragmentConfigs))
                 .take(1)

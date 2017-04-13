@@ -17,6 +17,8 @@ public interface IMSCollectPresenter extends IPresenter<IMSCollectView> {
      */
     void getInvsByWorkId(String workId, int flag);
 
+    void checkLocation(String queryType, String workId, String invId, String batchFlag, String location);
+
     /**
      * 获取库存信息
      *

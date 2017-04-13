@@ -84,12 +84,8 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 item.invId = cursor.getString(++index);
                 item.invCode = cursor.getString(++index);
                 item.invName = cursor.getString(++index);
-                item.refLineId = cursor.getString(++index);
-                final String lineId = cursor.getString(++index);
-                if (!TextUtils.isEmpty(lineId)) {
-                    item.refLineId = lineId;
-                }
                 item.refCodeId = cursor.getString(++index);
+                item.refLineId = cursor.getString(++index);
                 item.lineNum = cursor.getString(++index);
                 item.materialId = cursor.getString(++index);
                 item.materialNum = cursor.getString(++index);
@@ -119,6 +115,96 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                     break;
                 case "01":
                     // 青海的验收功能相关处理
+                    clearStringBuffer();
+                    sb.append("select l.id as trans_line_id,")
+                            .append("l.work_id,l.inv_id,")
+                            .append("l.material_id ,l.unit,")
+                            .append("l.quantity,l.qualified_quantity,")
+                            .append("l.inspection_result,l.remark,")
+                            .append("i.org_code as inv_code,")
+                            .append("i.org_name as inv_name,")
+                            .append("mpl.order_quantity,custom.random_quantity,")
+                            .append("custom.rust_quantity,custom.damaged_quantity,")
+                            .append("custom.bad_quantity,custom.other_quantity,")
+                            .append("custom.z_package,custom.qm_num,custom.certificate,")
+                            .append("custom.instructions,custom.qm_certificate, custom.claim_num,")
+                            .append("custom.manufacturer, custom.inspection_quantity ");
+                    sb.append(" from mtl_inspection_headers h ,mtl_inspection_lines l ")
+                            .append(" left join mtl_inspection_lines_custom custom ")
+                            .append(" on l.id = custom.inspection_line_id")
+                            .append(" left join p_auth_org i")
+                            .append(" on l.inv_id = i.org_id, ")
+                            .append(" mtl_po_lines mpl ");
+                    sb.append(" where h.id = l.inspection_id   and h.ins_flag = '1'")
+                            .append(" and h.po_id = ? and l.po_line_id = ?");
+                    // 逐行赋值验收数据
+                    for (RefDetailEntity d : billDetailList) {
+                        cursor = db.rawQuery(sb.toString(), new String[]{refData.refCodeId, d.refLineId});
+
+                        while (cursor.moveToNext()) {
+                            // 缓存的id
+                            index = -1;
+                            d.transLineId = cursor.getString(++index);
+                            d.workId = cursor.getString(++index);
+                            d.invId = cursor.getString(++index);
+                            d.materialId = cursor.getString(++index);
+                            d.unit = cursor.getString(++index);
+                            // 缓存的应收数量
+                            d.totalQuantity = cursor.getString(++index);
+                            // 缓存的完好数量
+                            d.qualifiedQuantity = cursor.getString(++index);
+                            // 检验结果
+                            d.inspectionResult = cursor.getString(++index);
+                            d.remark = cursor.getString(++index);
+                            d.invCode = cursor.getString(++index);
+                            d.invName = cursor.getString(++index);
+                            d.orderQuantity = cursor.getString(++index);
+                            // 缓存的抽检数量
+                            d.randomQuantity = cursor.getString(++index);
+                            // 缓存的锈蚀数量
+                            d.rustQuantity = cursor.getString(++index);
+                            // 缓存的损坏数量
+                            d.damagedQuantity = cursor.getString(++index);
+                            // 缓存的变质数量
+                            d.badQuantity = cursor.getString(++index);
+                            // 缓存的其他数量
+                            d.otherQuantity = cursor.getString(++index);
+                            // 包装情况
+                            d.sapPackage = cursor.getString(++index);
+                            // 质检单号
+                            d.qmNum = cursor.getString(++index);
+                            // 合格证
+                            d.certificate = cursor.getString(++index);
+                            // 说明书
+                            d.instructions = cursor.getString(++index);
+                            // 质检证书
+                            d.qmCertificate = cursor.getString(++index);
+                            // 索赔单
+                            d.claimNum = cursor.getString(++index);
+                            // 制造商
+                            d.manufacturer = cursor.getString(++index);
+                            // 送检数
+                            d.inspectionQuantity = cursor.getString(++index);
+                        }
+                        cursor.close();
+                    }
+                    // 头缓存
+                    clearStringBuffer();
+                    sb.append("select t.id as trans_id,")
+                            .append(" t.inspection_type,")
+                            .append(" ph.po_num from mtl_inspection_headers t, mtl_po_headers ph ")
+                            .append(" where t.po_id = ph.id and t.po_id = ?  and t.ins_flag = ?");
+                    cursor = db.rawQuery(sb.toString(), new String[]{refData.refCodeId, "1"});
+                    while (cursor.moveToNext()) {
+                        refData.transId = cursor.getString(0);
+                        refData.inspectionType = cursor.getInt(1);
+                    }
+                    cursor.close();
+                    clearStringBuffer();
+                    // 有缓存的话赋值 tempFlag = 'Y'
+                    if (!TextUtils.isEmpty(refData.transId)) {
+                        refData.tempFlag = "Y";
+                    }
                     break;
                 case "38":// UB/STO发出 351
                 case "311":// UB/STO接收 101
@@ -238,7 +324,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         lineSql.append(" and line_num_105 = ?");
                         break;
                     default:
-                        lineSql.append(" and id = ?");
+                        lineSql.append(" and po_line_id = ?");
                         break;
                 }
 
@@ -258,15 +344,8 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                     cursor.close();
                     //注意这里需要将bizType和refType保存到单据数据中
                     if (TextUtils.isEmpty(poLineId)) {
-                        switch (bizType) {
-                            case "13":
-                                //对于105非必检，如果没有历史数据，那么需要自动生成一个主键
-                                poLineId = UiUtil.getUUID();
-                                break;
-                            default:
-                                poLineId = data.refLineId;
-                                break;
-                        }
+                        //这里不管什么业务，只要该行不存在，那么新增一个
+                        poLineId = UiUtil.getUUID();
                         db.execSQL(sb.toString(), new Object[]{poLineId, poId, data.refLineId,
                                 data.lineNum, data.workId, data.invId, data.materialId, data.materialNum,
                                 data.materialDesc, data.materialGroup, data.orderQuantity, data.actQuantity,
@@ -320,7 +399,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
         clearStringBuffer();
         sb.append("select L.work_id,WORG.org_code as work_code,WORG.org_name as work_name,")
                 .append("L.inv_id,IORG.org_code as inv_code,IORG.org_name as inv_name,")
-                .append("L.id,L.po_id,L.po_line_id,L.line_num,L.material_id,")
+                .append("L.po_id,L.po_line_id,L.line_num,L.material_id,")
                 .append("L.material_num,L.material_desc,L.material_group,")
                 .append("L.order_quantity,L.act_quantity,L.qm_flag,L.unit,")
                 .append("L.ref_doc,L.ref_doc_item,L.ins_lot,L.ins_lot_quantity,L.qualified_quantity,")
