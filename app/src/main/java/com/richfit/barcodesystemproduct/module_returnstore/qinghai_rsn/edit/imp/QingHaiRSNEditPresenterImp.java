@@ -3,6 +3,7 @@ package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.imp
 import android.content.Context;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditPresenterImp;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.IQingHaiRSNEditPresenter;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.IQingHaiRSNEditView;
@@ -20,10 +21,9 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2017/3/2.
  */
 
-public class QingHaiRSNEditPresenterImp extends BasePresenter<IQingHaiRSNEditView>
+public class QingHaiRSNEditPresenterImp extends BaseEditPresenterImp<IQingHaiRSNEditView>
         implements IQingHaiRSNEditPresenter {
 
-    IQingHaiRSNEditView mView;
 
     @Inject
     public QingHaiRSNEditPresenterImp(@ContextLife("Activity") Context context) {
@@ -73,49 +73,6 @@ public class QingHaiRSNEditPresenterImp extends BasePresenter<IQingHaiRSNEditVie
                         }
                     }
                 });
-        addSubscriber(subscriber);
-    }
-
-    @Override
-    public void uploadCollectionDataSingle(ResultEntity result) {
-        mView = getView();
-        ResourceSubscriber<String> subscriber =
-                mRepository.uploadCollectionDataSingle(result)
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new RxSubscriber<String>(mContext) {
-                            @Override
-                            public void _onNext(String s) {
-
-                            }
-
-                            @Override
-                            public void _onNetWorkConnectError(String message) {
-                                if (mView != null) {
-                                    mView.networkConnectError(Global.RETRY_SAVE_COLLECTION_DATA_ACTION);
-                                }
-                            }
-
-                            @Override
-                            public void _onCommonError(String message) {
-                                if (mView != null) {
-                                    mView.saveCollectedDataFail(message);
-                                }
-                            }
-
-                            @Override
-                            public void _onServerError(String code, String message) {
-                                if (mView != null) {
-                                    mView.saveCollectedDataFail(message);
-                                }
-                            }
-
-                            @Override
-                            public void _onComplete() {
-                                if (mView != null) {
-                                    mView.saveCollectedDataSuccess();
-                                }
-                            }
-                        });
         addSubscriber(subscriber);
     }
 }

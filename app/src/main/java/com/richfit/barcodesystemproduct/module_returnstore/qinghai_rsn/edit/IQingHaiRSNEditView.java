@@ -1,13 +1,13 @@
 package com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit;
 
-import com.richfit.barcodesystemproduct.base.BaseView;
+import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditView;
 import com.richfit.domain.bean.ReferenceEntity;
 
 /**
  * Created by monday on 2017/3/2.
  */
 
-public interface IQingHaiRSNEditView extends BaseView{
+public interface IQingHaiRSNEditView extends IBaseEditView {
 
     /**
      * 输入物料获取缓存后，刷新界面
@@ -20,10 +20,4 @@ public interface IQingHaiRSNEditView extends BaseView{
     void loadTransferSingleInfoFail(String message);
 
     void loadTransferSingeInfoComplete();
-
-    /**
-     * 保存单条数据
-     */
-    void saveCollectedDataSuccess();
-    void saveCollectedDataFail(String message);
 }

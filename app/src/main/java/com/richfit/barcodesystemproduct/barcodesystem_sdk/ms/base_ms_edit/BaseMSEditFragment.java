@@ -11,6 +11,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit.imp.MSEditPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -33,7 +34,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/2/13.
  */
 
-public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp>
+public abstract class BaseMSEditFragment extends BaseEditFragment<MSEditPresenterImp>
         implements IMSEditView {
 
     @BindView(R.id.tv_ref_line_num)
@@ -362,15 +363,10 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
     }
 
     @Override
-    public void saveCollectedDataSuccess(String message) {
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         tvTotalQuantity.setText(String.valueOf(mTotalQuantity));
         tvLocQuantity.setText(getString(etQuantity));
-        showMessage(message);
-    }
-
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage(message);
     }
 
     @Override

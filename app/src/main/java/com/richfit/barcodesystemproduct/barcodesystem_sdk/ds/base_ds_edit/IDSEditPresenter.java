@@ -1,14 +1,14 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit;
 
 
-import com.richfit.common_lib.IInterface.IPresenter;
+import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditPresenter;
 import com.richfit.domain.bean.ResultEntity;
 
 /**
  * Created by monday on 2016/11/21.
  */
 
-public interface IDSEditPresenter extends IPresenter<IDSEditView> {
+public interface IDSEditPresenter extends IBaseEditPresenter<IDSEditView> {
     /**
      * 获取库存信息
      *
@@ -37,12 +37,5 @@ public interface IDSEditPresenter extends IPresenter<IDSEditView> {
      */
     void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,
                                String batchFlag, String location, String refDoc, int refDocItem, String userId);
-
-    /**
-     * 保存本次采集的数据
-     *
-     * @param result:用户采集的数据(json格式)
-     */
-    void uploadCollectionDataSingle(ResultEntity result);
 
 }

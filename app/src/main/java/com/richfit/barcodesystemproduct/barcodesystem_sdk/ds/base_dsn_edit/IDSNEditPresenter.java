@@ -1,13 +1,12 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_edit;
 
-import com.richfit.common_lib.IInterface.IPresenter;
-import com.richfit.domain.bean.ResultEntity;
+import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditPresenter;
 
 /**
  * Created by monday on 2017/2/27.
  */
 
-public interface IDSNEditPresenter extends IPresenter<IDSNEditView> {
+public interface IDSNEditPresenter extends IBaseEditPresenter<IDSNEditView> {
 
     /**
      * 获取数据采集界面的缓存
@@ -38,11 +37,4 @@ public interface IDSNEditPresenter extends IPresenter<IDSNEditView> {
                           String invCode, String storageNum, String materialNum, String materialId,
                           String location, String batchFlag, String specialInvFlag, String specialInvNum,
                           String invType, String deviceId);
-
-    /**
-     * 保存本次采集的数据
-     *
-     * @param result:用户采集的数据(json格式)
-     */
-    void uploadCollectionDataSingle(ResultEntity result);
 }

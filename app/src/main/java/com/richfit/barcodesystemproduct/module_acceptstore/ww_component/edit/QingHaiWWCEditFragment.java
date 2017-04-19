@@ -6,7 +6,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
@@ -22,7 +22,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/3/13.
  */
 
-public class QingHaiWWCEditFragment extends BaseFragment<QingHaiWWCEditPresenterImp>
+public class QingHaiWWCEditFragment extends BaseEditFragment<QingHaiWWCEditPresenterImp>
         implements QingHaiWWCEditContract.IQingHaiWWCEditView {
 
     @BindView(R.id.tv_material_num)
@@ -179,14 +179,9 @@ public class QingHaiWWCEditFragment extends BaseFragment<QingHaiWWCEditPresenter
 
     @Override
     public void saveEditedDataSuccess(String message) {
-        showMessage("修改成功");
+        super.saveEditedDataSuccess(message);
         tvLocationQuantity.setText(mQuantity);
         tvTotalQuantity.setText(mQuantity);
-    }
-
-    @Override
-    public void saveEditedDataFail(String message) {
-        showMessage("修改失败");
     }
 
     /**

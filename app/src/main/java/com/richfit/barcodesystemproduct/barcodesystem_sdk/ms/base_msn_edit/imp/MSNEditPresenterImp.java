@@ -3,11 +3,11 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp;
 import android.content.Context;
 
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.IMSNEditPresenter;
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.IMSNEditView;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -24,10 +24,8 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2016/11/22.
  */
 
-public class MSNEditPresenterImp extends BasePresenter<IMSNEditView>
+public class MSNEditPresenterImp extends BaseEditPresenterImp<IMSNEditView>
         implements IMSNEditPresenter {
-
-    protected IMSNEditView mView;
 
     @Inject
     public MSNEditPresenterImp(@ContextLife("Activity") Context context) {
@@ -158,23 +156,23 @@ public class MSNEditPresenterImp extends BasePresenter<IMSNEditView>
                             @Override
                             public void _onCommonError(String message) {
                                 if (mView != null) {
-                                    mView.saveCollectedDataFail(message);
+                                    mView.saveEditedDataFail(message);
                                 }
                             }
 
                             @Override
                             public void _onServerError(String code, String message) {
                                 if (mView != null) {
-                                    mView.saveCollectedDataFail(message);
+                                    mView.saveEditedDataFail(message);
                                 }
                             }
 
                             @Override
                             public void _onComplete() {
                                 if (mView != null) {
-                                    mView.saveCollectedDataSuccess();
+                                    mView.saveEditedDataSuccess("修改成功!");
                                 }
-                            }
+                           }
                         });
         addSubscriber(subscriber);
     }

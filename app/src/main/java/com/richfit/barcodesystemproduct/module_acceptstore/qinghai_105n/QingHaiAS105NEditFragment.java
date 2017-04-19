@@ -11,7 +11,6 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.imp.AS
 
 public class QingHaiAS105NEditFragment extends BaseASEditFragment<ASEditPresenterImp> {
 
-
     @Override
     public void initInjector() {
         mFragmentComponent.inject(this);

@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.imp.QingHaiRSNEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
@@ -33,7 +34,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * Created by monday on 2017/3/2.
  */
 
-public class QingHaiRSNEditFragment extends BaseFragment<QingHaiRSNEditPresenterImp>
+public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPresenterImp>
         implements IQingHaiRSNEditView {
 
 
@@ -284,14 +285,9 @@ public class QingHaiRSNEditFragment extends BaseFragment<QingHaiRSNEditPresenter
     }
 
     @Override
-    public void saveCollectedDataSuccess() {
-        showMessage("修改成功");
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         tvLocQuantity.setText(getString(etQuantity));
-    }
-
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage("修改失败");
     }
 
     @Override

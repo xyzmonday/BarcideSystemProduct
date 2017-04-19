@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
+import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -31,7 +32,10 @@ public class UploadPresenterImp extends BasePresenter<UploadContract.View>
     UploadContract.View mView;
     List<ReferenceEntity> mRefDatas;
     HashMap<String, Object> mExtraTransMap;
-    SparseArray<String> mMessageArray;
+    /*物料凭证*/
+    SparseArray<String> mMaterialDocArray;
+    /*显示数据相对于单据数据的偏移量*/
+    SparseArray<Integer> mPositionOffset;
 
     @Inject
     public UploadPresenterImp(@ContextLife("Activity") Context context) {
@@ -42,7 +46,8 @@ public class UploadPresenterImp extends BasePresenter<UploadContract.View>
     public void onStart() {
         mRefDatas = new ArrayList<>();
         mExtraTransMap = new HashMap<>();
-        mMessageArray = new SparseArray<>();
+        mMaterialDocArray = new SparseArray<>();
+        mPositionOffset = new SparseArray<>();
     }
 
     @Override
@@ -82,30 +87,46 @@ public class UploadPresenterImp extends BasePresenter<UploadContract.View>
     public void uploadCollectedDataOffLine() {
         mView = getView();
         mTaskNum = -1;
-        mMessageArray.clear();
+        mMaterialDocArray.clear();
         ResourceSubscriber<String> subscriber = Flowable.fromIterable(mRefDatas)
                 .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
                 .map(refData -> wrapper2Results(refData, false))
                 .flatMap(results -> mRepository.uploadCollectionDataOffline(results))
-                .flatMap(a -> submitData2SAPInner(++mTaskNum))
+                .flatMap(message -> submitData2SAPInner(message))
+                .doOnComplete(() -> mRepository.deleteOfflineDataAfterUploadSuccess("", "", "", ""))
                 .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<String>() {
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在上传离线数据...") {
                     @Override
-                    public void onNext(String message) {
+                    public void _onNext(String transNum) {
                         if (mView != null) {
-                            mView.uploadCollectDataSuccess(mTaskNum, message);
+                            mView.uploadCollectDataSuccess(mTaskNum, mPositionOffset.get(mTaskNum),
+                                    mMaterialDocArray.get(mTaskNum), transNum.length() > 10 ? transNum.substring(transNum.length() - 10) : transNum);
                         }
                     }
 
                     @Override
-                    public void onError(Throwable t) {
+                    public void _onNetWorkConnectError(String message) {
                         if (mView != null) {
-                            mView.uploadCollectDataFail(t.getMessage());
+                            mView.uploadCollectDataFail(message);
                         }
                     }
 
                     @Override
-                    public void onComplete() {
+                    public void _onCommonError(String message) {
+                        if (mView != null) {
+                            mView.uploadCollectDataFail(message);
+                        }
+                    }
+
+                    @Override
+                    public void _onServerError(String code, String message) {
+                        if (mView != null) {
+                            mView.uploadCollectDataFail(message);
+                        }
+                    }
+
+                    @Override
+                    public void _onComplete() {
                         if (mView != null) {
                             mView.uploadCollectDataComplete();
                         }
@@ -114,11 +135,31 @@ public class UploadPresenterImp extends BasePresenter<UploadContract.View>
         addSubscriber(subscriber);
     }
 
-    private Flowable<String> submitData2SAPInner(int taskNum) {
-        if (mRefDatas == null && taskNum < 0 && mTaskNum >= mRefDatas.size()) {
-            return Flowable.empty();
+    @Override
+    public void resetStateAfterUpload() {
+        mRefDatas.clear();
+        mTaskNum = -1;
+        mMaterialDocArray.clear();
+        mExtraTransMap.clear();
+        mPositionOffset.clear();
+    }
+
+    /**
+     * 根据不同的业务进行转储
+     *
+     * @param materialDoc:物料凭证
+     * @return
+     */
+    private Flowable<String> submitData2SAPInner(String materialDoc) {
+        mTaskNum++;
+        if (mRefDatas == null && mTaskNum < 0 && mTaskNum >= mRefDatas.size()) {
+            return Flowable.just("skip");
         }
-        final ReferenceEntity refData = mRefDatas.get(taskNum);
+        if (materialDoc.length() > 10) {
+            mMaterialDocArray.put(mTaskNum, materialDoc.substring(materialDoc.length() - 10));
+        }
+        final ReferenceEntity refData = mRefDatas.get(mTaskNum);
+        mPositionOffset.put(mTaskNum, refData.billDetailList.size());
         final String bizType = refData.bizType;
         final String transId = refData.transId;
         final String refType = refData.refType;
@@ -171,8 +212,12 @@ public class UploadPresenterImp extends BasePresenter<UploadContract.View>
             case "94":// 代管料调拨-HRM
                 break;
         }
-        return mRepository.transferCollectionData(transId, bizType, refType,
-                userId, voucherDate, transToSapFlag, mExtraTransMap);
+        if (TextUtils.isEmpty(transToSapFlag)) {
+            //表示该业务不需要转储
+            return mRepository.setTransFlag(transId);
+        }
+        return mRepository.setTransFlag(transId).zipWith(mRepository.transferCollectionData(transId, bizType, refType,
+                userId, voucherDate, transToSapFlag, mExtraTransMap), (s1, s2) -> s2);
     }
 
     /**
@@ -248,6 +293,8 @@ public class UploadPresenterImp extends BasePresenter<UploadContract.View>
                     result.businessTypeDesc = "采购入库-103";
                     break;
                 case "13":// 采购入库-105(非必检)
+                    result.businessTypeDesc = "采购入库-105(非必检)";
+                    break;
                 case "19":// 委外入库
                 case "19_ZJ":// 委外入库-组件
                 case "110":// 采购入库-105(青海必检)

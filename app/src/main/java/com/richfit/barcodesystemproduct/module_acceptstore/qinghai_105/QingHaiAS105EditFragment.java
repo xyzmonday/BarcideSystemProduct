@@ -136,9 +136,7 @@ public class QingHaiAS105EditFragment extends BaseASEditFragment<ASEditPresenter
             result.projectText = getString(etProjectText);
             //移动原因说明
             result.moveCauseDesc = getString(etMoveCauseDesc);
-
             result.modifyFlag = "Y";
-
             result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
             result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
             result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, lineData.mapExt, mExtraLocationMap);

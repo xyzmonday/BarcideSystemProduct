@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit;
 
 
-import com.richfit.barcodesystemproduct.base.BaseView;
+import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditView;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 
@@ -11,7 +11,7 @@ import java.util.List;
  * Created by monday on 2016/11/21.
  */
 
-public interface IDSEditView extends BaseView {
+public interface IDSEditView extends IBaseEditView {
     /**
      * 显示库存
      * @param list
@@ -27,11 +27,4 @@ public interface IDSEditView extends BaseView {
      */
     void onBindCache(RefDetailEntity cache, String batchFlag, String location);
     void loadCacheFail(String message);
-
-    /**
-     * 保存修改的数据
-     */
-    void saveCollectedDataSuccess(String message);
-    void saveCollectedDataFail(String message);
-
 }

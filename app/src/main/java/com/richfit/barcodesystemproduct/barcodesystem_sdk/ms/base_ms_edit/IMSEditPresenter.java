@@ -1,13 +1,12 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit;
 
-import com.richfit.common_lib.IInterface.IPresenter;
-import com.richfit.domain.bean.ResultEntity;
+import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditPresenter;
 
 /**
  * Created by monday on 2017/2/13.
  */
 
-public interface IMSEditPresenter extends IPresenter<IMSEditView>{
+public interface IMSEditPresenter extends IBaseEditPresenter<IMSEditView> {
 
     /**
      * 获取库存信息
@@ -37,11 +36,4 @@ public interface IMSEditPresenter extends IPresenter<IMSEditView>{
      */
     void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,
                                String batchFlag, String location, String refDoc, int refDocItem, String userId);
-
-    /**
-     * 保存本次采集的数据
-     *
-     * @param result:用户采集的数据(json格式)
-     */
-    void uploadCollectionDataSingle(ResultEntity result);
 }

@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.barcodesystemproduct.module_check.qinghai_blind.edit.imp.BlindEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
@@ -25,7 +25,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2016/12/6.
  */
 
-public class QingHaiBlindEditFragment extends BaseFragment<BlindEditPresenterImp>
+public class QingHaiBlindEditFragment extends BaseEditFragment<BlindEditPresenterImp>
         implements IBlindEditView {
 
     @BindView(R.id.ll_check_location)
@@ -157,16 +157,17 @@ public class QingHaiBlindEditFragment extends BaseFragment<BlindEditPresenterImp
     }
 
     @Override
-    public void saveCheckDataSuccess() {
-        showMessage("修改成功");
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         etCheckQuantity.setText("");
     }
 
     @Override
-    public void saveCheckDataFail(String message) {
-        showMessage("修改失败;" + message);
+    public void saveEditedDataFail(String message) {
+        super.saveEditedDataFail(message);
         etCheckQuantity.setText("");
     }
+
 
     @Override
     public void networkConnectError(String retryAction) {
@@ -175,8 +176,7 @@ public class QingHaiBlindEditFragment extends BaseFragment<BlindEditPresenterImp
 
     @Override
     public void retry(String retryAction) {
-        saveCheckDataSuccess();
-
+        saveCollectedData();
         super.retry(retryAction);
     }
 }

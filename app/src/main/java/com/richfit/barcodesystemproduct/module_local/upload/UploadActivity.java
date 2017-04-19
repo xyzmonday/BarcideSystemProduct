@@ -35,6 +35,7 @@ public class UploadActivity extends BaseActivity<UploadPresenterImp>
 
     List<ResultEntity> mDatas;
     ShowUploadDataAdapter mAdapter;
+    private StickyRecyclerHeadersDecoration mStickHeader;
 
     @Override
     public void initVariables() {
@@ -60,8 +61,8 @@ public class UploadActivity extends BaseActivity<UploadPresenterImp>
         recyclerView.setLayoutManager(lm);
         mAdapter = new ShowUploadDataAdapter(this, R.layout.item_local_data, mDatas);
         recyclerView.setAdapter(mAdapter);
-        final StickyRecyclerHeadersDecoration stickHeader = new StickyRecyclerHeadersDecoration(mAdapter);
-        recyclerView.addItemDecoration(stickHeader);
+        mStickHeader = new StickyRecyclerHeadersDecoration(mAdapter);
+        recyclerView.addItemDecoration(mStickHeader);
         recyclerView.addItemDecoration(new StickyDividerDecoration(this));
     }
 
@@ -104,20 +105,21 @@ public class UploadActivity extends BaseActivity<UploadPresenterImp>
     @Override
     public void uploadCollectDataComplete() {
         showMessage("数据上传成功!!!");
-
+        mAdapter.notifyDataSetChanged();
+        mPresenter.resetStateAfterUpload();
     }
 
     @Override
-    public void uploadCollectDataSuccess(int taskNum, String message) {
-        L.e("taskNum = " + taskNum + "; message = " + message);
+    public void uploadCollectDataSuccess(int taskNum, int offset, String materialDoc, String transNum) {
+        L.e("taskNum = " + taskNum + ";offset = " + offset + "; materialDoc = " + materialDoc + "; transNum = " + transNum);
+        mAdapter.setStickyHeaderData(taskNum, offset, materialDoc, transNum);
+        mStickHeader.invalidateHeaders();
     }
 
     @Override
     public void uploadCollectDataFail(String message) {
         showMessage(message);
     }
-
-
 
     @Override
     protected void onDestroy() {

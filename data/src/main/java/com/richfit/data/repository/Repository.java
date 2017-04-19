@@ -499,6 +499,11 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
+    public Flowable<String> setTransFlag(String transId) {
+        return mLocalRepository.setTransFlag(transId);
+    }
+
+    @Override
     public Flowable<MaterialEntity> getMaterialInfo(String queryType, String materialNum) {
         return isLocal ? mLocalRepository.getMaterialInfo(queryType, materialNum) : mServerRepository.getMaterialInfo(queryType, materialNum);
     }

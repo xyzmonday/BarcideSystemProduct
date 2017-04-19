@@ -1,14 +1,14 @@
 package com.richfit.barcodesystemproduct.module_acceptstore.qingyang_asn.edit;
 
 
-import com.richfit.common_lib.IInterface.IPresenter;
+import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditPresenter;
 import com.richfit.domain.bean.ResultEntity;
 
 /**
  * Created by monday on 2016/12/1.
  */
 
-public interface IASNEditPresenter extends IPresenter<IASNEditView> {
+public interface IASNEditPresenter extends IBaseEditPresenter<IASNEditView> {
 
     /**
      * 获取数据采集界面的缓存
@@ -24,11 +24,4 @@ public interface IASNEditPresenter extends IPresenter<IASNEditView> {
     void getTransferInfoSingle(String bizType, String materialNum, String userId, String workId,
                                String invId, String recWorkId, String recInvId, String batchFlag,
                                String refDoc, int refDocItem);
-
-    /**
-     * 保存本次吸怪的数据
-     *
-     * @param result:用户采集的数据(json格式)
-     */
-    void uploadCollectionDataSingle(ResultEntity result);
 }

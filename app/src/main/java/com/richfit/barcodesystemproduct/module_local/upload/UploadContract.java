@@ -14,7 +14,7 @@ public interface UploadContract {
     interface View extends BaseView {
 
 
-        void uploadCollectDataSuccess(int taskNum, String message);
+        void uploadCollectDataSuccess(int taskNum,int offset, String message,String transNum);
 
         void uploadCollectDataComplete();
 
@@ -32,5 +32,6 @@ public interface UploadContract {
 
         void uploadCollectedDataOffLine();
 
+        void resetStateAfterUpload();
     }
 }

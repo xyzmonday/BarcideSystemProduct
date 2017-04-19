@@ -77,8 +77,8 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
      */
     @Override
     public long getHeaderId(int position) {
-        //这我们给出的是相同单据号的共享同一个stickyHeader
-        char[] chars = mDatas.get(position).refCode.toCharArray();
+        //这我们给出的是相同单据号+业务类型的共享同一个stickyHeader
+        char[] chars = (mDatas.get(position).refCode + mDatas.get(position).businessType).toCharArray();
         long id = 0L;
         for (char c : chars) {
             id += c;
@@ -115,11 +115,20 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         holder.recordNum.setText(item.refCode);
         holder.bizType.setText(item.businessTypeDesc);
         holder.refType.setText(item.refTypeDesc);
+        holder.materialDoc.setText(item.materialDoc);
+        holder.transNum.setText(item.transNum);
     }
 
     @Override
     public int getItemCount() {
         return mDatas.size();
+    }
+
+    public void setStickyHeaderData(int startPos, int offset, String materialDoc, String transNum) {
+        for (int i = startPos * offset; i < offset; i++) {
+            mDatas.get(i).materialDoc = materialDoc;
+            mDatas.get(i).transNum = transNum;
+        }
     }
 
     public static class UploadViewHolder extends RecyclerView.ViewHolder {
@@ -157,12 +166,16 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         TextView recordNum;
         TextView bizType;
         TextView refType;
+        TextView materialDoc;
+        TextView transNum;
 
         public UploadHeaderViewHolder(View itemView) {
             super(itemView);
             recordNum = (TextView) itemView.findViewById(R.id.recordNum);
             bizType = (TextView) itemView.findViewById(R.id.bizType);
             refType = (TextView) itemView.findViewById(R.id.refType);
+            materialDoc = (TextView) itemView.findViewById(R.id.materialDoc);
+            transNum = (TextView) itemView.findViewById(R.id.transNum);
         }
     }
 }

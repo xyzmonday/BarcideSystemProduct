@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qingyang_asn.edit.imp.ASNEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
@@ -33,7 +34,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * Created by monday on 2016/12/1.
  */
 
-public class QingYangASNEditFragment extends BaseFragment<ASNEditPresenterImp>
+public class QingYangASNEditFragment extends BaseEditFragment<ASNEditPresenterImp>
         implements IASNEditView {
 
     @BindView(R.id.tv_material_num)
@@ -123,7 +124,7 @@ public class QingYangASNEditFragment extends BaseFragment<ASNEditPresenterImp>
         //获取缓存信息
         mPresenter.getTransferInfoSingle(mRefData.bizType, materialNum,
                 Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
-                mRefData.recInvId, batchFlag,"",-1);
+                mRefData.recInvId, batchFlag, "", -1);
     }
 
     @Override
@@ -281,14 +282,9 @@ public class QingYangASNEditFragment extends BaseFragment<ASNEditPresenterImp>
     }
 
     @Override
-    public void saveCollectedDataSuccess() {
-        showMessage("修改成功");
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         tvLocQuantity.setText(getString(etQuantity));
-    }
-
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage("修改失败");
     }
 
     @Override
@@ -297,7 +293,7 @@ public class QingYangASNEditFragment extends BaseFragment<ASNEditPresenterImp>
             case Global.RETRY_LOAD_SINGLE_CACHE_ACTION:
                 mPresenter.getTransferInfoSingle(mRefData.bizType, getString(tvMaterialNum),
                         Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,
-                        mRefData.recInvId, getString(tvBatchFlag),"",-1);
+                        mRefData.recInvId, getString(tvBatchFlag), "", -1);
                 break;
             case Global.RETRY_SAVE_COLLECTION_DATA_ACTION:
                 saveCollectedData();

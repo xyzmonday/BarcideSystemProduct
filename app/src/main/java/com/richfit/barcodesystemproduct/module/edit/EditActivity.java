@@ -3,7 +3,6 @@ package com.richfit.barcodesystemproduct.module.edit;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog.Builder;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,25 +69,9 @@ public class EditActivity extends BaseActivity<EditPresenterImp> implements IEdi
 
     @OnClick(R.id.floating_button)
     public void onClick(View v) {
-        //注意这里由于子菜单的code都是从0开始的，所以拍照需要特别设置
-        showWarningDialog("您真的需要修改数据吗?点击确定将完成修改.");
-    }
-
-    /**
-     * 显示提示信息
-     *
-     * @param message:提示信息
-     */
-    private void showWarningDialog(String message) {
-        Builder builder = new Builder(this);
-        builder.setTitle("提示");
-        builder.setMessage(message);
-        builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
-        builder.setPositiveButton("确定", (dialog, which) -> {
-            if (mFragment != null)
-                mFragment.saveCollectedData();
-        });
-        builder.show();
+        if (mFragment != null) {
+            mFragment.showOperationMenuOnCollection(mCompanyCode);
+        }
     }
 
     @Override
@@ -119,5 +102,11 @@ public class EditActivity extends BaseActivity<EditPresenterImp> implements IEdi
     @Override
     public void initEditFragmentFail(String message) {
         showMessage("初始化修改界面错误" + message);
+    }
+
+    @Override
+    public void onDestroy() {
+        mFragment = null;
+        super.onDestroy();
     }
 }

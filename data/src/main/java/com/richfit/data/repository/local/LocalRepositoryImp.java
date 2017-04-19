@@ -460,7 +460,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     public Flowable<List<ReferenceEntity>> readTransferedData() {
         return Flowable.just(1)
                 .flatMap(a -> {
-                    List<ReferenceEntity> datas = mBusinessServiceDao.readTransfredData();
+                    List<ReferenceEntity> datas = mBusinessServiceDao.readTransferedData();
                     if (datas.size() == 0) {
                         return Flowable.error(new Throwable("您还未采集过数据"));
                     }
@@ -471,6 +471,21 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
         mBusinessServiceDao.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
+    }
+
+    @Override
+    public Flowable<String> setTransFlag(String transId) {
+        if (TextUtils.isEmpty(transId)) {
+            return Flowable.error(new Throwable("修改失败"));
+        }
+        return Flowable.just(transId)
+                .flatMap(id -> {
+                    boolean flag = mBusinessServiceDao.setTransFlag(id);
+                    if (flag) {
+                        return Flowable.just("修改成功");
+                    }
+                    return Flowable.error(new Throwable("修改失败"));
+                });
     }
 
 

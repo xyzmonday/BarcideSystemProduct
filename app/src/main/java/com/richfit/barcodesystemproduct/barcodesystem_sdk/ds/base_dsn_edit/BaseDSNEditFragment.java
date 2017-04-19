@@ -12,6 +12,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_edit.imp.DSNEditPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -35,7 +36,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/2/27.
  */
 
-public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterImp>
+public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresenterImp>
         implements IDSNEditView {
 
     @BindView(R.id.tv_material_num)
@@ -382,14 +383,9 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
     }
 
     @Override
-    public void saveCollectedDataSuccess() {
-        showMessage("修改成功");
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         tvLocQuantity.setText(getString(etQuantity));
-    }
-
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage(message);
     }
 
     @Override

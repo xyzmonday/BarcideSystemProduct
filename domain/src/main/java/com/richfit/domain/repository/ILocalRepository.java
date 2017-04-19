@@ -267,4 +267,10 @@ public interface ILocalRepository extends IRepository {
      * @param transId:缓存抬头id
      */
     void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId);
+
+    /**
+     * 01成功后修改抬头的缓存标识
+     * @param transId
+     */
+    Flowable<String> setTransFlag(String transId);
 }

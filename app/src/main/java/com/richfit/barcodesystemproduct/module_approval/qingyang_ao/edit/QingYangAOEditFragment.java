@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.barcodesystemproduct.module_approval.qingyang_ao.edit.imp.ApprovalOtherEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
@@ -28,7 +29,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * Created by monday on 2016/11/29.
  */
 
-public class QingYangAOEditFragment extends BaseFragment<ApprovalOtherEditPresenterImp>
+public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPresenterImp>
         implements IApprovalOtherEditView {
 
     @BindView(R.id.tv_ref_line_num)
@@ -156,17 +157,13 @@ public class QingYangAOEditFragment extends BaseFragment<ApprovalOtherEditPresen
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
-                .subscribe(result -> mPresenter.uploadInspectionDataSingle(result));
+                .subscribe(result -> mPresenter.uploadCollectionDataSingle(result));
     }
 
-
     @Override
-    public void saveCollectedDataSuccess() {
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         showMessage("修改成功");
     }
 
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage(message);
-    }
 }

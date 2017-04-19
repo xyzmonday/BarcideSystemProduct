@@ -146,4 +146,6 @@ public class ResultEntity {
     public String materialGroup;
     public String businessTypeDesc;
     public String refTypeDesc;
+    public String materialDoc;
+    public String transNum;
 }

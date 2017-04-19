@@ -51,7 +51,9 @@ public interface IBusinessService {
      */
     boolean deleteBusinessDataByLocationId(String locationId, String transId, String transLineId);
 
-    List<ReferenceEntity> readTransfredData();
+    List<ReferenceEntity> readTransferedData();
 
     void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId);
+
+    boolean setTransFlag(String transId);
 }

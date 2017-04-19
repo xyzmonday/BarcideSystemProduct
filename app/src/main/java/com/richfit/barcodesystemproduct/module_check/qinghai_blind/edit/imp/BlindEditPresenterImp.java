@@ -2,12 +2,12 @@ package com.richfit.barcodesystemproduct.module_check.qinghai_blind.edit.imp;
 
 import android.content.Context;
 
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditPresenterImp;
 import com.richfit.barcodesystemproduct.module_check.qinghai_blind.edit.IBlindEditPresenter;
 import com.richfit.barcodesystemproduct.module_check.qinghai_blind.edit.IBlindEditView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.ResultEntity;
 
@@ -17,10 +17,8 @@ import javax.inject.Inject;
  * Created by monday on 2016/12/6.
  */
 
-public class BlindEditPresenterImp extends BasePresenter<IBlindEditView>
+public class BlindEditPresenterImp extends BaseEditPresenterImp<IBlindEditView>
         implements IBlindEditPresenter {
-
-    IBlindEditView mView;
 
     @Inject
     public BlindEditPresenterImp(@ContextLife("Activity") Context context) {
@@ -49,21 +47,21 @@ public class BlindEditPresenterImp extends BasePresenter<IBlindEditView>
                     @Override
                     public void _onCommonError(String message) {
                         if (mView != null) {
-                            mView.saveCheckDataFail(message);
+                            mView.saveEditedDataFail(message);
                         }
                     }
 
                     @Override
                     public void _onServerError(String code, String message) {
                         if (mView != null) {
-                            mView.saveCheckDataFail(message);
+                            mView.saveEditedDataFail(message);
                         }
                     }
 
                     @Override
                     public void _onComplete() {
                         if (mView != null) {
-                            mView.saveCheckDataSuccess();
+                            mView.saveEditedDataSuccess("修改成功!");
                         }
                     }
                 }));

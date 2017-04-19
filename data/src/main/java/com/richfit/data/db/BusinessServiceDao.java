@@ -261,7 +261,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             selectionList.add(param.refDoc);
             if (param.refDocItem != null) {
                 sb.append("  and L.ref_doc_item = ? ");
-                //注意list不能给出
                 selectionList.add(String.valueOf(param.refDocItem));
             }
         }
@@ -832,7 +831,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @return
      */
     @Override
-    public List<ReferenceEntity> readTransfredData() {
+    public List<ReferenceEntity> readTransferedData() {
         SQLiteDatabase db = getWritableDB();
         ArrayList<ReferenceEntity> datas = new ArrayList<>();
 
@@ -841,13 +840,13 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         sql.append("select id,voucher_date,ref_code_id,ref_code,biz_type,ref_type,move_type,inv_type,")
                 .append("supplier_id,supplier_code,created_by ")
                 .append("from MTL_TRANSACTION_HEADERS order by creation_date");
-        ReferenceEntity header = new ReferenceEntity();
-        ;
+        ReferenceEntity header = null;
         int index;
         //1. 读取抬头的信息
         Cursor cursor = db.rawQuery(sql.toString(), null);
         while (cursor.moveToNext()) {
             index = -1;
+            header = new ReferenceEntity();
             header.transId = cursor.getString(++index);
             header.voucherDate = cursor.getString(++index);
             header.refCodeId = cursor.getString(++index);
@@ -889,9 +888,10 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
 
 
         for (int i = 0, size = datas.size(); i < size; i++) {
-            ArrayList<RefDetailEntity> details = new ArrayList<>();
+            final ReferenceEntity refData = datas.get(i);
+            refData.billDetailList = new ArrayList<>();
             RefDetailEntity detail = null;
-            cursor = db.rawQuery(sb.toString(), new String[]{datas.get(i).transId});
+            cursor = db.rawQuery(sb.toString(), new String[]{refData.transId});
             while (cursor.moveToNext()) {
                 detail = new RefDetailEntity();
                 index = -1;
@@ -927,9 +927,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 detail.workName = cursor.getString(++index);
                 detail.invCode = cursor.getString(++index);
                 detail.invName = cursor.getString(++index);
-                details.add(detail);
+                refData.billDetailList.add(detail);
             }
-            datas.get(i).billDetailList = details;
             cursor.close();
         }
         //进行数据转换，将子节点转换为Item
@@ -943,34 +942,29 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @param transId
      */
     @Override
-    public void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId) {
-        if (TextUtils.isEmpty(transId)) {
-            return;
-        }
+    public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
+
         SQLiteDatabase db = getWritableDB();
 
-        //获取refCodeId用于删除单据
-        String refCodeId = null;
-        Cursor cursor = db.rawQuery("select ref_code_id from MTL_TRANSACTION_HEADERS where id = ?",
-                new String[]{transId});
-
-        while (cursor.moveToNext()) {
-            refCodeId = cursor.getString(0);
-        }
-        cursor.close();
-        if (TextUtils.isEmpty(refCodeId)) {
-            return;
-        }
-
         //删除缓存
-        db.delete("MTL_TRANSACTION_HEADERS", "id = ?", new String[]{transId});
-        db.delete("MTL_TRANSACTION_LINES", "trans_id = ?", new String[]{transId});
-        db.delete("MTL_TRANSACTION_LINES_LOCATION", "trans_id = ?", new String[]{transId});
-        db.delete("MTL_TRANSACTION_LINES_SPLIT", "trans_id= ?", new String[]{transId});
+        db.delete("MTL_TRANSACTION_HEADERS", null, null);
+        db.delete("MTL_TRANSACTION_LINES", null, null);
+        db.delete("MTL_TRANSACTION_LINES_LOCATION", null, null);
+        db.delete("MTL_TRANSACTION_LINES_SPLIT", null, null);
 
         //删除单据
-
-
+        db.delete("MTL_PO_HEADERS", null, null);
+        db.delete("MTL_PO_LINES", null, null);
         db.close();
+    }
+
+    @Override
+    public boolean setTransFlag(String transId) {
+        SQLiteDatabase db = getWritableDB();
+        ContentValues cv = new ContentValues();
+        cv.put("trans_flag", "3");
+        int iResult = db.update("MTL_TRANSACTION_HEADERS", cv, "id = ?", new String[]{transId});
+        db.close();
+        return iResult > 0;
     }
 }

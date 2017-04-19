@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.edit.imp.QingHaiAOEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
@@ -34,7 +35,7 @@ import static com.richfit.barcodesystemproduct.module_approval.qinghai_ao.collec
  * Created by monday on 2017/3/1.
  */
 
-public class QingHaiAOEditFragment extends BaseFragment<QingHaiAOEditPresenterImp>
+public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresenterImp>
         implements IQingHaiAOEditView {
 
     @BindView(R.id.tv_order_quantity)
@@ -338,7 +339,7 @@ public class QingHaiAOEditFragment extends BaseFragment<QingHaiAOEditPresenterIm
             //包装情况
             result.sapPackage = String.valueOf(spSapPackage.getSelectedItemPosition() + 1);
             //质检单号
-             result.qmNum = getString(etQmNum);
+            result.qmNum = getString(etQmNum);
             //索赔单号
             result.claimNum = getString(etClaimNum);
             //合格证
@@ -356,18 +357,12 @@ public class QingHaiAOEditFragment extends BaseFragment<QingHaiAOEditPresenterIm
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
-                .subscribe(result -> mPresenter.uploadInspectionDataSingle(result));
+                .subscribe(result -> mPresenter.uploadCollectionDataSingle(result));
     }
 
     @Override
-    public void saveCollectedDataSuccess() {
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         showMessage("数据修改成功");
     }
-
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage(message);
-    }
-
-
 }

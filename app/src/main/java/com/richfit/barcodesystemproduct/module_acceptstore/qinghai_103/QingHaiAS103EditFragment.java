@@ -11,7 +11,6 @@ import com.richfit.barcodesystemproduct.module_acceptstore.qinghai_103.imp.QingH
 
 public class QingHaiAS103EditFragment extends BaseASEditFragment<QingHaiAS103EditPresenterImp> {
 
-
     @Override
     public void initInjector() {
         mFragmentComponent.inject(this);
@@ -24,5 +23,4 @@ public class QingHaiAS103EditFragment extends BaseASEditFragment<QingHaiAS103Edi
         llLocationQuantity.setVisibility(View.GONE);
         super.initView();
     }
-
 }

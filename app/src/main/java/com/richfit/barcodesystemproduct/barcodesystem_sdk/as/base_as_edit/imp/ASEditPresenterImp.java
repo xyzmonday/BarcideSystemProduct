@@ -3,12 +3,12 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.IASEditPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_edit.IASEditView;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.ResultEntity;
 
@@ -22,10 +22,8 @@ import io.reactivex.subscribers.ResourceSubscriber;
  * Created by monday on 2016/11/19.
  */
 
-public class ASEditPresenterImp extends BasePresenter<IASEditView>
+public class ASEditPresenterImp extends BaseEditPresenterImp<IASEditView>
         implements IASEditPresenter {
-
-    protected IASEditView mView;
 
     @Inject
     public ASEditPresenterImp(@ContextLife("Activity") Context context) {

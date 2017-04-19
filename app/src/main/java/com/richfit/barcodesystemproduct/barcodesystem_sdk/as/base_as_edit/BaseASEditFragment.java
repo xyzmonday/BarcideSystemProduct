@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -28,7 +29,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2016/11/19.
  */
 
-public abstract class BaseASEditFragment<P extends IASEditPresenter> extends BaseFragment<P>
+public abstract class BaseASEditFragment<P extends IASEditPresenter> extends BaseEditFragment<P>
         implements IASEditView {
 
     @BindView(R.id.tv_ref_line_num)
@@ -230,18 +231,12 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
                 .subscribe(result -> mPresenter.uploadCollectionDataSingle(result));
     }
 
-
     @Override
     public void saveEditedDataSuccess(String message) {
-        showMessage("修改成功");
+        super.saveEditedDataSuccess(message);
         if (!isNLocation)
             tvLocationQuantity.setText(mQuantity);
         tvTotalQuantity.setText(String.valueOf(mTotalQuantity));
-    }
-
-    @Override
-    public void saveEditedDataFail(String message) {
-        showMessage("修改失败;" + message);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit;
 
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -11,6 +10,7 @@ import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -34,7 +34,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2016/11/22.
  */
 
-public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends BaseFragment<P>
+public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends BaseEditFragment<P>
         implements IMSNEditView {
 
     @BindView(R.id.tv_material_num)
@@ -79,6 +79,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     protected String mSpecialInvFlag;
     protected String mSpecialInvNum;
     protected boolean isWareHouseSame;
+
 
     @Override
     protected int getContentId() {
@@ -383,19 +384,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     }
 
     @Override
-    public void showOperationMenuOnCollection(final String companyCode) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setTitle("提示");
-        builder.setMessage("您真的需要保存数据吗?点击确定将保存数据.");
-        builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
-        builder.setPositiveButton("确定", (dialog, which) -> {
-            dialog.dismiss();
-            saveCollectedData();
-        });
-        builder.show();
-    }
-
-    @Override
     public void saveCollectedData() {
         if (!checkCollectedDataBeforeSave()) {
             return;
@@ -436,15 +424,12 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     }
 
     @Override
-    public void saveCollectedDataSuccess() {
-        showMessage("修改成功");
+    public void saveEditedDataSuccess(String message) {
+        super.saveEditedDataSuccess(message);
         tvLocQuantity.setText(getString(etQuantity));
     }
 
-    @Override
-    public void saveCollectedDataFail(String message) {
-        showMessage(message);
-    }
+
 
     @Override
     public void retry(String retryAction) {

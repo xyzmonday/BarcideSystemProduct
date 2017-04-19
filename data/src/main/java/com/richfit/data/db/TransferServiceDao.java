@@ -153,6 +153,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item.returnQuantity = cursor.getString(++index);
             item.refDoc = cursor.getString(++index);
             item.refDocItem = cursor.getInt(++index);
+            if(!TextUtils.isEmpty(item.refDoc) && item.refDocItem != null) {
+                item.lineNum105 = item.refDoc + "_" + String.valueOf(item.refDocItem);
+            }
             billDetailList.add(item);
         }
         clearStringBuffer();
@@ -290,7 +293,6 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 .append("T.QUANTITY,T.INS_LOT,T.DECISION_CODE,T.PROJECT_TEXT,")
                 .append("T.MOVE_CAUSE,T.MOVE_CAUSE_DESC,")
                 .append("T.RETURN_QUANTITY,T.REF_DOC,T.REF_DOC_ITEM ")
-
                 .append("FROM MTL_TRANSACTION_LINES T ");
 
         sb.append(" LEFT JOIN P_AUTH_ORG RW ON T.REC_WORK_ID = RW.ORG_ID ")
@@ -334,6 +336,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item.returnQuantity = cursor.getString(++index);
             item.refDoc = cursor.getString(++index);
             item.refDocItem = cursor.getInt(++index);
+            if(!TextUtils.isEmpty(item.refDoc) && item.refDocItem != null) {
+                item.lineNum105 = item.refDoc + "_" + String.valueOf(item.refDocItem);
+            }
             billDetailList.add(item);
         }
         cursor.close();
@@ -698,6 +703,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 item.returnQuantity = cursor.getString(++index);
                 item.refDoc = cursor.getString(++index);
                 item.refDocItem = cursor.getInt(++index);
+                if(!TextUtils.isEmpty(item.refDoc) && item.refDocItem != null) {
+                    item.lineNum105 = item.refDoc + "_" + String.valueOf(item.refDocItem);
+                }
                 billDetailList.add(item);
             }
             clearStringBuffer();
@@ -940,6 +948,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item.returnQuantity = cursor.getString(++index);
             item.refDoc = cursor.getString(++index);
             item.refDocItem = cursor.getInt(++index);
+            if(!TextUtils.isEmpty(item.refDoc) && item.refDocItem != null) {
+                item.lineNum105 = item.refDoc + "_" + String.valueOf(item.refDocItem);
+            }
             billDetailList.add(item);
         }
         cursor.close();

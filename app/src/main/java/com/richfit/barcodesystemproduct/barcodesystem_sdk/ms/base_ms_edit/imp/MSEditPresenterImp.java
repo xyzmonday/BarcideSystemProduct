@@ -3,31 +3,26 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit.IMSEditPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit.IMSEditView;
+import com.richfit.barcodesystemproduct.base.base_edit.BaseEditPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.ResultEntity;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.subscribers.ResourceSubscriber;
-
 /**
  * Created by monday on 2017/2/13.
  */
 
-public class MSEditPresenterImp extends BasePresenter<IMSEditView>
+public class MSEditPresenterImp extends BaseEditPresenterImp<IMSEditView>
         implements IMSEditPresenter {
-
-    IMSEditView mView;
 
     @Inject
     public MSEditPresenterImp(@ContextLife("Activity") Context context) {
@@ -140,49 +135,6 @@ public class MSEditPresenterImp extends BasePresenter<IMSEditView>
 
                             @Override
                             public void _onComplete() {
-                            }
-                        });
-        addSubscriber(subscriber);
-    }
-
-    @Override
-    public void uploadCollectionDataSingle(ResultEntity result) {
-        mView = getView();
-        ResourceSubscriber<String> subscriber =
-                mRepository.uploadCollectionDataSingle(result)
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new RxSubscriber<String>(mContext) {
-                            @Override
-                            public void _onNext(String s) {
-
-                            }
-
-                            @Override
-                            public void _onNetWorkConnectError(String message) {
-                                if (mView != null) {
-                                    mView.networkConnectError(Global.RETRY_SAVE_COLLECTION_DATA_ACTION);
-                                }
-                            }
-
-                            @Override
-                            public void _onCommonError(String message) {
-                                if (mView != null) {
-                                    mView.saveCollectedDataFail(message);
-                                }
-                            }
-
-                            @Override
-                            public void _onServerError(String code, String message) {
-                                if (mView != null) {
-                                    mView.saveCollectedDataFail(message);
-                                }
-                            }
-
-                            @Override
-                            public void _onComplete() {
-                                if (mView != null) {
-                                    mView.saveCollectedDataSuccess("修改成功");
-                                }
                             }
                         });
         addSubscriber(subscriber);
