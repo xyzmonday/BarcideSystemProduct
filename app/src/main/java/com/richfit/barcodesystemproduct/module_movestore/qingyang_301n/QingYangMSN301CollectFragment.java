@@ -68,7 +68,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
                 saveCollectedData();
             } else {
                 etMaterialNum.setText(materialNum);
-//                etSendBatchFlag.setText(batchFlag);
+//                etSendBatchFlag.setText(BATCH_FLAG);
                 loadMaterialInfo(materialNum, "");
             }
         } else if (list != null && list.length == 1 & !cbSingle.isChecked()) {

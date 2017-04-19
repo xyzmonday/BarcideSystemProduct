@@ -1,7 +1,8 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_311n;
 
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.widget.TextView;
+import android.widget.EditText;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.BaseMSNEditFragment;
@@ -25,15 +26,17 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/4/12.
  */
 
-public class QingHaiLMSNEditFragment extends BaseMSNEditFragment<MSNEditPresenterImp> {
+public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresenterImp> {
 
 
     @BindView(R.id.et_send_location)
     RichEditText etSendLocation;
     @BindView(R.id.tv_special_inv_flag)
-    TextView tvSpecialInvFlag;
+    EditText etSpecialInvFlag;
     @BindView(R.id.tv_special_inv_num)
-    TextView tvSpecialInvNum;
+    EditText etSpecialInvNum;
+
+    String specialConvert = "N";
 
     @Override
     public int getContentId() {
@@ -63,8 +66,8 @@ public class QingHaiLMSNEditFragment extends BaseMSNEditFragment<MSNEditPresente
     public void initData() {
         etRecLoc.setEnabled(false);
         super.initData();
-        tvSpecialInvFlag.setText(mSpecialInvFlag);
-        tvSpecialInvNum.setText(mSpecialInvNum);
+        etSpecialInvFlag.setText(mSpecialInvFlag);
+        etSpecialInvNum.setText(mSpecialInvNum);
         etSendLocation.setText(mSendLocation);
 
     }
@@ -128,6 +131,37 @@ public class QingHaiLMSNEditFragment extends BaseMSNEditFragment<MSNEditPresente
             tvRecBatchFlag.setText(recBatchFlag);
     }
 
+
+    @Override
+    public void showOperationMenuOnCollection(final String companyCode) {
+        //每一次保存之前需要重置该字段
+        specialConvert = "N";
+        boolean isTurn = false;
+        if (!TextUtils.isEmpty(getString(etSpecialInvFlag))
+                && !TextUtils.isEmpty(getString(etSpecialInvNum))) {
+            isTurn = true;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setTitle("温馨提示");
+        String message = isTurn ? "检测到有寄售库存,您是否要进行寄售转自有" : "您真的确定要保存本次修改的数据?";
+        builder.setMessage(message);
+        //  第一个按钮
+        builder.setPositiveButton("直接修改", (dialog, which) -> {
+            dialog.dismiss();
+            saveCollectedData();
+        });
+        if (isTurn) {
+            builder.setNeutralButton("寄售转自有", (dialog, which) -> {
+                dialog.dismiss();
+                specialConvert = "Y";
+                saveCollectedData();
+            });
+        }
+        //  第三个按钮
+        builder.setNegativeButton("取消修改", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
     @Override
     public boolean checkCollectedDataBeforeSave() {
         final String sendLocation = getString(etSendLocation);
@@ -140,6 +174,15 @@ public class QingHaiLMSNEditFragment extends BaseMSNEditFragment<MSNEditPresente
             showMessage("您输入的接收仓位不合理");
             return false;
         }
+
+        final String specialInvFlag = getString(etSpecialInvFlag);
+        final String specialInvNum = getString(etSpecialInvNum);
+        if (!TextUtils.isEmpty(specialInvFlag) && "K".equalsIgnoreCase(specialInvFlag)
+                && TextUtils.isEmpty(specialInvNum)) {
+            showMessage("请先输入特殊库存编号");
+            return false;
+        }
+
         //检查是否合理，可以保存修改后的数据
         if (TextUtils.isEmpty(getString(etQuantity))) {
             showMessage("请输入移库数量");
@@ -179,10 +222,10 @@ public class QingHaiLMSNEditFragment extends BaseMSNEditFragment<MSNEditPresente
             result.recInvId = mRefData.recInvId;
             result.materialId = CommonUtil.Obj2String(tvMaterialNum.getTag());
             result.batchFlag = getString(tvSendBatchFlag);
-
-            result.location = getString(etSendLocation).toUpperCase();
-            result.specialInvFlag = getString(tvSpecialInvFlag);
-            result.specialInvNum = getString(tvSpecialInvNum);
+            result.location = CommonUtil.toUpperCase(getString(etSendLocation));
+            result.specialInvFlag = getString(etSpecialInvFlag);
+            result.specialInvNum = getString(etSpecialInvNum);
+            result.specialConvert = specialConvert;
             result.recLocation = getString(etRecLoc);
             result.recBatchFlag = getString(tvRecBatchFlag);
             result.quantity = getString(etQuantity);

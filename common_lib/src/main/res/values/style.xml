@@ -97,9 +97,9 @@
 
     <!--表格分割线的样式-->
     <style name="ItemSeperatorLayout">
-        <item name="android:layout_width">1px</item>
+        <item name="android:layout_width">1dp</item>
         <item name="android:layout_height">match_parent</item>
-        <item name="android:background">@color/white_alpha_224</item>
+        <item name="android:background">@color/white_alpha_192</item>
     </style>
 
     <!--明细界面父节点样式-->

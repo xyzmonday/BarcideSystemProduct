@@ -37,6 +37,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".module_local.upload.UploadActivity"/>
+
         <activity
             android:name=".module_acceptstore.ww_component.WWComponentActivity"
             android:windowSoftInputMode="adjustPan|stateHidden" />

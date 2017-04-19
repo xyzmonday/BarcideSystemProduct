@@ -126,7 +126,8 @@ public class CNHeaderPresenterImp extends BaseHeaderPresenterImp<ICNHeaderView>
     public void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId) {
         mView = getView();
 
-        RxSubscriber<ReferenceEntity> subscriber = mRepository.getCheckInfo(userId, bizType,
+        RxSubscriber<ReferenceEntity> subscriber =
+                mRepository.getCheckInfo(userId, bizType,
                 checkLevel, checkSpecial, storageNum, workId, invId, "")
                 .filter(data -> data != null)
                 .compose(TransformerHelper.io2main())

@@ -1,5 +1,6 @@
 package com.richfit.domain.repository;
 
+import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.util.List;
@@ -50,10 +51,7 @@ public interface IBusinessService {
      */
     boolean deleteBusinessDataByLocationId(String locationId, String transId, String transLineId);
 
-    /**
-     * 提交所有离线数据到服务器
-     * @param params
-     * @return
-     */
-    String uploadBusinessDataOffline(List<ResultEntity> params);
+    List<ReferenceEntity> readTransfredData();
+
+    void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId);
 }

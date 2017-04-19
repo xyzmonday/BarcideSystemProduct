@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxTextView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_approval.qingyang_ao.edit.imp.ApprovalOtherEditPresenterImp;
@@ -22,6 +22,7 @@ import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by monday on 2016/11/29.
@@ -73,7 +74,7 @@ public class QingYangAOEditFragment extends BaseFragment<ApprovalOtherEditPresen
     public void initEvent() {
         //监听到货数量
         RxTextView.textChanges(etQuantity)
-                .debounce(500, TimeUnit.MILLISECONDS, rx.android.schedulers.AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 .filter(str -> !TextUtils.isEmpty(str) && str.length() > 0)
                 .subscribe(str -> tvBalanceQuantity.setText(str));
     }
@@ -144,7 +145,7 @@ public class QingYangAOEditFragment extends BaseFragment<ApprovalOtherEditPresen
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
             result.inspectionPerson = Global.USER_ID;
-            result.companyCode = Global.companyCode;
+            result.companyCode = Global.COMPANY_CODE;
             result.userId = Global.USER_ID;
             result.invId = tvInv.getTag() != null ? tvInv.getTag().toString() : "";
             result.modifyFlag = "Y";

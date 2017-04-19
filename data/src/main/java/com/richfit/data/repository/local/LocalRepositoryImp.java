@@ -65,34 +65,78 @@ public class LocalRepositoryImp implements ILocalRepository {
 
 
     @Override
-    public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkNum) {
-        return null;
+    public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel,
+                                                  String checkSpecial, String storageNum, String workId,
+                                                  String invId, String checkNum) {
+        return Flowable.just(userId)
+                .flatMap(id -> {
+                    ReferenceEntity refData = mCheckServiceDao.getCheckInfo(id, bizType, checkLevel, checkSpecial,
+                            storageNum, workId, invId, checkNum);
+                    if (refData == null || TextUtils.isEmpty(refData.checkId)) {
+                        return Flowable.error(new Throwable("盘点初始化失败"));
+                    }
+                    return Flowable.just(refData);
+                });
     }
 
     @Override
     public Flowable<String> deleteCheckData(String storageNum, String workId, String invId, String checkId,
                                             String userId, String bizType) {
-        return null;
+        return Flowable.just(userId)
+                .flatMap(id -> {
+                    if (mCheckServiceDao.deleteCheckData(storageNum, workId, invId, checkId, id, bizType)) {
+                        return Flowable.just("删除成功");
+                    } else {
+                        return Flowable.error(new Throwable("删除失败"));
+                    }
+                });
     }
 
     @Override
     public Flowable<List<InventoryEntity>> getCheckTransferInfoSingle(String checkId, String materialId, String materialNum, String location, String bizType) {
-        return null;
+        return Flowable.just(checkId)
+                .flatMap(id -> {
+                    List<InventoryEntity> list = mCheckServiceDao.getCheckTransferInfoSingle(id, materialId, materialNum, location, bizType);
+                    if (list != null && list.size() > 0) {
+                        return Flowable.just(list);
+                    }
+                    return Flowable.error(new Throwable("未获取到缓存"));
+                });
     }
 
     @Override
     public Flowable<ReferenceEntity> getCheckTransferInfo(String checkId, String materialNum, String location, String isPageQuery, int pageNum, int pageSize, String bizType) {
-        return null;
+        return Flowable.just(checkId)
+                .flatMap(id -> {
+                    ReferenceEntity refData = mCheckServiceDao.getCheckTransferInfo(id, materialNum, location, isPageQuery,
+                            pageNum, pageSize, bizType);
+                    if (refData.totalCount > 0) {
+                        return Flowable.just(refData);
+                    }
+
+                    if (refData.totalCount <= 0 && refData.checkList != null && refData.checkList.size() > 0) {
+                        return Flowable.just(refData);
+                    }
+                    return Flowable.error(new Throwable("未获取到盘点缓存数据"));
+                });
     }
 
     @Override
     public Flowable<String> deleteCheckDataSingle(String checkId, String checkLineId, String userId, String bizType) {
-        return null;
+        return Flowable.just(userId)
+                .flatMap(id -> {
+                    if (mCheckServiceDao.deleteCheckDataSingle(checkId, checkLineId, id, bizType)) {
+                        return Flowable.just("删除成功");
+                    } else {
+                        return Flowable.error(new Throwable("删除失败"));
+                    }
+                });
     }
 
     @Override
     public Flowable<MaterialEntity> getMaterialInfo(String queryType, String materialNum) {
-        return null;
+        return Flowable.just(queryType)
+                .flatMap(type -> Flowable.just(mBasicServiceDao.getMaterialInfo(type, materialNum)));
     }
 
     @Override
@@ -102,9 +146,9 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
-        return Flowable.just(workId)
-                .flatMap(id -> {
-                    if (mBasicServiceDao.getLocationInfo(queryType, id, invId, storageNum, location)) {
+        return Flowable.just(queryType)
+                .flatMap(type -> {
+                    if (mBasicServiceDao.getLocationInfo(type, workId, invId, storageNum, location)) {
                         return Flowable.just("仓位存在");
                     } else {
                         return Flowable.error(new Throwable("您输入的仓位不存在"));
@@ -257,10 +301,10 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode) {
+    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType, int mode) {
         return Flowable.just(bizType)
                 .flatMap(type -> {
-                    ArrayList<BizFragmentConfig> fragmentConfigs = mBasicServiceDao.readBizFragmentConfig(type, refType, fragmentType,mode);
+                    ArrayList<BizFragmentConfig> fragmentConfigs = mBasicServiceDao.readBizFragmentConfig(type, refType, fragmentType, mode);
                     if (fragmentConfigs == null || fragmentConfigs.size() == 0) {
                         return Flowable.error(new Throwable("未获取到配置信息"));
                     }
@@ -412,6 +456,23 @@ public class LocalRepositoryImp implements ILocalRepository {
                 .map(id -> mBasicServiceDao.readMenuInfo(id));
     }
 
+    @Override
+    public Flowable<List<ReferenceEntity>> readTransferedData() {
+        return Flowable.just(1)
+                .flatMap(a -> {
+                    List<ReferenceEntity> datas = mBusinessServiceDao.readTransfredData();
+                    if (datas.size() == 0) {
+                        return Flowable.error(new Throwable("您还未采集过数据"));
+                    }
+                    return Flowable.just(datas);
+                });
+    }
+
+    @Override
+    public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
+        mBusinessServiceDao.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
+    }
+
 
     /**
      * 获取单条缓存
@@ -559,7 +620,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     private boolean deleteCollectDataSingleInner(String lineDeleteFlag, String transId, String transLineId, String locationId,
-                                            String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
+                                                 String refType, String bizType, String refLineId, String userId, int position, String companyCode) {
         boolean isDeleteSuccess;
         switch (bizType) {
             case "00":
@@ -656,6 +717,18 @@ public class LocalRepositoryImp implements ILocalRepository {
                         return Flowable.error(new Throwable("保存出错"));
                     }
                     return Flowable.just("保存成功");
+                });
+    }
+
+    @Override
+    public Flowable<String> uploadCheckDataSingle(ResultEntity result) {
+        return Flowable.just(result)
+                .flatMap(res -> {
+                    if (mCheckServiceDao.uploadCheckDataSingle(res)) {
+                        return Flowable.just("盘点成功");
+                    } else {
+                        return Flowable.error(new Throwable("盘点失败"));
+                    }
                 });
     }
 

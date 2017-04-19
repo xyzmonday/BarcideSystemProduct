@@ -6,11 +6,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_edit.imp.MSEditPresenterImp;
+import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
@@ -45,37 +45,37 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
     @BindView(R.id.tv_send_batch_flag_name)
     protected TextView tvSendBatchFlagName;
     @BindView(R.id.tv_batch_flag)
-    TextView tvBatchFlag;
+    protected TextView tvBatchFlag;
     @BindView(R.id.tv_send_inv_name)
     protected TextView tvSendInvName;
     @BindView(R.id.tv_inv)
-    TextView tvInv;
+    protected TextView tvInv;
     @BindView(R.id.tv_act_quantity)
-    TextView tvActQuantity;
+    protected TextView tvActQuantity;
     @BindView(R.id.et_quantity)
-    EditText etQuantity;
+    protected EditText etQuantity;
     @BindView(R.id.sp_location)
-    Spinner spLocation;
+    protected Spinner spLocation;
     @BindView(R.id.tv_inv_quantity)
     TextView tvInvQuantity;
     @BindView(R.id.tv_location_quantity)
     TextView tvLocQuantity;
     @BindView(R.id.tv_total_quantity)
-    TextView tvTotalQuantity;
+    protected TextView tvTotalQuantity;
 
     protected String mRefLineId;
     protected String mLocationId;
     protected int mPosition;
     //该子节点修改前的出库数量
-    private String mQuantity;
+    protected String mQuantity;
     protected List<InventoryEntity> mInventoryDatas;
     private LocationAdapter mLocationAdapter;
     private List<String> mLocations;
     protected String mSelectedLocation;
     Map<String, Object> mExtraLocationMap;
-    private float mTotalQuantity;
-    private String mSpecialInvFlag;
-    private String mSpecialInvNum;
+    protected float mTotalQuantity;
+    protected String mSpecialInvFlag;
+    protected String mSpecialInvNum;
 
     @Override
     protected int getContentId() {
@@ -105,7 +105,7 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
                     //获取缓存
                     mPresenter.getTransferInfoSingle(mRefData.refCodeId, mRefData.refType,
-                            mRefData.bizType, mRefLineId, getString(tvBatchFlag),mInventoryDatas.get(position).locationCombine
+                            mRefData.bizType, mRefLineId, getString(tvBatchFlag), mInventoryDatas.get(position).locationCombine
                             , "", -1, Global.USER_ID);
                 });
     }
@@ -161,7 +161,8 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt, false);
             bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap, false);
             //初始化库存地点
-            loadInventoryInfo(lineData.workId, invId, lineData.workCode, invCode, lineData.materialId, "", batchFlag);
+            if (spLocation.isEnabled())
+                loadInventoryInfo(lineData.workId, invId, lineData.workCode, invCode, lineData.materialId, "", batchFlag);
         }
     }
 
@@ -345,6 +346,8 @@ public abstract class BaseMSEditFragment extends BaseFragment<MSEditPresenterImp
             result.location = mInventoryDatas.get(locationPos).location;
             result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
             result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
+            result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
+                    "Y" : "N";
             result.batchFlag = getString(tvBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";

@@ -52,13 +52,21 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setStatusBar(false);
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void initData(Bundle savedInstanceState) {
+        super.initData(savedInstanceState);
+        toRegister();
+    }
+
+    private void toRegister() {
         Flowable.just(1)
                 .map(a -> UiUtil.getMacAddress())
                 .compose(TransformerHelper.io2main())
-                .subscribe(macAddress -> Global.macAddress = macAddress, e -> {
+                .subscribe(macAddress -> Global.MAC_ADDRESS = macAddress, e -> {
                 }, () -> mPresenter.register());
     }
-
 
     /**
      * 跳转到登陆页面
@@ -88,7 +96,7 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
                 .setCancelText("下次再说")
                 .setConfirmClickListener(sDialog -> {
                     sDialog.setTitleText("用户注册")
-                            .setContentText("手持的MAC地址:" + Global.macAddress)
+                            .setContentText("手持的MAC地址:" + Global.MAC_ADDRESS)
                             .setConfirmText("OK")
                             .setConfirmClickListener(null)
                             .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);

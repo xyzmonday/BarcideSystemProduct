@@ -53,6 +53,7 @@ public class UiUtil {
 
         return toolbarHeight;
     }
+
     /**
      * 生成随机的32id
      */
@@ -94,7 +95,6 @@ public class UiUtil {
 //        String deviceId = deviceUuid.toString();
 //        return tmDevice;
 //    }
-
     public static String getMacAddress() {
         String macSerial = null;
         String str = "";
@@ -148,9 +148,6 @@ public class UiUtil {
     }
 
 
-
-
-
     /**
      * 获取屏幕的宽
      */
@@ -186,6 +183,10 @@ public class UiUtil {
         return date;
     }
 
+    public static long getSystemDate() {
+        return System.currentTimeMillis();
+    }
+
     public static int dip2px(Context context, float dipValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dipValue * scale + 0.5f);
@@ -212,10 +213,10 @@ public class UiUtil {
     }
 
     public final static int convertToInt(Integer value) {
-       if(value == null) {
-           return -1;
-       }
-       return value.intValue();
+        if (value == null) {
+            return -1;
+        }
+        return value.intValue();
     }
 
     public final static float convertToFloat(Object value, float defaultValue) {
@@ -544,15 +545,15 @@ public class UiUtil {
     }
 
     public static int darkerColor(int color, float factor) {
-        int a = Color.alpha( color );
-        int r = Color.red( color );
-        int g = Color.green( color );
-        int b = Color.blue( color );
+        int a = Color.alpha(color);
+        int r = Color.red(color);
+        int g = Color.green(color);
+        int b = Color.blue(color);
 
-        return Color.argb( a,
-                Math.max( (int)(r * factor), 0 ),
-                Math.max( (int)(g * factor), 0 ),
-                Math.max( (int)(b * factor), 0 ) );
+        return Color.argb(a,
+                Math.max((int) (r * factor), 0),
+                Math.max((int) (g * factor), 0),
+                Math.max((int) (b * factor), 0));
     }
 
     public static int getThemeColor(Context ctx, int attr) {

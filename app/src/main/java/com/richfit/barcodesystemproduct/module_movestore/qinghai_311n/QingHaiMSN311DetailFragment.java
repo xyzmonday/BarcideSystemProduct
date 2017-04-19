@@ -1,6 +1,5 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_311n;
 
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -72,18 +71,7 @@ public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<MSNDetail
     protected void submit2BarcodeSystem(String transToSapFlag) {
         //如果需要寄售转自有但是没有成功过，都需要用户需要再次寄售转自有
         if (isNeedTurn && !isTurnSuccess) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-            builder.setTitle("温馨提示")
-                    .setMessage("您需要先寄售转自有，请点击确定;您也可以点击直接过账，不进行寄售转自有。")
-                    .setPositiveButton("确定", (dialog, which) -> {
-                        dialog.dismiss();
-                        startTurnOwnSupplies("07");
-                    })
-                    .setNegativeButton("直接过账", (dialog, which) -> {
-                        dialog.dismiss();
-                        isNeedTurn = false;
-                        submit2BarcodeSystem(mBottomMenus.get(0).transToSapFlag);
-                    }).show();
+            startTurnOwnSupplies("07");
             return;
         }
         String transferFlag = (String) SPrefUtil.getData(mBizType, "0");

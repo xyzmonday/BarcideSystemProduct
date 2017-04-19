@@ -8,13 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.common_lib.R;
 import com.richfit.common_lib.utils.AppCompat;
 
 import java.util.concurrent.TimeUnit;
 
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+
 
 /**
  * Created by monday on 2016/11/11.
@@ -61,7 +62,7 @@ public class NetConnectErrorDialogFragment extends DialogFragment {
 
     private void setOnClickListener() {
         RxView.clicks(mView)
-                .debounce(500, TimeUnit.MILLISECONDS,AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(a->{

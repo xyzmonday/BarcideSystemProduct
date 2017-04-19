@@ -59,10 +59,10 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
                                 Global.LOGIN_ID = userInfo.loginId;
                                 Global.USER_ID = userInfo.userId;
                                 Global.USER_NAME = userInfo.userName;
-                                Global.companyId = userInfo.companyId;
-                                Global.companyCode = userInfo.companyCode;
-                                Global.authOrg = userInfo.authOrgs;
-                                Global.batchFlag = "Y".equals(userInfo.batchFlag) ? true : false;
+                                Global.COMPANY_ID = userInfo.companyId;
+                                Global.COMPANY_CODE = userInfo.companyCode;
+                                Global.AUTH_ORG = userInfo.authOrgs;
+                                Global.BATCH_FLAG = "Y".equals(userInfo.batchFlag) ? true : false;
                             }
 
                             @Override

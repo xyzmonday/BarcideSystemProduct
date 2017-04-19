@@ -310,7 +310,7 @@ public class QingHaiAOEditFragment extends BaseFragment<QingHaiAOEditPresenterIm
             result.refLineId = lineData.refLineId;
             result.materialId = lineData.materialId;
             result.businessType = mRefData.bizType;
-            result.companyCode = Global.companyCode;
+            result.companyCode = Global.COMPANY_CODE;
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
             result.inspectionType = mRefData.inspectionType;

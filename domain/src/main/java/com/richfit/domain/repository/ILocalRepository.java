@@ -260,4 +260,11 @@ public interface ILocalRepository extends IRepository {
      */
     Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId);
 
+    Flowable<List<ReferenceEntity>> readTransferedData();
+
+    /**
+     * 离线数据上传成功删除本地所有的缓存和单据数据
+     * @param transId:缓存抬头id
+     */
+    void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId);
 }

@@ -29,7 +29,7 @@ import javax.inject.Inject;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
-import static com.richfit.common_lib.utils.Global.companyId;
+import static com.richfit.common_lib.utils.Global.COMPANY_ID;
 
 /**
  * Created by monday on 2016/11/8.
@@ -94,7 +94,7 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
             return;
         }
 
-        if (TextUtils.isEmpty(companyId) && mView != null) {
+        if (TextUtils.isEmpty(COMPANY_ID) && mView != null) {
             mView.loadExtraConfigFail("未获取到公司id");
             return;
         }

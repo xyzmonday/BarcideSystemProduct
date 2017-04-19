@@ -105,7 +105,7 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     protected int mFragmentType;
     //该页签名称
     protected String mTabTitle;
-    protected boolean mIsOpenBatchManager = Global.batchFlag;
+    protected boolean mIsOpenBatchManager = Global.BATCH_FLAG;
 
     public static BaseFragment findFragment(FragmentManager fm, String tag, String companyCode, String moduleCode,
                                             String bizType, String refType, int fragmentType, String title, Class clazz) {

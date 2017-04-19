@@ -11,12 +11,12 @@ public class Global {
     public static String USER_ID;
     public static String LOGIN_ID;
     public static String USER_NAME;
-    public static String companyId;
-    public static String companyCode;
-    public static String macAddress;
-    public static String authOrg;
+    public static String COMPANY_ID;
+    public static String COMPANY_CODE;
+    public static String MAC_ADDRESS;
+    public static String AUTH_ORG;
     //是否打开批次管理Y表示打开
-    public static boolean batchFlag;
+    public static boolean BATCH_FLAG;
 
     /*主模块编码*/
     public static final String WZYS = "100";

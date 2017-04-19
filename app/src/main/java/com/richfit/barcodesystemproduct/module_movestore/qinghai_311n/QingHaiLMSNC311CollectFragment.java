@@ -1,5 +1,6 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_311n;
 
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -27,7 +28,7 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2017/4/12.
  */
 
-public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollectPresenterImp> {
+public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCollectPresenterImp> {
 
     @BindView(R.id.et_send_location)
     RichEditText etSendLocation;
@@ -36,6 +37,7 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
     @BindView(R.id.et_special_inv_num)
     EditText etSpecialInvNum;
 
+    String specialConvert = "N";
 
     @Override
     public int getContentId() {
@@ -122,6 +124,7 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
 
     /**
      * 在匹配缓存前先检查仓位是否存在
+     *
      * @param batchFlag
      * @param location
      */
@@ -162,6 +165,7 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
 
     /**
      * 通过仓位和批次匹配出仓位缓存
+     *
      * @param batchFlag
      * @param sendLocation
      * @param locationCombine
@@ -192,7 +196,7 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
 
                     final boolean isMatched = mIsOpenBatchManager ?
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
-                            && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
+                                    && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);
 
                     if (isMatched) {
@@ -212,6 +216,37 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
             etRecLoc.setText(recLocation);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(etRecBatchFlag)))
             etRecBatchFlag.setText(recBatchFlag);
+    }
+
+    @Override
+    public void showOperationMenuOnCollection(final String companyCode) {
+        //每一次保存之前需要重置该字段
+        specialConvert = "N";
+        boolean isTurn = false;
+        final int position = spSendLoc.getSelectedItemPosition();
+        if (position >= 0 && !TextUtils.isEmpty(mInventoryDatas.get(position).specialInvFlag)
+                && !TextUtils.isEmpty(mInventoryDatas.get(position).specialInvNum)) {
+            isTurn = true;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setTitle("温馨提示");
+        String message = isTurn ? "检测到有寄售库存,您是否要进行寄售转自有" : "您真的确定要保存本次采集的数据?";
+        builder.setMessage(message);
+        //  第一个按钮
+        builder.setPositiveButton("直接保存", (dialog, which) -> {
+            dialog.dismiss();
+            saveCollectedData();
+        });
+        if (isTurn) {
+            builder.setNeutralButton("寄售转自有", (dialog, which) -> {
+                dialog.dismiss();
+                specialConvert = "Y";
+                saveCollectedData();
+            });
+        }
+        //  第三个按钮
+        builder.setNegativeButton("取消保存", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
     }
 
     /**
@@ -254,6 +289,13 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
             showMessage("您输入的发出仓位不合理");
             return false;
         }
+        final String specialInvFlag = getString(etSpecialInvFlag);
+        final String specialInvNum = getString(etSpecialInvNum);
+        if (!TextUtils.isEmpty(specialInvFlag) && "K".equalsIgnoreCase(specialInvFlag)
+                && TextUtils.isEmpty(specialInvNum)) {
+            showMessage("请先输入特殊库存编号");
+            return false;
+        }
         //实发数量
         if (Float.valueOf(getString(etQuantity)) < 0.0f) {
             showMessage("输入数量不合理");
@@ -288,6 +330,8 @@ public class QingHaiLMSNCollectFragment extends BaseMSNCollectFragment<MSNCollec
             result.location = getString(etSendLocation).toUpperCase();
             result.specialInvFlag = getString(etSpecialInvFlag);
             result.specialInvNum = getString(etSpecialInvNum);
+            result.specialConvert = specialConvert;
+
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER)

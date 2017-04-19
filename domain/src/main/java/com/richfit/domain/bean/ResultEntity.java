@@ -137,4 +137,13 @@ public class ResultEntity {
     public String insId;
     public String unit;
     public String insLineId;
+    public String recQuantity;
+    public String specialConvert;
+    public String actQuantity;
+    public String workCode;
+    public String invCode;
+    public String materialDesc;
+    public String materialGroup;
+    public String businessTypeDesc;
+    public String refTypeDesc;
 }

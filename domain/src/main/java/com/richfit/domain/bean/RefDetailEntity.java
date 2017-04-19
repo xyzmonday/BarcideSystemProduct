@@ -145,6 +145,9 @@ public class RefDetailEntity extends TreeNode {
     public String lastFlag;
     /*单据行的额外字段数据*/
     public Map<String, Object> mapExt;
+    public String recQuantity;
+    public String transLineSplitId;
+    public String specialConvert;
 
     @Override
     public String toString() {

@@ -403,6 +403,7 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
                     childNode.locationId = location.id;
                     childNode.specialInvFlag = location.specialInvFlag;
                     childNode.specialInvNum = location.specialInvNum;
+                    childNode.specialConvert = location.specialConvert;
                     //处理子节点的缓存
                     childNode.mapExt = location.mapExt;
                     addTreeInfo(parentNode, childNode, nodes);

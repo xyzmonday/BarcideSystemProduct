@@ -14,6 +14,7 @@ import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.InvEntity;
+import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
@@ -414,8 +415,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                 }
                 sql.append("INSERT OR REPLACE INTO ")
                         .append(tableName)
-                        .append(" (id,storage_num,work_id,inv_id,location,sap_update_date)")
-                        .append(" VALUES (?,?,?,?,?,?)");
+                        .append(" (id,storage_num,work_id,inv_id,location)")
+                        .append(" VALUES (?,?,?,?,?)");
 
                 break;
             case 1:
@@ -527,19 +528,17 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                                     item.get(Global.STORAGENUM_KEY),
                                     CommonUtil.Obj2String(item.get(Global.WORK_ID)),
                                     CommonUtil.Obj2String(item.get(Global.INV_ID)),
-                                    item.get(Global.CODE_KEY),
-                                    item.get(Global.SAPUPDATEDATE_KEY)});
+                                    item.get(Global.CODE_KEY)});
                         }
                     } else {
                         //仓位
                         for (int i = start; i < end; i++) {
                             item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
                             stmt.bindString(1, item.get(Global.ID_KEY).toString());
-                            stmt.bindString(2, item.get(Global.STORAGENUM_KEY).toString());
+                            stmt.bindString(2, CommonUtil.Obj2String(item.get(Global.STORAGENUM_KEY)));
                             stmt.bindString(3, CommonUtil.Obj2String(item.get(Global.WORK_ID)));
                             stmt.bindString(4, CommonUtil.Obj2String(item.get(Global.INV_ID)));
-                            stmt.bindString(5, item.get(Global.CODE_KEY).toString());
-                            stmt.bindString(6, item.get(Global.SAPUPDATEDATE_KEY).toString());
+                            stmt.bindString(5, CommonUtil.Obj2String(item.get(Global.CODE_KEY)));
                             stmt.execute();
                             stmt.clearBindings();
                         }
@@ -693,8 +692,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             data.workName = "请选择";
             works.add(0, data);
             ArrayList<String> authOrgs = new ArrayList<>();
-            if (!TextUtils.isEmpty(Global.authOrg)) {
-                authOrgs.addAll(Arrays.asList(Global.authOrg.split("\\|")));
+            if (!TextUtils.isEmpty(Global.AUTH_ORG)) {
+                authOrgs.addAll(Arrays.asList(Global.AUTH_ORG.split("\\|")));
             }
 
             StringBuffer sb = new StringBuffer();
@@ -1049,8 +1048,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         SQLiteDatabase db = getReadableDB();
         ArrayList<String> list = new ArrayList<>();
         ArrayList<String> authOrgs = new ArrayList<>();
-        if (!TextUtils.isEmpty(Global.authOrg)) {
-            authOrgs.addAll(Arrays.asList(Global.authOrg.split("\\|")));
+        if (!TextUtils.isEmpty(Global.AUTH_ORG)) {
+            authOrgs.addAll(Arrays.asList(Global.AUTH_ORG.split("\\|")));
         }
         StringBuffer sb = new StringBuffer();
         String tableName = flag == 0 ? PAuthOrgKey : PAuthOrg2Key;
@@ -1222,25 +1221,26 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         clearStringBuffer();
         String[] selections;
         List<String> selectionList = new ArrayList<>();
+        sb.append(" select count(*) from BASE_LOCATION where ");
         if (TextUtils.isEmpty(storageNum)) {
             // 如果仓库号为空 则先查询库存地点是否启用了WM
-            Cursor cursor = db.rawQuery("select storage_code from p_auth_org where org_id = ? ", new String[]{invId});
+            Cursor cursor = db.rawQuery("select storage_code from p_auth_org where org_id = ? ",
+                    new String[]{invId});
             String storageCode = null;
             while (cursor.moveToNext()) {
                 storageCode = cursor.getString(0);
             }
             cursor.close();
-            sb.append(" select count(*) from BASE_LOCATION where ");
             if (TextUtils.isEmpty(storageCode)) {
+                sb.append(" work_id = ? and inv_id = ? and location = ?");
                 selectionList.add(workId);
                 selectionList.add(invId);
                 selectionList.add(location);
-                sb.append(" work_id = ? and inv_id = ? and location = ?");
 
             } else {
+                sb.append(" storage_num = ? and location = ?");
                 selectionList.add(storageCode);
                 selectionList.add(location);
-                sb.append(" storage_num = ? and location = ?");
             }
         } else {
             // 如果传入的是仓库号 表示启用了WM 直接根据仓库号查询
@@ -1264,5 +1264,32 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             return true;
         else
             return false;
+    }
+
+    @Override
+    public MaterialEntity getMaterialInfo(String queryType, String materialNum) {
+        SQLiteDatabase db = getWritableDB();
+        MaterialEntity item = new MaterialEntity();
+        Cursor cursor = null;
+        switch (queryType) {
+            case "01":
+                // 物料基础信息
+                cursor = db.rawQuery("select id ,material_num,material_desc,material_group,unit from BASE_MATERIAL_CODE where material_num = ?",
+                        new String[]{materialNum});
+                while (cursor.moveToNext()) {
+                    item.id = cursor.getString(0);
+                    item.materialNum = cursor.getString(1);
+                    item.materialDesc = cursor.getString(2);
+                    item.materialGroup = cursor.getString(3);
+                    item.unit = cursor.getString(4);
+                }
+                break;
+            default:
+                break;
+        }
+        if (cursor != null)
+            cursor.close();
+        db.close();
+        return item;
     }
 }

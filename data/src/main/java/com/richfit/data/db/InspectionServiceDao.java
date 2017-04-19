@@ -223,6 +223,11 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         return images;
     }
 
+    /**
+     * 保存验收单条缓存
+     * @param param
+     * @return
+     */
     @Override
     public boolean uploadInspectionDataSingle(ResultEntity param) {
         boolean customBoolean = false;// 标识是否更新扩展表
@@ -268,6 +273,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         clearStringBuffer();
         cursor.close();
 
+        final long creationDate = UiUtil.getSystemDate();
         final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
         ContentValues cv = new ContentValues();
         if (TextUtils.isEmpty(insId)) {
@@ -275,6 +281,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             insId = UiUtil.getUUID();
             cv.put("id", insId);
             cv.put("po_id", param.refCodeId);
+            cv.put("ref_code",param.refCode);
             cv.put("ins_flag", "1");
             cv.put("inspection_date", currentDate);
             cv.put("workflow_level", "0");
@@ -288,11 +295,11 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             //保存成功系统生成的验收单号
             cv.put("inspection_num", "");
             cv.put("created_by", param.userId);
-            cv.put("creation_date", currentDate);
+            cv.put("creation_date", creationDate);
             db.insert("MTL_INSPECTION_HEADERS", null, cv);
         } else {
-            cv.put("created_by", param.userId);
-            cv.put("creation_date", currentDate);
+            cv.put("last_updated_by", param.userId);
+            cv.put("last_update_date", creationDate);
             db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{insId});
         }
         db.close();
@@ -320,6 +327,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         clearStringBuffer();
         cursor.close();
         final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
+        final long creationDate = UiUtil.getSystemDate();
         ContentValues cv = new ContentValues();
         if (TextUtils.isEmpty(insLineId)) {
             insLineId = UiUtil.getUUID();
@@ -336,7 +344,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             cv.put("work_id", param.workId);
             cv.put("inv_id", param.invId);
             cv.put("created_by", param.userId);
-            cv.put("creation_date", currentDate);
+            cv.put("creation_date", creationDate);
             cv.put("quantity", param.quantity);
             switch (param.companyCode) {
                 case "20N0":
@@ -351,7 +359,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             }
             db.insert("MTL_INSPECTION_LINES", null, cv);
         } else {
-            sb.append("update MTL_INSPECTION_LINES set inspection_result = ?,created_by = ?,creation_date = ?,inspection_date = ?");
+            sb.append("update MTL_INSPECTION_LINES set inspection_result = ?,last_updated_by = ?,last_update_date = ?,inspection_date = ?");
             if ("Y".equalsIgnoreCase(param.modifyFlag)) {
                 // 修改
                 sb.append(",quantity = ?");

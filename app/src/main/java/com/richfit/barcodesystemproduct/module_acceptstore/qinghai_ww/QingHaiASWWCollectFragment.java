@@ -23,7 +23,7 @@ import com.richfit.domain.bean.RefDetailEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.richfit.common_lib.utils.Global.companyCode;
+import static com.richfit.common_lib.utils.Global.COMPANY_CODE;
 
 /**
  * 委外入库逻辑比较复杂:
@@ -155,7 +155,7 @@ public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectP
 
         Intent intent = new Intent(mActivity, WWComponentActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putString(Global.EXTRA_COMPANY_CODE_KEY, companyCode);
+        bundle.putString(Global.EXTRA_COMPANY_CODE_KEY, COMPANY_CODE);
         bundle.putString(Global.EXTRA_MODULE_CODE_KEY, "");
         bundle.putString(Global.EXTRA_BIZ_TYPE_KEY, "19_ZJ");
         bundle.putString(Global.EXTRA_REF_TYPE_KEY, mRefType);

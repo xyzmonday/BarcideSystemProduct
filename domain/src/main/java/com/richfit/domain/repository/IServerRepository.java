@@ -7,11 +7,9 @@ import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.LoadDataTask;
 import com.richfit.domain.bean.RefNumEntity;
-import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.UpdateEntity;
-import com.richfit.domain.bean.UserEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +23,6 @@ import io.reactivex.Flowable;
  */
 
 public interface IServerRepository extends IRepository {
-
-
 
     /**
      * 下载额外字段的配置信息
@@ -119,13 +115,6 @@ public interface IServerRepository extends IRepository {
      */
     Flowable<String> uploadInspectionImage(ResultEntity result);
 
-    /**
-     * 删除盘点结果
-     *
-     * @param result
-     * @return
-     */
-    Flowable<String> uploadCheckDataSingle(ResultEntity result);
 
     /**
      * 获取库存
@@ -169,15 +158,6 @@ public interface IServerRepository extends IRepository {
     Flowable<String> changeLoginInfo(String userId, String newPassword);
 
     /**
-     * 离线模式上传验收数据
-     *
-     * @param refData
-     * @return
-     */
-    Flowable<String> uploadInspectionDataOffline(ReferenceEntity refData);
-
-
-    /**
      * 上传验收采集的所有图片(从青海开始，使用该新开发的接口)
      * 传输参数加了一个  transFileToServer  区分传输到SAP还是条码服务器
      * private String transFileToServer;// 01：条码服务器，02：SAP服务器，DEBUG:传输DEBUG文件到本地服务器
@@ -194,4 +174,6 @@ public interface IServerRepository extends IRepository {
      */
     Flowable<ResultEntity> getDeviceInfo(String deviceId);
 
+
+    Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results);
 }

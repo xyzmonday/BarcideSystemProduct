@@ -15,8 +15,6 @@ import com.richfit.domain.bean.RefDetailEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.pedant.SweetAlert.SweetAlertDialog;
-
 /**
  * Created by monday on 2017/2/23.
  */
@@ -129,12 +127,13 @@ public abstract class BaseDSNDetailFragment<P extends IDSNDetailPresenter> exten
             showMessage("已经过账,不允许修改");
             return;
         }
+        String subFunName = "26".equals(mBizType) ? "201无参考出库" : "221无参考出库";
         //获取与该子节点的物料编码和发出库位一致的发出仓位和接收仓位列表
         if (mAdapter != null && DSNDetailAdapter.class.isInstance(mAdapter)) {
             DSNDetailAdapter adapter = (DSNDetailAdapter) mAdapter;
             ArrayList<String> sendLocations = adapter.getLocations(position, 0);
             mPresenter.editNode(sendLocations, null, null, node, mCompanyCode,
-                    mBizType, mRefType, "201无参考出库", position);
+                    mBizType, mRefType, subFunName, position);
         }
     }
 
@@ -197,12 +196,7 @@ public abstract class BaseDSNDetailFragment<P extends IDSNDetailPresenter> exten
     protected void submit2BarcodeSystem(String tranToSapFlag) {
         //如果需要寄售转自有但是没有成功过，都需要用户需要再次寄售转自有
         if (isNeedTurn && !isTurnSuccess) {
-            new SweetAlertDialog(mActivity).setTitleText("温馨提示")
-                    .setContentText("您需要先寄售转自有，请点击确定。").setConfirmText("确定")
-                    .setConfirmClickListener(sweetAlertDialog -> {
-                        sweetAlertDialog.dismiss();
-                        startTurnOwnSupplies("07");
-                    }).show();
+            startTurnOwnSupplies("07");
             return;
         }
         String transferFlag = (String) SPrefUtil.getData(mBizType, "0");
@@ -210,8 +204,11 @@ public abstract class BaseDSNDetailFragment<P extends IDSNDetailPresenter> exten
             showMessage(getString(R.string.detail_off_location));
             return;
         }
+        mExtraTansMap.clear();
+        mExtraTansMap.put("centerCost", mRefData.costCenter);
+        mExtraTansMap.put("projectNum", mRefData.projectNum);
         mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, tranToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, tranToSapFlag, mExtraTansMap);
     }
 
     /**

@@ -117,9 +117,9 @@
                 android:text="@string/special_inv_flag" />
 
 
-            <TextView
+            <EditText
                 android:id="@+id/tv_special_inv_flag"
-                style="@style/RightTextViewItemStyle" />
+                style="@style/RightEditTextItemStyle" />
         </LinearLayout>
 
 
@@ -134,9 +134,9 @@
                 android:text="@string/special_inv_num" />
 
 
-            <TextView
+            <EditText
                 android:id="@+id/tv_special_inv_num"
-                style="@style/RightTextViewItemStyle" />
+                style="@style/RightEditTextItemStyle" />
         </LinearLayout>
 
         <LinearLayout

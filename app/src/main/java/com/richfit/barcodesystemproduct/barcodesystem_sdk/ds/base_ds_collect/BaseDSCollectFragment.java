@@ -12,8 +12,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
-import com.jakewharton.rxbinding.widget.RxTextView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
@@ -40,7 +40,7 @@ import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
  * 增加寄售转自有业务，将specialInvFlag和specialInvNum和location字段全部显示在仓位下拉里面，
@@ -682,6 +682,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             return false;
         }
 
+
         //检查额外字段是否合格
         if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
             showMessage("请检查输入数据");
@@ -692,6 +693,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             showMessage("请检查输入数据");
             return false;
         }
+
         return true;
     }
 
@@ -710,6 +712,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
 
     @Override
     public void saveCollectedData() {
+
         if (!checkCollectedDataBeforeSave()) {
             return;
         }
@@ -730,12 +733,16 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             result.materialId = lineData.materialId;
             result.batchFlag = getString(etBatchFlag);
             result.quantity = getString(etQuantity);
+
             //库存相关的字段回传
             int locationPos = spLocation.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;
             result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
             result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.supplierNum = mRefData.supplierNum;
+            //寄售转自有的标识
+            result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
+                    "Y" : "N";
             result.modifyFlag = "N";
             result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
             result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);

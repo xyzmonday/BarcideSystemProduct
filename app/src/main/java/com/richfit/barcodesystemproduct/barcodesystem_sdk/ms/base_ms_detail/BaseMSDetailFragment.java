@@ -15,7 +15,6 @@ import com.richfit.domain.bean.TreeNode;
 import java.util.List;
 
 import butterknife.BindView;
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static com.richfit.common_lib.utils.SPrefUtil.getData;
 
@@ -130,8 +129,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
         //仅仅检查子节点
         for (RefDetailEntity node : nodes) {
             if (Global.CHILD_NODE_ITEM_TYPE == node.getViewType() &&
-                    "K".equalsIgnoreCase(node.specialInvFlag) &&
-                    !isEmpty(node.specialInvNum)) {
+                    "Y".equalsIgnoreCase(node.specialConvert)) {
                 isNeedTurn = true;
                 break;
             }
@@ -216,12 +214,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
     protected void submit2BarcodeSystem(String transToSapFlag) {
         //如果需要寄售转自有但是没有成功过，都需要用户需要再次寄售转自有
         if (isNeedTurn && !isTurnSuccess) {
-            new SweetAlertDialog(mActivity).setTitleText("温馨提示")
-                    .setContentText("您需要先寄售转自有，请点击确定。").setConfirmText("确定")
-                    .setConfirmClickListener(sweetAlertDialog -> {
-                        sweetAlertDialog.dismiss();
-                        startTurnOwnSupplies("07");
-                    }).show();
+            startTurnOwnSupplies("07");
             return;
         }
         String state = (String) SPrefUtil.getData(mBizType + mRefType, "0");

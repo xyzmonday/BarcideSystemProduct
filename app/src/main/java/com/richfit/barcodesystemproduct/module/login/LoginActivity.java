@@ -5,11 +5,10 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 
-import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.module.welcome.WelcomeActivity;
-import com.richfit.common_lib.rxutils.RxCilck;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.widget.RichAutoEditText;
 
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by monday on 2016/10/27.
@@ -39,6 +38,19 @@ public class LoginActivity extends BaseActivity<LoginPresenterImp> implements Lo
 
     @Override
     public void initInjector() {
+//        mDisposable = Flowable.create((FlowableOnSubscribe<String>) emitter -> {
+//            setupActivityComponent().inject(LoginActivity.this);
+//            emitter.onNext("Dagger2 is Ok!!!");
+//            emitter.onComplete();
+//        }, BackpressureStrategy.LATEST).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribeWith(new ComponentSubscriber() {
+//                    @Override
+//                    public void onComplete() {
+//                        mPresenter.readUserInfos();
+//                        mPresenter.uploadCrashLogFiles();
+//                    }
+//                });
         mActivityComponent.inject(this);
     }
 
@@ -53,22 +65,19 @@ public class LoginActivity extends BaseActivity<LoginPresenterImp> implements Lo
                 .subscribe(a -> mPresenter.login(etUsername.getText().toString(),
                         etPassword.getText().toString()));
 
-        RxCilck.clicks(etUsername)
+        RxView.clicks(etUsername)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     if (etUsername.getAdapter() != null) {
                         etUsername.setThreshold(0);
                         etUsername.showDropDown();
                     }
                 });
-//
-//        RxView.clicks(btnLogin)
-//                .subscribe(a -> {
-//                    throw new RuntimeException("自定义异常");
-//                });
     }
 
     @Override
     public void initData(Bundle savedInstanceState) {
+        super.initData(savedInstanceState);
         mPresenter.readUserInfos();
         mPresenter.uploadCrashLogFiles();
     }

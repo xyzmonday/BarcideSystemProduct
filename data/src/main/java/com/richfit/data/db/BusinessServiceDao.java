@@ -7,9 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
+import com.richfit.domain.bean.RefDetailEntity;
+import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.repository.IBusinessService;
 
@@ -74,40 +75,49 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             default:
                 break;
         }
+        SQLiteDatabase db = null;
+        try {
+            db = getWritableDB();
+            //1.抬头
+            final String transId = saveBusinessHeader(db, result);
+            if (TextUtils.isEmpty(transId)) {
+                return false;
+            }
 
-        //1.抬头
-        final String transId = saveBusinessHeader(result);
-        if (TextUtils.isEmpty(transId)) {
+            result.transId = transId;
+            // 2.行表
+            String transLineId = saveBusinessLine(db, result, yk, subGroup, refDoc, prodGroup);
+            if (TextUtils.isEmpty(transLineId)) {
+                return false;
+            }
+            result.transLineId = transLineId;
+
+            // 3.行表-拆分表
+            String transLineSplitId = saveBusinessLineSplit(db, result, yk);
+            if (TextUtils.isEmpty(transLineSplitId)) {
+                return false;
+            }
+            result.transLineSplitId = transLineSplitId;
+
+            // 4.仓位表
+            String locationId = saveBusinessLocation(db, result, yk, device);
+            if (TextUtils.isEmpty(locationId)) {
+                return false;
+            }
+
+            // 5.更新行的累计数量
+            updateLineTotalQuantity(db, result);
+
+            // 6.更新拆分行的累计数量
+            updateLineSplitTotalQuantity(db, result);
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
+        } finally {
+            if (db != null) {
+                db.close();
+            }
         }
-
-        result.transId = transId;
-        // 2.行表
-        String transLineId = saveBusinessLine(result, yk, subGroup, refDoc, prodGroup);
-        if (TextUtils.isEmpty(transLineId)) {
-            return false;
-        }
-        result.transLineId = transLineId;
-
-        // 3.行表-拆分表
-        String transLineSplitId = saveBusinessLineSplit(result, yk);
-        if (TextUtils.isEmpty(transLineSplitId)) {
-            return false;
-        }
-        result.transLineSplitId = transLineSplitId;
-
-        // 4.仓位表
-        String locationId = saveBusinessLocation(result, yk, device);
-        if (TextUtils.isEmpty(locationId)) {
-            return false;
-        }
-
-        // 5.更新行的累计数量
-        updateLineTotalQuantity(result);
-
-        // 6.更新拆分行的累计数量
-        updateLineSplitTotalQuantity(result);
-
         return true;
     }
 
@@ -117,15 +127,13 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @param param
      * @return
      */
-    private String saveBusinessHeader(ResultEntity param) {
+    private String saveBusinessHeader(SQLiteDatabase db, ResultEntity param) {
         // 1.查头是否存在
         // 条件
         // 无参考：bizType、createdBy、
         // 有参考：bizType、refType、refCodeId
         clearStringBuffer();
-        SQLiteDatabase db = getWritableDB();
         String transId = "";
-
         //定义一个匹配条件的容器
         List<String> selectionsList = new ArrayList<>();
         String[] selections;
@@ -163,6 +171,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         }
         sb.setLength(0);
         cursor.close();
+        final long creationDate = UiUtil.getSystemDate();
         ContentValues cv;
         if (TextUtils.isEmpty(transId)) {
             //如果不存在，那么直接插入一条数据
@@ -180,7 +189,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             cv.put("supplier_id", param.supplierId);
             cv.put("supplier_code", param.supplierNum);
             cv.put("created_by", param.userId);
-            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("creation_date", creationDate);
             long iResult = db.insert("mtl_transaction_headers", null, cv);
             if (iResult < 1) {
                 return "";
@@ -189,8 +198,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             //修改
             cv = new ContentValues();
             cv.put("id", transId);
-            cv.put("created_by", param.userId);
-            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_updated_by", param.userId);
+            cv.put("last_update_date", creationDate);
             int iResult = db.update("mtl_transaction_headers", cv, "id = ?", new String[]{transId});
             if (iResult < 1) {
                 return "";
@@ -210,7 +219,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @param prodGroup
      * @return
      */
-    private String saveBusinessLine(ResultEntity param, boolean yk, boolean subGroup,
+    private String saveBusinessLine(SQLiteDatabase db, ResultEntity param, boolean yk, boolean subGroup,
                                     boolean refDoc, boolean prodGroup) {
         String transLineId = null;
         String transId = param.transId;
@@ -219,7 +228,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         // 无参考：workId、invId、materialId 移库增加 recWorkId、recInvId
         // 有参考：refLineId
         clearStringBuffer();
-        SQLiteDatabase db = getWritableDB();
         String[] selections;
         List<String> selectionList = new ArrayList<>();
         sb.append("select L.id from mtl_transaction_lines L where L.trans_id = ?");
@@ -271,7 +279,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         }
         sb.setLength(0);
         cursor.close();
-
+        final long creationDate = UiUtil.getSystemDate();
         ContentValues cv = new ContentValues();
         cv.put("trans_id", transId);
         cv.put("material_id", param.materialId);
@@ -303,7 +311,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             transLineId = UiUtil.getUUID();
             cv.put("id", transLineId);
             cv.put("created_by", param.userId);
-            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("creation_date", creationDate);
             long iResult = db.insert("mtl_transaction_lines", null, cv);
             if (iResult < 1) {
                 return "";
@@ -312,13 +320,12 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             // 修改
             cv.put("id", transLineId);
             cv.put("last_updated_by", param.userId);
-            cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_update_date", creationDate);
             int iResult = db.update("mtl_transaction_lines", cv, "id = ?", new String[]{transLineId});
             if (iResult < 1) {
                 return "";
             }
         }
-        db.close();
         return transLineId;
     }
 
@@ -329,12 +336,11 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @param yk
      * @return
      */
-    private String saveBusinessLineSplit(ResultEntity param, boolean yk) {
+    private String saveBusinessLineSplit(SQLiteDatabase db, ResultEntity param, boolean yk) {
         String transLineSplitId = null;
         String transId = param.transId;
         String transLineId = param.transLineId;
         clearStringBuffer();
-        SQLiteDatabase db = getWritableDB();
         String[] selections;
         List<String> selectionList = new ArrayList<>();
 
@@ -385,7 +391,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         }
         cursor.close();
         sb.setLength(0);
-
+        final long creationDate = UiUtil.getSystemDate();
         ContentValues cv = new ContentValues();
         cv.put("trans_id", transId);
         cv.put("trans_line_id", transLineId);
@@ -399,6 +405,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cv.put("batch_num", param.batchFlag);
         cv.put("ref_line_num", param.refLineNum);
         cv.put("ref_doc", param.refDoc);
+        cv.put("special_convert", param.specialConvert);
         if (param.refDocItem != null) {
             cv.put("ref_doc_item", param.refDocItem);
         }
@@ -426,7 +433,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             transLineSplitId = UiUtil.getUUID();
             cv.put("id", transLineSplitId);
             cv.put("created_by", param.userId);
-            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("creation_date", creationDate);
 
             long iResult = db.insert("mtl_transaction_lines_split", null, cv);
             if (iResult < 1) {
@@ -436,13 +443,13 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             // 修改
             cv.put("id", transLineSplitId);
             cv.put("last_updated_by", param.userId);
-            cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_update_date", creationDate);
+            cv.put("special_convert", param.specialConvert);
             int iResult = db.update("mtl_transaction_lines_split", cv, "id = ?", new String[]{transLineSplitId});
             if (iResult < 1) {
                 return "";
             }
         }
-        db.close();
         return transLineSplitId;
     }
 
@@ -454,13 +461,12 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @param device
      * @return
      */
-    private String saveBusinessLocation(ResultEntity param, boolean yk, boolean device) {
+    private String saveBusinessLocation(SQLiteDatabase db, ResultEntity param, boolean yk, boolean device) {
         String locationId = null;
         String transId = param.transId;
         String transLineId = param.transLineId;
         String transLineSplitId = param.transLineSplitId;
         clearStringBuffer();
-        SQLiteDatabase db = getWritableDB();
         String[] selections;
         List<String> selectionList = new ArrayList<>();
 
@@ -497,7 +503,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         }
         sb.setLength(0);
         cursor.close();
-
+        final long creationDate = UiUtil.getSystemDate();
         ContentValues cv = new ContentValues();
         if (TextUtils.isEmpty(locationId)) {
             // 新增
@@ -518,7 +524,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 }
             }
             cv.put("created_by", param.userId);
-            cv.put("creation_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("creation_date", creationDate);
             cv.put("quantity", param.quantity);
             if (yk) {
                 cv.put("rec_quantity", param.quantity);
@@ -531,7 +537,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         } else {
             // 修改
             cv.put("last_updated_by", param.userId);
-            cv.put("last_update_date", UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
+            cv.put("last_update_date", creationDate);
 
             int iResult = db.update("mtl_transaction_lines_location", cv, "id = ?", new String[]{locationId});
             if (iResult < 0) {
@@ -555,9 +561,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      *
      * @param param
      */
-    public void updateLineTotalQuantity(ResultEntity param) {
+    public void updateLineTotalQuantity(SQLiteDatabase db, ResultEntity param) {
         // mtl_transaction_lines
-        SQLiteDatabase db = getWritableDB();
         clearStringBuffer();
         sb.append(" SELECT IFNULL(SUM(T.QUANTITY), 0) AS A ")
                 .append(" FROM MTL_TRANSACTION_LINES_LOCATION T ")
@@ -572,7 +577,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
 
         db.execSQL("update MTL_TRANSACTION_LINES set quantity =  ? where id = ?",
                 new String[]{totalQuantity, param.transLineId});
-        db.close();
     }
 
     /**
@@ -580,8 +584,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      *
      * @param param
      */
-    private void updateLineSplitTotalQuantity(ResultEntity param) {
-        SQLiteDatabase db = getWritableDB();
+    private void updateLineSplitTotalQuantity(SQLiteDatabase db, ResultEntity param) {
         StringBuffer sb = new StringBuffer();
         sb.append(" SELECT SUM(QUANTITY) AS A ")
                 .append("FROM MTL_TRANSACTION_LINES_SPLIT T ")
@@ -595,7 +598,6 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cursor.close();
         db.execSQL("update MTL_TRANSACTION_LINES_SPLIT set quantity = ? where id = ?",
                 new String[]{totalQuantity, param.transLineSplitId});
-        db.close();
     }
 
     /**
@@ -824,8 +826,151 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         return true;
     }
 
+    /**
+     * 读取所有缓存数据，等待上传
+     *
+     * @return
+     */
     @Override
-    public String uploadBusinessDataOffline(List<ResultEntity> params) {
-        return null;
+    public List<ReferenceEntity> readTransfredData() {
+        SQLiteDatabase db = getWritableDB();
+        ArrayList<ReferenceEntity> datas = new ArrayList<>();
+
+        clearStringBuffer();
+        StringBuffer sql = new StringBuffer();
+        sql.append("select id,voucher_date,ref_code_id,ref_code,biz_type,ref_type,move_type,inv_type,")
+                .append("supplier_id,supplier_code,created_by ")
+                .append("from MTL_TRANSACTION_HEADERS order by creation_date");
+        ReferenceEntity header = new ReferenceEntity();
+        ;
+        int index;
+        //1. 读取抬头的信息
+        Cursor cursor = db.rawQuery(sql.toString(), null);
+        while (cursor.moveToNext()) {
+            index = -1;
+            header.transId = cursor.getString(++index);
+            header.voucherDate = cursor.getString(++index);
+            header.refCodeId = cursor.getString(++index);
+            header.recordNum = cursor.getString(++index);
+            header.bizType = cursor.getString(++index);
+            header.refType = cursor.getString(++index);
+            header.moveType = cursor.getString(++index);
+            header.invType = cursor.getString(++index);
+            header.supplierId = cursor.getString(++index);
+            header.supplierNum = cursor.getString(++index);
+            header.recordCreator = cursor.getString(++index);
+            datas.add(header);
+        }
+        cursor.close();
+        sql.setLength(0);
+        //2. 读取明细
+        if (datas.size() == 0) {
+            return datas;
+        }
+        sb.append("select T.id,T.ref_line_id,T.ref_line_num,T.work_id,T.inv_id,T.rec_work_id,T.rec_inv_id,")
+                .append("T.material_id,T.ref_doc,T.ref_doc_item,T.ins_lot,")
+                .append("T.return_quantity,T.move_cause,T.move_cause_desc,T.decision_code,")
+                .append("T.project_text,L.id as locationId,L.quantity,L.rec_quantity,L.location,L.rec_location, ")
+                .append("S.id as transLineSplitId,S.batch_num,S.rec_batch_num,S.special_convert,")
+                .append("M.material_num,M.material_desc,M.material_group,WORG.org_code as work_code,WORG.org_name as work_name,")
+                .append("IORG.org_code as inv_code,IORG.org_name as inv_name ")
+                .append(" from MTL_TRANSACTION_LINES T ")
+                .append(" left join MTL_TRANSACTION_LINES_LOCATION L ")
+                .append(" on T.id = L.trans_line_id ")
+                .append(" left join MTL_TRANSACTION_LINES_SPLIT S ")
+                .append(" on T.id = S.trans_line_id ")
+                .append(" left join BASE_MATERIAL_CODE M ")
+                .append(" on T.material_id = M.id")
+                .append(" left join P_AUTH_ORG WORG ")
+                .append(" on T.work_id = WORG.org_id")
+                .append(" left join P_AUTH_ORG IORG ")
+                .append(" on T.inv_id = IORG.org_id")
+                .append(" where T.trans_id = ?");
+
+
+        for (int i = 0, size = datas.size(); i < size; i++) {
+            ArrayList<RefDetailEntity> details = new ArrayList<>();
+            RefDetailEntity detail = null;
+            cursor = db.rawQuery(sb.toString(), new String[]{datas.get(i).transId});
+            while (cursor.moveToNext()) {
+                detail = new RefDetailEntity();
+                index = -1;
+                detail.transLineId = cursor.getString(++index);
+                detail.refLineId = cursor.getString(++index);
+                detail.lineNum = cursor.getString(++index);
+                detail.workId = cursor.getString(++index);
+                detail.invId = cursor.getString(++index);
+                detail.recWorkId = cursor.getString(++index);
+                detail.recInvId = cursor.getString(++index);
+                detail.materialId = cursor.getString(++index);
+                detail.refDoc = cursor.getString(++index);
+                detail.refDocItem = cursor.getInt(++index);
+                detail.insLot = cursor.getString(++index);
+                detail.returnQuantity = cursor.getString(++index);
+                detail.moveCause = cursor.getString(++index);
+                detail.moveCauseDesc = cursor.getString(++index);
+                detail.decisionCode = cursor.getString(++index);
+                detail.projectText = cursor.getString(++index);
+                detail.locationId = cursor.getString(++index);
+                detail.quantity = cursor.getString(++index);
+                detail.recQuantity = cursor.getString(++index);
+                detail.location = cursor.getString(++index);
+                detail.recLocation = cursor.getString(++index);
+                detail.transLineSplitId = cursor.getString(++index);
+                detail.batchFlag = cursor.getString(++index);
+                detail.recBatchFlag = cursor.getString(++index);
+                detail.specialConvert = cursor.getString(++index);
+                detail.materialNum = cursor.getString(++index);
+                detail.materialDesc = cursor.getString(++index);
+                detail.materialGroup = cursor.getString(++index);
+                detail.workCode = cursor.getString(++index);
+                detail.workName = cursor.getString(++index);
+                detail.invCode = cursor.getString(++index);
+                detail.invName = cursor.getString(++index);
+                details.add(detail);
+            }
+            datas.get(i).billDetailList = details;
+            cursor.close();
+        }
+        //进行数据转换，将子节点转换为Item
+        db.close();
+        return datas;
+    }
+
+    /**
+     * 离线数据上传成功后删除缓存和单据数据
+     *
+     * @param transId
+     */
+    @Override
+    public void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId) {
+        if (TextUtils.isEmpty(transId)) {
+            return;
+        }
+        SQLiteDatabase db = getWritableDB();
+
+        //获取refCodeId用于删除单据
+        String refCodeId = null;
+        Cursor cursor = db.rawQuery("select ref_code_id from MTL_TRANSACTION_HEADERS where id = ?",
+                new String[]{transId});
+
+        while (cursor.moveToNext()) {
+            refCodeId = cursor.getString(0);
+        }
+        cursor.close();
+        if (TextUtils.isEmpty(refCodeId)) {
+            return;
+        }
+
+        //删除缓存
+        db.delete("MTL_TRANSACTION_HEADERS", "id = ?", new String[]{transId});
+        db.delete("MTL_TRANSACTION_LINES", "trans_id = ?", new String[]{transId});
+        db.delete("MTL_TRANSACTION_LINES_LOCATION", "trans_id = ?", new String[]{transId});
+        db.delete("MTL_TRANSACTION_LINES_SPLIT", "trans_id= ?", new String[]{transId});
+
+        //删除单据
+
+
+        db.close();
     }
 }

@@ -15,14 +15,14 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.BottomMenuAdapter;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_check.qinghai_blind.header.imp.BlindHeaderPresenterImp;
-import com.richfit.common_lib.rxutils.RxCilck;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -37,6 +37,7 @@ import com.richfit.domain.bean.WorkEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 
@@ -125,7 +126,8 @@ public class QingHaiBlindHeaderFragment extends BaseFragment<BlindHeaderPresente
                 .subscribe(position -> mPresenter.getInvsByWorkId(mWorkDatas.get(position).workId, 0));
 
          /*如果选择仓库级，那么初始化工厂和库存地点*/
-        RxCilck.clicks(rbWarehouseLevel)
+        RxView.clicks(rbWarehouseLevel)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     resetUI();
                     mRefData = null;
@@ -134,7 +136,8 @@ public class QingHaiBlindHeaderFragment extends BaseFragment<BlindHeaderPresente
                 });
 
         /*如果选择仓位级，那么初始化仓库号*/
-        RxCilck.clicks(rbStorageNumLevel)
+        RxView.clicks(rbStorageNumLevel)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     resetUI();
                     mRefData = null;

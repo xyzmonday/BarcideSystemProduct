@@ -78,6 +78,17 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
                 .appComponent(BarcodeSystemApplication.getAppComponent())
                 .build();
         super.onCreate(savedInstanceState);
+        //恢复全局的数据
+        if (savedInstanceState != null) {
+            Global.USER_ID = savedInstanceState.getString("user_id_key");
+            Global.LOGIN_ID = savedInstanceState.getString("login_id_key");
+            Global.USER_NAME = savedInstanceState.getString("user_name_key");
+            Global.COMPANY_ID = savedInstanceState.getString("company_id_key");
+            Global.COMPANY_CODE = savedInstanceState.getString("company_code_key");
+            Global.MAC_ADDRESS = savedInstanceState.getString("mac_address_key");
+            Global.AUTH_ORG = savedInstanceState.getString("auth_org_key");
+            Global.BATCH_FLAG = savedInstanceState.getBoolean("batch_flag_key");
+        }
 
         int layoutId = getContentId();
         if (layoutId > 0) {
@@ -90,20 +101,17 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         scanDataIntentFilter.addAction(WZ_RECT_DATA_ACTION);
         scanDataIntentFilter.addAction(DQ_RECE_DATA_ACTION);
         registerReceiver(receiver, scanDataIntentFilter);
-
         initInjector();
         if (mPresenter != null)
-            mPresenter.attachView(this);
+            mPresenter.attachView(BaseActivity.this);
         initVariables();
         initViews();
         initData(savedInstanceState);
         initEvent();
         if (mOpenStatusBar)
             StatusBarCompat.compat(this);
-        ViewServer.get(this).addWindow(this);
-        //注意这里如果不在onDestroy方法里面不释放当前Activity的实例，那么将出现内存泄露
-//        AppManager.addActivity(this);
     }
+
 
     protected void setStatusBar(boolean isOpenStatusBar) {
         mOpenStatusBar = isOpenStatusBar;
@@ -116,6 +124,20 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString("user_id_key", Global.USER_ID);
+        outState.putString("login_id_key", Global.LOGIN_ID);
+        outState.putString("user_name_key", Global.USER_NAME);
+        outState.putString("company_id_key", Global.COMPANY_ID);
+        outState.putString("company_code_key", Global.COMPANY_CODE);
+        outState.putString("mac_address_key", Global.MAC_ADDRESS);
+        outState.putString("auth_org_key", Global.AUTH_ORG);
+        outState.putBoolean("batch_flag_key", Global.BATCH_FLAG);
+        super.onSaveInstanceState(outState);
+
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mNetConnectErrorDialogFragment != null) {
@@ -124,10 +146,10 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         }
         unregisterReceiver(receiver);
         if (mUnbinder != null && mUnbinder != Unbinder.EMPTY) mUnbinder.unbind();
+
         if (mPresenter != null)
             //防止内存泄露
             mPresenter.detachView();
-        ViewServer.get(this).removeWindow(this);
     }
 
 

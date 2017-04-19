@@ -27,6 +27,7 @@ import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.TreeNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -62,6 +63,8 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
     protected String mInspectionNum;
     /*底部提示菜单数据源*/
     protected List<BottomMenuEntity> mBottomMenus;
+    /*数据上传01/05等业务，在开发后期需要增加的字段*/
+    protected HashMap<String,Object> mExtraTansMap = new HashMap<>();
 
     /**
      * 初始化公共的组件，这里统一设置RecyclerView的基本配置；自动下拉刷新接口

@@ -8,6 +8,7 @@ import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 
 import java.util.ArrayList;
@@ -124,6 +125,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
     }
 
     private int createModuleIcon(String moduleCode) {
+
         if (TextUtils.isEmpty(moduleCode))
             return 0;
         switch (moduleCode) {
@@ -155,6 +157,8 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
                 return R.mipmap.icon_module14;
             case Global.L_LOADDATA:
                 return R.mipmap.icon_module15;
+            case Global.L_UPLOADDATA:
+                return R.mipmap.icon_module16;
         }
         return 0;
     }

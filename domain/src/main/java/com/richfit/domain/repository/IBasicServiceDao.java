@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.InvEntity;
+import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
@@ -215,4 +216,6 @@ public interface IBasicServiceDao {
      * @return
      */
     boolean getLocationInfo(String queryType, String workId, String invId, String storageNum, String location);
+
+    MaterialEntity getMaterialInfo(String queryType,String materialNum);
 }

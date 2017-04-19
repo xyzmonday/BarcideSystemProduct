@@ -31,10 +31,14 @@ public class QingHaiUbSto351LCollectFragment extends BaseMSCollectFragment {
     @BindView(R.id.et_special_inv_num)
     EditText etSpecialInvNum;
 
+    @Override
+    public int getContentId() {
+        return R.layout.fragment_lmsy_collect;
+    }
 
     @Override
     public void initInjector() {
-
+        mFragmentComponent.inject(this);
     }
 
     @Override
@@ -151,6 +155,14 @@ public class QingHaiUbSto351LCollectFragment extends BaseMSCollectFragment {
         //发出仓位
         if (TextUtils.isEmpty(getString(etSendLocation)) || getString(etSendLocation).length() > 10) {
             showMessage("您输入的发出仓位不合理");
+            return false;
+        }
+
+        final String specialInvFlag = getString(etSpecialInvFlag);
+        final String specialInvNum = getString(etSpecialInvNum);
+        if(!TextUtils.isEmpty(specialInvFlag) && "K".equalsIgnoreCase(specialInvFlag)
+                && TextUtils.isEmpty(specialInvNum)) {
+            showMessage("请先输入特殊库存编号");
             return false;
         }
 

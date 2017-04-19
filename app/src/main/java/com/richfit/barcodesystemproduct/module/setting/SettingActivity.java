@@ -12,11 +12,11 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.module.setting.imp.SettingPresenterImp;
 import com.richfit.common_lib.dialog.ProgressDialogFragment;
-import com.richfit.common_lib.rxutils.RxCilck;
 import com.richfit.common_lib.utils.FileUtil;
 import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
@@ -25,6 +25,7 @@ import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.UpdateEntity;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import ch.ielse.view.SwitchView;
@@ -90,17 +91,20 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     @Override
     public void initEvent() {
         /*获取版本信息*/
-        RxCilck.clicks(mCheckUpdateApk)
+        RxView.clicks(mCheckUpdateApk)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .filter(a -> mCurrentLoadStatus != LOAD_STATUS_LADING
                         && mCurrentLoadStatus != LOAD_STATUS_PAUSE)
                 .subscribe(a -> mPresenter.getAppVersion());
 
         /*下载基础数据*/
-        RxCilck.clicks(fabButton)
+        RxView.clicks(fabButton)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .filter(a -> mCurrentLoadStatus != LOAD_STATUS_LADING)
                 .subscribe(a -> startLoadBasicData());
 
-        RxCilck.clicks(mProgressBar)
+        RxView.clicks(mProgressBar)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     if (mProgressBar.getStatus() == ButtonCircleProgressBar.Status.Starting) {
                         //如果正在下载，那么暂停
@@ -112,9 +116,6 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
                             resume(mUpdateInfo.appDownloadUrl, mUpdateInfo.appName);
                     }
                 });
-        //重置密码
-//        RxCilck.clicks(mResetPwd)
-//                .subscribe(a->mPresenter.)
     }
 
     @Override

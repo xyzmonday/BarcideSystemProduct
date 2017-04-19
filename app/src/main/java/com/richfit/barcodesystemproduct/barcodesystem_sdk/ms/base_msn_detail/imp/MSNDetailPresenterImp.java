@@ -354,6 +354,7 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
                     data.locationId = loc.id;
                     data.specialInvFlag = loc.specialInvFlag;
                     data.specialInvNum = loc.specialInvNum;
+                    data.specialConvert = loc.specialConvert;
                     //额外字段信息
                     data.mapExt = UiUtil.copyMap(target.mapExt, loc.mapExt);
                     datas.add(data);

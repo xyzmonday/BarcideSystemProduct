@@ -65,8 +65,8 @@ import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detai
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.header.LQHeaderFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.collect.LACollectFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.header.LAHeaderFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSNCollectFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSNEditFragment;
+import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSN311EditFragment;
+import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSNC311CollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311CollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311DetailFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311EditFragment;
@@ -79,6 +79,8 @@ import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.QingHa
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.QingHaiUbSto351DetailFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.QingHaiUbSto351EditFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.QingHaiUbSto351HeaderFragment;
+import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.QingHaiUbSto351LCollectFragment;
+import com.richfit.barcodesystemproduct.module_movestore.qinghai_ubsto351.QingHaiUbSto351LEditFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301CollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301DetailFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qingyang_301n.QingYangMSN301EditFragment;
@@ -297,7 +299,10 @@ public interface FragmentComponent {
     void inject(QingYangRSYCollectFragment fragment);
     void inject(QingYangRSYEditFragment framgent);
 
-    void inject(QingHaiLMSNCollectFragment fragment);
-    void inject(QingHaiLMSNEditFragment framgent);
+    void inject(QingHaiLMSNC311CollectFragment fragment);
+    void inject(QingHaiLMSN311EditFragment framgent);
+
+    void inject(QingHaiUbSto351LCollectFragment fragment);
+    void inject(QingHaiUbSto351LEditFragment fragment);
 
 }

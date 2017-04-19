@@ -9,27 +9,23 @@ import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.common_lib.utils.UiUtil;
-import com.richfit.domain.bean.RefDetailEntity;
+import com.richfit.domain.bean.ResultEntity;
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
- * 离线单据数据下载界面中数据明细适配器
- * Created by monday on 2017/3/21.
+ * Created by monday on 2017/4/18.
  */
 
-public class LocalRefDataAdapter extends RecyclerView.Adapter<LocalRefDataAdapter.LocalDataViewHolder>
-        implements StickyRecyclerHeadersAdapter<LocalRefDataAdapter.LocalHeaderViewHolder> {
+public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAdapter.UploadViewHolder>
+        implements StickyRecyclerHeadersAdapter<ShowUploadDataAdapter.UploadHeaderViewHolder> {
 
     private int mLayoutId;
-    private List<RefDetailEntity> mDatas;
+    private List<ResultEntity> mDatas;
     private Context mContext;
 
-    public LocalRefDataAdapter(Context context, int layoutId, List<RefDetailEntity> datas) {
+    public ShowUploadDataAdapter(Context context, int layoutId, List<ResultEntity> datas) {
         this.mContext = context;
         this.mDatas = datas;
         this.mLayoutId = layoutId;
@@ -43,10 +39,9 @@ public class LocalRefDataAdapter extends RecyclerView.Adapter<LocalRefDataAdapte
      * @return
      */
     @Override
-    public LocalDataViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(mContext).inflate(mLayoutId, parent,
-                false);
-        LocalDataViewHolder holder = new LocalDataViewHolder(itemView);
+    public UploadViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(mContext).inflate(mLayoutId, parent, false);
+        UploadViewHolder holder = new UploadViewHolder(itemView);
         return holder;
     }
 
@@ -57,30 +52,33 @@ public class LocalRefDataAdapter extends RecyclerView.Adapter<LocalRefDataAdapte
      * @param position
      */
     @Override
-    public void onBindViewHolder(LocalDataViewHolder holder, int position) {
-        final RefDetailEntity item = mDatas.get(position);
+    public void onBindViewHolder(UploadViewHolder holder, int position) {
+        final ResultEntity item = mDatas.get(position);
         holder.rowNum.setText(String.valueOf((position + 1)));
-        holder.lineNum.setText(item.lineNum);
+        holder.lineNum.setText(item.refLineNum);
         holder.materialNum.setText(item.materialNum);
         holder.materialDesc.setText(item.materialDesc);
         holder.materialGroup.setText(item.materialGroup);
         holder.batchFlag.setText(item.batchFlag);
-        holder.totalQuantity.setText(item.totalQuantity);
+        holder.totalQuantity.setText(item.quantity);
         holder.actQuantity.setText(item.actQuantity);
         holder.work.setText(item.workCode);
+        holder.location.setText("barcode".equalsIgnoreCase(item.location) ? "" : item.location);
         holder.inv.setText(item.invCode);
+        holder.batchFlag.setText(item.batchFlag);
     }
 
     /**
      * 给出stickyHeader的Id,每一个Item的将根据Id与上一个Item的Id是否一致来判断是否需要
      * 生成一个新的stickyHeader
+     *
      * @param position
      * @return
      */
     @Override
     public long getHeaderId(int position) {
         //这我们给出的是相同单据号的共享同一个stickyHeader
-        char[] chars = mDatas.get(position).recordNum.toCharArray();
+        char[] chars = mDatas.get(position).refCode.toCharArray();
         long id = 0L;
         for (char c : chars) {
             id += c;
@@ -90,28 +88,33 @@ public class LocalRefDataAdapter extends RecyclerView.Adapter<LocalRefDataAdapte
 
     /**
      * 为stickyHeader生成一个ViewHolder
+     *
      * @param parent
      * @return
      */
     @Override
-    public LocalHeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+    public UploadHeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.item_local_data_sticky, parent, false);
         ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
         //注意这里我们需要直接给出stickyHeader宽度，因为一般而言RecyclerView的Item不进行左右滑动。
         //由于需要左右滑动也就是Item的宽度已经超过了屏幕宽度，stickyHeader不能测量出准确的宽度，所以直接给出
         //精确的宽度，这个宽度是通过布局文件手动计算得到的。
         layoutParams.width = UiUtil.dip2px(mContext, 1840);
-        return new LocalHeaderViewHolder(view);
+        return new UploadHeaderViewHolder(view);
     }
 
     /**
      * 为stickyHeader的ViewHolder绑定数据
+     *
      * @param holder
      * @param position
      */
     @Override
-    public void onBindHeaderViewHolder(LocalHeaderViewHolder holder, int position) {
-        holder.mTvHeader.setText("单据号:" + mDatas.get(position).recordNum);
+    public void onBindHeaderViewHolder(UploadHeaderViewHolder holder, int position) {
+        ResultEntity item = mDatas.get(position);
+        holder.recordNum.setText(item.refCode);
+        holder.bizType.setText(item.businessTypeDesc);
+        holder.refType.setText(item.refTypeDesc);
     }
 
     @Override
@@ -119,43 +122,47 @@ public class LocalRefDataAdapter extends RecyclerView.Adapter<LocalRefDataAdapte
         return mDatas.size();
     }
 
-    public static class LocalDataViewHolder extends RecyclerView.ViewHolder {
+    public static class UploadViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.rowNum)
         TextView rowNum;
-        @BindView(R.id.lineNum)
         TextView lineNum;
-        @BindView(R.id.materialNum)
         TextView materialNum;
-        @BindView(R.id.materialDesc)
         TextView materialDesc;
-        @BindView(R.id.materialGroup)
         TextView materialGroup;
-        @BindView(R.id.batchFlag)
         TextView batchFlag;
-        @BindView(R.id.tv_act_quantity)
         TextView actQuantity;
-        @BindView(R.id.totalQuantity)
         TextView totalQuantity;
-        @BindView(R.id.work)
+        TextView location;
         TextView work;
-        @BindView(R.id.inv)
         TextView inv;
 
-        public LocalDataViewHolder(View itemView) {
+        public UploadViewHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(itemView);
+            rowNum = (TextView) itemView.findViewById(R.id.rowNum);
+            lineNum = (TextView) itemView.findViewById(R.id.lineNum);
+            materialNum = (TextView) itemView.findViewById(R.id.materialNum);
+            materialDesc = (TextView) itemView.findViewById(R.id.materialDesc);
+            materialGroup = (TextView) itemView.findViewById(R.id.materialGroup);
+            batchFlag = (TextView) itemView.findViewById(R.id.batchFlag);
+            actQuantity = (TextView) itemView.findViewById(R.id.actQuantity);
+            totalQuantity = (TextView) itemView.findViewById(R.id.totalQuantity);
+            location = (TextView) itemView.findViewById(R.id.location);
+            work = (TextView) itemView.findViewById(R.id.work);
+            inv = (TextView) itemView.findViewById(R.id.inv);
         }
     }
 
-    public static class LocalHeaderViewHolder extends RecyclerView.ViewHolder {
+    public static class UploadHeaderViewHolder extends RecyclerView.ViewHolder {
 
-        TextView mTvHeader;
+        TextView recordNum;
+        TextView bizType;
+        TextView refType;
 
-        public LocalHeaderViewHolder(View itemView) {
+        public UploadHeaderViewHolder(View itemView) {
             super(itemView);
-            mTvHeader = (TextView) itemView.findViewById(R.id.recordNum);
+            recordNum = (TextView) itemView.findViewById(R.id.recordNum);
+            bizType = (TextView) itemView.findViewById(R.id.bizType);
+            refType = (TextView) itemView.findViewById(R.id.refType);
         }
     }
-
 }

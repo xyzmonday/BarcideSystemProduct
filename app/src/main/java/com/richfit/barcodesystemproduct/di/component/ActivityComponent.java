@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 
 import com.richfit.barcodesystemproduct.di.module.ActivityModule;
-import com.richfit.common_lib.scope.ActivityScope;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.barcodesystemproduct.module.home.HomeActivity;
 import com.richfit.barcodesystemproduct.module.login.LoginActivity;
@@ -15,6 +13,9 @@ import com.richfit.barcodesystemproduct.module.splash.SplashActivity;
 import com.richfit.barcodesystemproduct.module.welcome.WelcomeActivity;
 import com.richfit.barcodesystemproduct.module_acceptstore.ww_component.WWComponentActivity;
 import com.richfit.barcodesystemproduct.module_local.loaddown.LoadLocalRefDataActivity;
+import com.richfit.barcodesystemproduct.module_local.upload.UploadActivity;
+import com.richfit.common_lib.scope.ActivityScope;
+import com.richfit.common_lib.scope.ContextLife;
 
 import dagger.Component;
 
@@ -42,5 +43,7 @@ public interface ActivityComponent {
     void inject(EditActivity activity);
     void inject(WWComponentActivity activity);
     void inject(LoadLocalRefDataActivity activity);
+
+    void inject(UploadActivity activity);
 
 }

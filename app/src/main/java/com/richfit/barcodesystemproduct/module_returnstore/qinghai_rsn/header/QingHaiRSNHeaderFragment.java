@@ -7,14 +7,14 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
-import com.jakewharton.rxbinding.widget.RxAutoCompleteTextView;
-import com.jakewharton.rxbinding.widget.RxTextView;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.header.imp.QingHaiRSNPresenterImp;
-import com.richfit.common_lib.rxutils.RxCilck;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -93,7 +93,8 @@ public class QingHaiRSNHeaderFragment extends BaseFragment<QingHaiRSNPresenterIm
                         getString(etAutoComp), 100, ORG_FLAG, mBizType));
 
         //点击自动提示控件，显示默认列表
-        RxCilck.clicks(etAutoComp)
+        RxView.clicks(etAutoComp)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> showAutoCompleteConfig(etAutoComp));
 
         //修改自动提示控件，说明用户需要锁乳关键字进行搜索，如果默认的列表中存在，那么不在向数据库进行查询

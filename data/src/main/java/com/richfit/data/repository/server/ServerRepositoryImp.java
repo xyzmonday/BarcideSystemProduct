@@ -72,7 +72,7 @@ public class ServerRepositoryImp implements IServerRepository {
 
     @Override
     public Flowable<ArrayList<RowConfig>> loadExtraConfig(String companyId) {
-        mRequestParam.put("companyId", companyId);
+        mRequestParam.put("COMPANY_ID", companyId);
         return mRequestApi.loadExtraConfig(JsonUtil.map2Json(mRequestParam))
                 .compose(TransformerHelper.handleResponse());
     }
@@ -451,8 +451,11 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("refType", refType);
         mRequestParam.put("voucherDate", voucherDate);
         mRequestParam.put("userId", userId);
-        mRequestParam.put("mapExHead", extraHeaderMap);
         mRequestParam.put("transToSAPFlag", transToSAPFlag);
+
+        if(extraHeaderMap != null && extraHeaderMap.size() > 0) {
+            mRequestParam.putAll(extraHeaderMap);
+        }
         return mRequestApi.transferCollectionData(JsonUtil.map2Json(mRequestParam))
                 .compose(TransformerHelper.ListTransformer);
     }
@@ -557,12 +560,6 @@ public class ServerRepositoryImp implements IServerRepository {
     }
 
     @Override
-    public Flowable<String> uploadInspectionDataOffline(ReferenceEntity refData) {
-        return mRequestApi.uploadInspectionDataOffline(JsonUtil.object2Json(refData))
-                .compose(TransformerHelper.MapTransformer);
-    }
-
-    @Override
     public Flowable<String> uploadMultiFiles(List<ResultEntity> results) {
         Map<String, RequestBody> bodyMap = new HashMap<>();
         if (results.size() > 0) {
@@ -591,6 +588,12 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("deviceId", deviceId);
         return mRequestApi.getDeviceInfo(JsonUtil.object2Json(mRequestParam))
                 .compose(TransformerHelper.handleResponse());
+    }
+
+    @Override
+    public Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results) {
+        return mRequestApi.uploadCollectionDataOffline(JsonUtil.object2Json(results))
+                .compose(TransformerHelper.MapTransformer);
     }
 
 

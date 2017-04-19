@@ -7,7 +7,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_edit.imp.DSNEditPresenterImp;
@@ -123,6 +123,7 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
         mSelectedLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
         mSpecialInvFlag = bundle.getString(Global.EXTRA_SPECIAL_INV_FLAG_KEY);
         mSpecialInvNum = bundle.getString(Global.EXTRA_SPECIAL_INV_NUM_KEY);
+
         //发出批次
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
         //接收仓位
@@ -305,11 +306,6 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
             return false;
         }
 
-        if (spLocation.getSelectedItemPosition() <= 0) {
-            showMessage("请先选择下架仓位");
-            return false;
-        }
-
         //检查额外字段是否合格
         if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
             showMessage("请检查输入数据");
@@ -364,8 +360,16 @@ public abstract class BaseDSNEditFragment extends BaseFragment<DSNEditPresenterI
             result.recInvId = mRefData.recInvId;
             result.materialId = tvMaterialNum.getTag().toString();
             result.batchFlag = getString(tvBatchFlag);
-            result.location = mInventoryDatas.get(spLocation.getSelectedItemPosition()).location;
+            result.costCenter = mRefData.costCenter;
+            result.projectNum = mRefData.projectNum;
+            final int position = spLocation.getSelectedItemPosition();
+            result.location = mInventoryDatas.get(position).location;
+            result.specialInvFlag = mInventoryDatas.get(position).specialInvFlag;
+            result.specialInvNum = mInventoryDatas.get(position).specialInvNum;
+            result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
+                    "Y" : "N";
             result.quantity = getString(etQuantity);
+            result.invType = "1";
             result.modifyFlag = "Y";
             result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
             result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, mExtraLineMap, mExtraLocationMap);

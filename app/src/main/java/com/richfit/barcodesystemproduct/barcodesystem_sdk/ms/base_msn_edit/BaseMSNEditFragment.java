@@ -7,7 +7,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
@@ -48,7 +48,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     @BindView(R.id.et_quantity)
     protected EditText etQuantity;
     @BindView(R.id.sp_send_location)
-    Spinner spSendLoc;
+    protected Spinner spSendLoc;
     @BindView(R.id.tv_send_batch_flag)
     protected TextView tvSendBatchFlag;
     @BindView(R.id.tv_inv_quantity)
@@ -68,7 +68,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     ArrayList<String> mSendLocations;
     ArrayList<String> mRecLocations;
     /*库存列表*/
-    private List<InventoryEntity> mInventoryDatas;
+    protected List<InventoryEntity> mInventoryDatas;
     private LocationAdapter mSendLocAdapter;
     /*缓存的历史仓位数量*/
     protected List<RefDetailEntity> mHistoryDetailList;
@@ -418,6 +418,8 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             result.location = mInventoryDatas.get(locationPos).location;
             result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
             result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
+            result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
+                    "Y" : "N";
             result.recLocation = getString(etRecLoc);
             result.recBatchFlag = getString(tvRecBatchFlag);
             result.quantity = getString(etQuantity);

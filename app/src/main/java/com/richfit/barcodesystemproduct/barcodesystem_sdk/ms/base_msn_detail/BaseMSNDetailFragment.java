@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
  * 注意对于无参考的明细界面，默认给出的PARENT_ITEM_NODE类型的节点。
@@ -111,9 +110,8 @@ public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> exten
      * @param nodes
      */
     private void saveTurnFlag(final List<RefDetailEntity> nodes) {
-        //注意无参考不需要检查
         for (RefDetailEntity node : nodes) {
-            if ("K".equalsIgnoreCase(node.specialInvFlag) && !isEmpty(node.specialInvNum)) {
+            if ("Y".equalsIgnoreCase(node.specialConvert)) {
                 isNeedTurn = true;
                 break;
             }
@@ -210,12 +208,7 @@ public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> exten
     protected void submit2BarcodeSystem(String transToSapFlag) {
         //如果需要寄售转自有但是没有成功过，都需要用户需要再次寄售转自有
         if (isNeedTurn && !isTurnSuccess) {
-            new SweetAlertDialog(mActivity).setTitleText("温馨提示")
-                    .setContentText("您需要先寄售转自有，请点击确定。").setConfirmText("确定")
-                    .setConfirmClickListener(sweetAlertDialog -> {
-                        sweetAlertDialog.dismiss();
-                        startTurnOwnSupplies("07");
-                    }).show();
+            startTurnOwnSupplies("07");
             return;
         }
         String transferFlag = (String) SPrefUtil.getData(mBizType, "0");

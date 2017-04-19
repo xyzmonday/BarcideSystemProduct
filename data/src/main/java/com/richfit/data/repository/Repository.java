@@ -222,7 +222,8 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<String> uploadCheckDataSingle(ResultEntity result) {
-        return mServerRepository.uploadCheckDataSingle(result);
+        return isLocal ? mLocalRepository.uploadCheckDataSingle(result) :
+                mServerRepository.uploadCheckDataSingle(result);
     }
 
     @Override
@@ -412,8 +413,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode) {
-        return mLocalRepository.readBizFragmentConfig(bizType, refType, fragmentType,mode);
+    public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType, int mode) {
+        return mLocalRepository.readBizFragmentConfig(bizType, refType, fragmentType, mode);
     }
 
     @Override
@@ -454,7 +455,7 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode) {
-       return mLocalRepository.saveMenuInfo(menus, loginId, mode);
+        return mLocalRepository.saveMenuInfo(menus, loginId, mode);
     }
 
     @Override
@@ -473,11 +474,6 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<String> uploadInspectionDataOffline(ReferenceEntity refData) {
-        return mServerRepository.uploadInspectionDataOffline(refData);
-    }
-
-    @Override
     public Flowable<String> uploadMultiFiles(List<ResultEntity> results) {
         return mServerRepository.uploadMultiFiles(results);
     }
@@ -485,6 +481,21 @@ public class Repository implements ILocalRepository, IServerRepository {
     @Override
     public Flowable<ResultEntity> getDeviceInfo(String deviceId) {
         return mServerRepository.getDeviceInfo(deviceId);
+    }
+
+    @Override
+    public Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results) {
+        return mServerRepository.uploadCollectionDataOffline(results);
+    }
+
+    @Override
+    public Flowable<List<ReferenceEntity>> readTransferedData() {
+        return mLocalRepository.readTransferedData();
+    }
+
+    @Override
+    public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
+        mLocalRepository.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
     }
 
     @Override

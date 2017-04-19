@@ -35,6 +35,7 @@ public class LocationInfoEntity {
 
     /*仓位的额外字段数据*/
     public Map<String, Object> mapExt;
+    public String specialConvert;
 
     @Override
     public String toString() {

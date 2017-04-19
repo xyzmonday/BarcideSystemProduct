@@ -49,7 +49,6 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
     public void setLocalFlag(boolean isLocal) {
         mRepository.setLocal(isLocal);
         if (isLocal) {
-            L.e("===正在跳转到登陆页面");
             //如果是本地，那么不在进行任何有关于网络的业务
             //跳转到登陆页面
             Intent intent = new Intent(mContext, HomeActivity.class);
@@ -57,35 +56,6 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
             activity.startActivity(intent);
             activity.finish();
         }
-    }
-
-    @Override
-    public void syncDate() {
-        mView = getView();
-        addSubscriber(mRepository.syncDate()
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<String>() {
-                    @Override
-                    public void onNext(String s) {
-                        if (mView != null) {
-                            mView.syncDateSuccess(s);
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        if (mView != null) {
-                            mView.syncDateFail(t.getMessage());
-                        }
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        if (mView != null) {
-                            mView.syncDateComplete();
-                        }
-                    }
-                }));
     }
 
     @Override
@@ -129,6 +99,35 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
                             }
                         });
         addSubscriber(subscriber);
+    }
+
+    @Override
+    public void syncDate() {
+        mView = getView();
+        addSubscriber(mRepository.syncDate()
+                .compose(TransformerHelper.io2main())
+                .subscribeWith(new ResourceSubscriber<String>() {
+                    @Override
+                    public void onNext(String s) {
+                        if (mView != null) {
+                            mView.syncDateSuccess(s);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        if (mView != null) {
+                            mView.syncDateFail(t.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if (mView != null) {
+                            mView.syncDateComplete();
+                        }
+                    }
+                }));
     }
 
     /**

@@ -161,7 +161,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         //获取仓位缓存
         sb.append(" SELECT T.ID,T.TRANS_ID,T.TRANS_LINE_ID,T.LOCATION,")
                 .append("L.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,L.REC_BATCH_NUM,")
-                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM ")
+                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM,L.SPECIAL_CONVERT ")
                 .append("FROM MTL_TRANSACTION_LINES_LOCATION T , MTL_TRANSACTION_LINES_SPLIT L")
                 .append(" WHERE T.TRANS_LINE_SPLIT_ID = L.ID ")
                 .append(" AND T.TRANS_LINE_ID = ?")
@@ -183,6 +183,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 locItem.recBatchFlag = cursor.getString(++index);
                 locItem.specialInvFlag = cursor.getString(++index);
                 locItem.specialInvNum = cursor.getString(++index);
+                locItem.specialConvert = cursor.getString(++index);
                 locItem.locationCombine = !TextUtils.isEmpty(locItem.specialInvFlag) ?
                         locItem.location + "_" + locItem.specialInvFlag + "_" + locItem.specialInvNum :
                         locItem.location;
@@ -345,7 +346,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         clearStringBuffer();
         sb.append(" SELECT T.ID,T.TRANS_ID,T.TRANS_LINE_ID,T.LOCATION,")
                 .append("L.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,L.REC_BATCH_NUM,")
-                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM ")
+                .append("L.SPECIAL_FLAG,L.SPECIAL_NUM,L.SPECIAL_CONVERT ")
                 .append("FROM MTL_TRANSACTION_LINES_LOCATION T , MTL_TRANSACTION_LINES_SPLIT L")
                 .append(" WHERE T.TRANS_LINE_SPLIT_ID = L.ID ")
                 .append(" AND T.TRANS_LINE_ID = ?")
@@ -368,6 +369,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
                 locItem.recBatchFlag = cursor.getString(++index);
                 locItem.specialInvFlag = cursor.getString(++index);
                 locItem.specialInvNum = cursor.getString(++index);
+                locItem.specialConvert = cursor.getString(++index);
                 locItem.locationCombine = !TextUtils.isEmpty(locItem.specialInvFlag) ?
                         locItem.location + "_" + locItem.specialInvFlag + "_" + locItem.specialInvNum :
                         locItem.location;

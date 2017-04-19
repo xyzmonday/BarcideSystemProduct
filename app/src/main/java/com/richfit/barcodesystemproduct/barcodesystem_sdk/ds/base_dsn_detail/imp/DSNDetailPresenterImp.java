@@ -359,6 +359,7 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                     data.recBatchFlag = loc.recBatchFlag;
                     data.specialInvFlag = loc.specialInvFlag;
                     data.specialInvNum = loc.specialInvNum;
+                    data.specialConvert = loc.specialConvert;
                     data.locationId = loc.id;
 
                     //额外字段信息

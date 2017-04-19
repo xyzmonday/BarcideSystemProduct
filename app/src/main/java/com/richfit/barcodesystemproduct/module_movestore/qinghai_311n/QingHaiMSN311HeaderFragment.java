@@ -2,7 +2,7 @@ package com.richfit.barcodesystemproduct.module_movestore.qinghai_311n;
 
 import android.view.View;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.BaseMSNHeaderFragment;

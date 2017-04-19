@@ -2,6 +2,7 @@ package com.richfit.domain.repository;
 
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.ReferenceEntity;
+import com.richfit.domain.bean.ResultEntity;
 
 import java.util.List;
 
@@ -80,4 +81,11 @@ public interface ICheckServiceDao {
      * @return
      */
     boolean deleteCheckDataSingle(String checkId, String checkLineId, String userId, String bizType);
+
+    /**
+     * 保存单条盘点结果
+     * @param result
+     * @return
+     */
+    boolean uploadCheckDataSingle(ResultEntity result);
 }

@@ -124,8 +124,8 @@ public interface IRequestApi {
     @GET("changeLoginInfo")
     Flowable<Map<String, Object>> changeLoginInfo(@Query("requestParam") String requestParam);
 
-    @GET("uploadInspectionDataOffline")
-    Flowable<Map<String, Object>> uploadInspectionDataOffline(@Query("requestParam") String requestParam);
+    @GET("uploadCollectionDataOffline")
+    Flowable<Map<String, Object>> uploadCollectionDataOffline(@Query("requestParam") String requestParam);
 
     @GET("getMaterialInfo")
     Flowable<Response<MaterialEntity>> getMaterialInfo(@Query("requestParam") String requestParam);
@@ -133,7 +133,7 @@ public interface IRequestApi {
     @GET("transferCheckData")
     Flowable<Map<String, Object>> transferCheckData(@Query("requestParam") String requestParam);
 
-
     @GET("getDeviceInfo")
     Flowable<Response<ResultEntity>> getDeviceInfo(@Query("requestParam") String requestParam);
+
 }

@@ -31,6 +31,7 @@ import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.module.main.MainActivity;
 import com.richfit.barcodesystemproduct.module.setting.SettingActivity;
 import com.richfit.barcodesystemproduct.module_local.loaddown.LoadLocalRefDataActivity;
+import com.richfit.barcodesystemproduct.module_local.upload.UploadActivity;
 import com.richfit.common_lib.baseadapterrv.MultiItemTypeAdapter;
 import com.richfit.common_lib.decoration.DividerGridItemDecoration;
 import com.richfit.common_lib.dialog.BasePopupWindow;
@@ -179,12 +180,12 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
             final List<MenuNode> refMenuNodes = bizMenuNodes.get(0).getChildren();
             if (refMenuNodes != null && refMenuNodes.size() == 1) {
                 //如果单据也只有一个，那么直接进入业务MainActivity
-                toMain(Global.companyCode, item.getFunctionCode(),
+                toMain(Global.COMPANY_CODE, item.getFunctionCode(),
                         bizMenuNodes.get(0).getBusinessType(),
                         refMenuNodes.get(0).getRefType(), bizMenuNodes.get(0).getCaption());
             } else if (refMenuNodes == null || refMenuNodes.size() == 0) {
                 //如果没有第三级菜单，那么直接跳转
-                toMain(Global.companyCode, item.getFunctionCode(),
+                toMain(Global.COMPANY_CODE, item.getFunctionCode(),
                         bizMenuNodes.get(0).getBusinessType(),
                         "", bizMenuNodes.get(0).getCaption());
             } else {
@@ -193,7 +194,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
             }
         } else if (bizMenuNodes == null || bizMenuNodes.size() == 0) {
             //没有第二级菜单.第三级菜单
-            toMain(Global.companyCode, item.getFunctionCode(),
+            toMain(Global.COMPANY_CODE, item.getFunctionCode(),
                     item.getBusinessType(),
                     "", item.getCaption());
 
@@ -241,10 +242,10 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
             final List<MenuNode> refMenuNodes = item.getChildren();
             if (refMenuNodes != null && refMenuNodes.size() == 1) {
                 //如果第三级只有一个节点，那么直接进入业务界面
-                toMain(Global.companyCode, moduleCode, item.getBusinessType(),
+                toMain(Global.COMPANY_CODE, moduleCode, item.getBusinessType(),
                         refMenuNodes.get(0).getRefType(), item.getCaption());
             } else if (refMenuNodes == null || refMenuNodes.size() == 0) {
-                toMain(Global.companyCode, moduleCode, item.getBusinessType(),
+                toMain(Global.COMPANY_CODE, moduleCode, item.getBusinessType(),
                         item.getRefType(), item.getCaption());
             } else {
                 setupRefTypeDialog(item, moduleCode);
@@ -279,7 +280,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
                 @Override
                 public void onSureListener(View v) {
                     int position = ((Integer) v.getTag());
-                    toMain(Global.companyCode, moduleCode, menuNode.getBusinessType(),
+                    toMain(Global.COMPANY_CODE, moduleCode, menuNode.getBusinessType(),
                             children.get(position).getRefType(), children.get(position).getCaption());
                 }
 
@@ -328,6 +329,9 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
                 break;
             case Global.L_LOADDATA:
                 clazz = LoadLocalRefDataActivity.class;
+                break;
+            case Global.L_UPLOADDATA:
+                clazz = UploadActivity.class;
                 break;
             default:
                 clazz = MainActivity.class;

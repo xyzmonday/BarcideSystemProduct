@@ -195,7 +195,7 @@ create table IF not exists T_USER
   company_id         TEXT,
   company_code       TEXT,
   auth_orgs          TEXT,
-  batch_flag          TEXT
+  batch_flag         TEXT
 );
 
 create table IF not exists T_CONFIG
@@ -249,12 +249,55 @@ create table IF not exists T_HOME_MENUS
     tree_level       INTEGER
 );
 
+create table MTL_CHECK_HEADER
+(
+  id               VARCHAR2(32) PRIMARY KEY NOT NULL,
+  storage_num      VARCHAR2(10),
+  work_id          VARCHAR2(32),
+  inv_id           VARCHAR2(32),
+  check_special    VARCHAR2(2),
+  check_num        VARCHAR2(32),
+  sap_check_num    VARCHAR2(20),
+  check_type       VARCHAR2(5),
+  created_by       VARCHAR2(32),
+  creation_date    INTEGER,
+  last_updated_by  VARCHAR2(32),
+  last_update_date INTEGER,
+  upload_by        VARCHAR2(32),
+  upload_date      INTEGER,
+  check_level      VARCHAR2(2),
+  trans_flag      VARCHAR2(2)
+);
+
+create table MTL_CHECK_LINES
+(
+  id               VARCHAR2(32) PRIMARY KEY NOT NULL,
+  work_id          VARCHAR2(32),
+  inv_id           VARCHAR2(32),
+  special_flag     VARCHAR2(5),
+  check_id         VARCHAR2(32),
+  line_num         NUMBER(5),
+  material_id      VARCHAR2(32),
+  location         VARCHAR2(10),
+  inv_type         VARCHAR2(5),
+  special_num      VARCHAR2(20),
+  batch_num        VARCHAR2(20),
+  quantity         NUMBER(13,3),
+  new_flag         VARCHAR2(5),
+  created_by       VARCHAR2(32),
+  creation_date    INTEGER,
+  last_updated_by  VARCHAR2(32),
+  last_update_date INTEGER,
+  inv_quantity     NUMBER(13,3)
+);
+
 create table MTL_INSPECTION_HEADERS
 (
   id                     VARCHAR2(32)  PRIMARY KEY NOT NULL,
   inspection_num         VARCHAR2(30),
   inspection_date        TEXT,
   po_id                  VARCHAR2(32),
+  ref_code               TEXT,
   ins_flag               VARCHAR2(10),
   workflow_id            VARCHAR2(32),
   workflow_level         VARCHAR2(32),
@@ -265,9 +308,9 @@ create table MTL_INSPECTION_HEADERS
   print_date             TEXT,
   status                 VARCHAR2(10),
   created_by             VARCHAR2(32),
-  creation_date          TEXT,
+  creation_date          INTEGER,
   last_updated_by        VARCHAR2(32),
-  last_update_date       TEXT,
+  last_update_date       INTEGER,
   inspection_type        VARCHAR2(10),
   inspection_instruction VARCHAR2(2000),
   ref_opinion            VARCHAR2(2000),
@@ -301,9 +344,9 @@ create table MTL_INSPECTION_LINES
   status                 VARCHAR2(10),
   remark                 VARCHAR2(2000),
   created_by             VARCHAR2(32),
-  creation_date          TEXT,
+  creation_date          INTEGER,
   last_updated_by        VARCHAR2(32),
-  last_update_date       TEXT,
+  last_update_date       INTEGER,
   quality_count          VARCHAR2(32),
   other_count            VARCHAR2(32),
   inspection_result      VARCHAR2(10)
@@ -456,20 +499,14 @@ create table IF not exists MTL_TRANSACTION_HEADERS
   system_flag      VARCHAR2(32),
   remark           VARCHAR2(500),
   created_by       VARCHAR2(32),
-  creation_date    TEXT,
+  creation_date    INTEGER,
   last_updated_by  VARCHAR2(32),
-  last_update_date TEXT,
+  last_update_date INTEGER,
   ref_code         VARCHAR2(20),
   supplier_code    VARCHAR2(20)
 );
 
-create table IF not exists MTL_TRANSACTION_HEADERS_CUSTOM
-(
-  id          VARCHAR2(32) PRIMARY KEY NOT NULL,
-  trans_id    VARCHAR2(32),
-  cost_center VARCHAR2(20),
-  project_num VARCHAR2(50)
-);
+
 
 create table IF not exists  MTL_TRANSACTION_LINES
 (
@@ -502,9 +539,9 @@ create table IF not exists  MTL_TRANSACTION_LINES
   project_text        VARCHAR2(1000),
   ins_lot             VARCHAR2(32),
   created_by          VARCHAR2(32),
-  creation_date       TEXT,
+  creation_date       INTEGER,
   last_updated_by     VARCHAR2(32),
-  last_update_date    TEXT
+  last_update_date    INTEGER
 );
 
 create table IF not exists MTL_TRANSACTION_LINES_SPLIT
@@ -529,6 +566,7 @@ create table IF not exists MTL_TRANSACTION_LINES_SPLIT
   new_material_id     VARCHAR2(32),
   quantity            NUMBER(13,3),
   order_unit_quantity NUMBER(13,3),
+  special_convert     TEXT,
   act_quantity        NUMBER(13,3),
   unit                VARCHAR2(32),
   unit_rate           NUMBER(13,3),
@@ -544,9 +582,9 @@ create table IF not exists MTL_TRANSACTION_LINES_SPLIT
   project_text        VARCHAR2(1000),
   ins_lot             VARCHAR2(32),
   created_by          VARCHAR2(32),
-  creation_date       TEXT,
+  creation_date       INTEGER,
   last_updated_by     VARCHAR2(32),
-  last_update_date    TEXT
+  last_update_date    INTEGER
 );
 
 create table IF not exists MTL_TRANSACTION_LINES_LOCATION
@@ -564,7 +602,7 @@ create table IF not exists MTL_TRANSACTION_LINES_LOCATION
    device_id           VARCHAR2(32),
    rec_device_id       VARCHAR2(32),
    created_by          VARCHAR2(32),
-   creation_date       TEXT,
+   creation_date       INTEGER,
    last_updated_by     VARCHAR2(32),
-   last_update_date    TEXT
+   last_update_date    INTEGER
 );

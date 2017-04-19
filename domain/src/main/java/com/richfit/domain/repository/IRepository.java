@@ -115,6 +115,13 @@ public interface IRepository {
     Flowable<String> uploadCollectionDataSingle(ResultEntity result);
 
     /**
+     * 保存盘点结果
+     *
+     * @param result
+     * @return
+     */
+    Flowable<String> uploadCheckDataSingle(ResultEntity result);
+    /**
      * 获取盘点头数据。
      *
      * @param userId

@@ -17,7 +17,7 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.BottomMenuAdapter;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
@@ -580,6 +580,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
             ResultEntity result = new ResultEntity();
             result.refCodeId = mRefData.refCodeId;
+            result.refCode = mRefData.recordNum;
             result.refLineId = lineData.refLineId;
             result.businessType = mRefData.bizType;
             result.materialId = lineData.materialId;
@@ -589,7 +590,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             result.moveType = mRefData.moveType;
             result.refLineNum = lineData.lineNum;
             result.inspectionType = mRefData.inspectionType;
-            result.companyCode = Global.companyCode;
+            result.companyCode = Global.COMPANY_CODE;
             result.inspectionPerson = Global.USER_ID;
             result.userId = Global.USER_ID;
             result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;

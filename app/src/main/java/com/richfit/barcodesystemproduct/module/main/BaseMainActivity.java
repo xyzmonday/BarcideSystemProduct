@@ -10,14 +10,16 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
-import com.richfit.common_lib.rxutils.RxCilck;
 import com.richfit.common_lib.transformer.CubeTransformer;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.widget.NoScrollViewPager;
+
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 
@@ -83,7 +85,9 @@ public abstract class BaseMainActivity<P extends MainContract.Presenter> extends
 
     @Override
     public void initEvent() {
-        RxCilck.clicks(mFloatingButton).subscribe(a -> responseOnClick());
+        RxView.clicks(mFloatingButton)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
+                .subscribe(a -> responseOnClick());
     }
 
     @Override

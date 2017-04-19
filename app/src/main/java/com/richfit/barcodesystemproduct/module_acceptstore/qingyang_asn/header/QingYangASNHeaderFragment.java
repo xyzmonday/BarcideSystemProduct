@@ -6,8 +6,8 @@ import android.text.TextUtils;
 import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
 
-import com.jakewharton.rxbinding.view.RxView;
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.MoveTypeAdapter;
 import com.richfit.barcodesystemproduct.adapter.MultiArrayAdapter;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
  * 无参考物资入库抬头(这里先不在封装成基类)

@@ -127,7 +127,7 @@ public class RetrofitModule {
                             .newBuilder()
                             .scheme(oldRequest.url().scheme())
                             .host(oldRequest.url().host())
-                            .addQueryParameter("macAddress", Global.macAddress)
+                            .addQueryParameter("macAddress", Global.MAC_ADDRESS)
                             .addQueryParameter("userId",Global.USER_ID);
 
                     // 新的请求
