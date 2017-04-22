@@ -6,7 +6,7 @@ import java.util.Map;
  * Created by monday on 2016/9/22.
  */
 
-public class ResultEntity {
+public class ResultEntity extends TreeNode{
     //任务id
     public int taskId;
     //    验收人ID（当前登陆用户的userId）

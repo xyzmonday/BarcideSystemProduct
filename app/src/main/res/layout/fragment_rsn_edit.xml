@@ -35,8 +35,7 @@
 
         <TextView
             android:id="@+id/tv_material_desc"
-            style="@style/RightTextViewItemStyle"
-            android:hint="@string/material_desc" />
+            style="@style/RightTextViewItemStyle" />
     </LinearLayout>
 
     <LinearLayout
@@ -51,8 +50,7 @@
 
         <TextView
             android:id="@+id/tv_material_group"
-            style="@style/RightTextViewItemStyle"
-            android:hint="@string/material_group" />
+            style="@style/RightTextViewItemStyle" />
     </LinearLayout>
 
     <LinearLayout
@@ -67,8 +65,7 @@
 
         <TextView
             android:id="@+id/tv_batch_flag"
-            style="@style/RightTextViewItemStyle"
-            android:hint="@string/batch_flag" />
+            style="@style/RightTextViewItemStyle" />
     </LinearLayout>
 
 
@@ -136,9 +133,8 @@
 
         <EditText
             android:id="@+id/et_quantity"
-            android:inputType="numberDecimal"
-            style="@style/RightEditTextItemStyle" />
-
+            style="@style/RightEditTextItemStyle"
+            android:inputType="numberDecimal" />
 
     </LinearLayout>
 </LinearLayout>

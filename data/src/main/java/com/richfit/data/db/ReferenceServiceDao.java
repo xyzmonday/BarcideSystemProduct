@@ -188,7 +188,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         }
                         cursor.close();
                     }
-                    // 头缓存
+                    // 头缓存(注意这里验收的缓存标识从1开始)
                     clearStringBuffer();
                     sb.append("select t.id as trans_id,")
                             .append(" t.inspection_type,")

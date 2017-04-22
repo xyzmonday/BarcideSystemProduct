@@ -113,7 +113,8 @@ public class QingHaiRSNDetailFragment extends BaseDetailFragment<QingHaiRSNDetai
         if (mAdapter != null && RSNDetailAdapter.class.isInstance(mAdapter)) {
             RSNDetailAdapter adapter = (RSNDetailAdapter) mAdapter;
             ArrayList<String> Locations = adapter.getLocations(position, 0);
-            mPresenter.editNode(Locations, null, null, node, mCompanyCode, mBizType, mRefType, "202-退库", position);
+            String subFunName = "46".equals(mBizType) ? "202-退库" : "222-退库";
+            mPresenter.editNode(Locations, null, null, node, mCompanyCode, mBizType, mRefType, subFunName, position);
         }
     }
 
@@ -158,8 +159,8 @@ public class QingHaiRSNDetailFragment extends BaseDetailFragment<QingHaiRSNDetai
             return;
         }
         mExtraTansMap.clear();
-        mExtraTansMap.put("centerCost",mRefData.costCenter);
-        mExtraTansMap.put("projectNum",mRefData.projectNum);
+        mExtraTansMap.put("centerCost", mRefData.costCenter);
+        mExtraTansMap.put("projectNum", mRefData.projectNum);
         mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
                 mRefData.voucherDate, transToSapFlag, mExtraTansMap);
     }

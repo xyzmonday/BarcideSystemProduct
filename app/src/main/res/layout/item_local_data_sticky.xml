@@ -18,6 +18,17 @@
 
     <View style="@style/ItemSeperatorLayout" />
 
+    <TextView
+        android:id="@+id/bizType"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:text="100000"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
 
     <TextView
         android:id="@+id/refType"
@@ -30,33 +41,8 @@
 
     <View style="@style/ItemSeperatorLayout" />
 
-    <TextView
-        android:id="@+id/bizType"
-        android:layout_width="240dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:text="100000"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
 
-    <View style="@style/ItemSeperatorLayout" />
 
-    <TextView
-        android:id="@+id/materialDoc"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:text="100000"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/transNum"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:text="100000"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
 
 </LinearLayout>

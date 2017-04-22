@@ -8,7 +8,6 @@ import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 
 import java.util.ArrayList;
@@ -117,7 +116,7 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
             menus.addAll(onLineMenus);
             mOnLineMenuRootId = onLineMenus.get(0).getId();
         }
-        if ((offLineMenus != null || offLineMenus.size() > 0)) {
+        if ((offLineMenus != null && offLineMenus.size() > 0)) {
             menus.addAll(offLineMenus);
             mOffLineMenuRootId = offLineMenus.get(0).getId();
         }

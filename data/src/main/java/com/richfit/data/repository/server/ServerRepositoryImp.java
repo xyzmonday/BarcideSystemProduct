@@ -593,7 +593,7 @@ public class ServerRepositoryImp implements IServerRepository {
     @Override
     public Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results) {
         return mRequestApi.uploadCollectionDataOffline(JsonUtil.object2Json(results))
-                .compose(TransformerHelper.MapTransformer);
+                .compose(TransformerHelper.ListTransformer);
     }
 
 

@@ -12,6 +12,7 @@ import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
@@ -69,7 +70,7 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
     protected String mLocationId;
     /*修改之前用户数的数量*/
     String mQuantity;
-    /*要修改的子节点的父节点在*/
+    /*要修改的子节点的父节点所在明细数据集的索引*/
     protected int mPosition;
     //是否上架（直接通过父节点的标志位判断即可）
     protected boolean isNLocation;
@@ -87,6 +88,11 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
          /*生成额外控件*/
         createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
         createExtraUI(mSubFunEntity.locationConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
+    }
+
+    @Override
+    public void initEvent() {
+
     }
 
     @Override
@@ -110,7 +116,7 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
         if (mRefData != null) {
             /*单据数据中的库存地点不一定有，而且用户可以录入新的库存地点，所以只有子节点的库存地点才是正确的*/
             final RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
-            //拿到上架总数
+            L.e("105非必检 refDoc = " + lineData.refDoc + "; refDocItem = " + lineData.refDocItem);
             tvRefLineNum.setText(lineData.lineNum);
             tvMaterialNum.setText(lineData.materialNum);
             tvMaterialDesc.setText(lineData.materialDesc);

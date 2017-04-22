@@ -123,6 +123,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         RefDetailEntity item;
         int index;
         cursor = db.rawQuery(sb.toString(), lineSelections);
+        //注意这里查出来的是quantity，直接赋值给了totalQuantity
         while (cursor.moveToNext()) {
             index = -1;
             item = new RefDetailEntity();
@@ -161,7 +162,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         clearStringBuffer();
         cursor.close();
 
-        //获取仓位缓存
+        //获取仓位缓存（注意这里查出来就是quantity，用户使用的是totalQuantity）
         sb.append(" SELECT T.ID,T.TRANS_ID,T.TRANS_LINE_ID,T.LOCATION,")
                 .append("L.BATCH_NUM,T.QUANTITY,T.REC_LOCATION,L.REC_BATCH_NUM,")
                 .append("L.SPECIAL_FLAG,L.SPECIAL_NUM,L.SPECIAL_CONVERT ")

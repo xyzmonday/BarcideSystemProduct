@@ -11,6 +11,8 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import io.reactivex.Flowable;
@@ -88,4 +90,6 @@ public class MainPresenterImp extends BasePresenter<MainContract.View>
                         });
         addSubscriber(subscriber);
     }
+
+
 }

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -839,7 +840,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         StringBuffer sql = new StringBuffer();
         sql.append("select id,voucher_date,ref_code_id,ref_code,biz_type,ref_type,move_type,inv_type,")
                 .append("supplier_id,supplier_code,created_by ")
-                .append("from MTL_TRANSACTION_HEADERS order by creation_date");
+                .append("from MTL_TRANSACTION_HEADERS ")
+                .append(" where trans_flag = '0' or trans_flag = '1'")
+                .append(" order by creation_date");
         ReferenceEntity header = null;
         int index;
         //1. 读取抬头的信息
@@ -884,7 +887,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 .append(" on T.work_id = WORG.org_id")
                 .append(" left join P_AUTH_ORG IORG ")
                 .append(" on T.inv_id = IORG.org_id")
-                .append(" where T.trans_id = ?");
+                .append(" where L.trans_line_id = T.id and S.trans_line_id = T.id ")
+                .append(" and L.trans_line_split_id = S.id and T.trans_id = ?");
 
 
         for (int i = 0, size = datas.size(); i < size; i++) {
@@ -960,6 +964,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
 
     @Override
     public boolean setTransFlag(String transId) {
+        L.e("setTransFlag = " + transId);
         SQLiteDatabase db = getWritableDB();
         ContentValues cv = new ContentValues();
         cv.put("trans_flag", "3");

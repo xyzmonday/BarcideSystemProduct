@@ -225,11 +225,13 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
 
     /**
      * 保存验收单条缓存
+     *
      * @param param
      * @return
      */
     @Override
     public boolean uploadInspectionDataSingle(ResultEntity param) {
+        SQLiteDatabase db = getWritableDB();
         boolean customBoolean = false;// 标识是否更新扩展表
         switch (param.businessType) {
             case "00":
@@ -243,15 +245,16 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         }
 
         // 1.头表
-        String insId = saveInspectionHeader(param);
+        String insId = saveInspectionHeader(db, param);
         param.insId = insId;
         // 2.行表
-        String insLineId = saveInspectionLine(param);
+        String insLineId = saveInspectionLine(db, param);
         param.insLineId = insLineId;
         if (customBoolean) {
             // 3.扩展表
-            saveInspectionCustom(param);
+            saveInspectionCustom(db, param);
         }
+        db.close();
         return true;
     }
 
@@ -260,9 +263,8 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
      *
      * @return
      */
-    private String saveInspectionHeader(ResultEntity param) {
+    private String saveInspectionHeader(SQLiteDatabase db, ResultEntity param) {
         clearStringBuffer();
-        SQLiteDatabase db = getWritableDB();
         String insId = null;
         sb.append("select distinct id from MTL_INSPECTION_HEADERS H where H.po_id = ? and H.ins_flag = ? ");
         Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.refCodeId, "1"});
@@ -275,13 +277,14 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
 
         final long creationDate = UiUtil.getSystemDate();
         final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1);
+        long iResult = -1;
         ContentValues cv = new ContentValues();
         if (TextUtils.isEmpty(insId)) {
             //如果为空那么插入一条
             insId = UiUtil.getUUID();
             cv.put("id", insId);
             cv.put("po_id", param.refCodeId);
-            cv.put("ref_code",param.refCode);
+            cv.put("ref_code", param.refCode);
             cv.put("ins_flag", "1");
             cv.put("inspection_date", currentDate);
             cv.put("workflow_level", "0");
@@ -296,14 +299,13 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             cv.put("inspection_num", "");
             cv.put("created_by", param.userId);
             cv.put("creation_date", creationDate);
-            db.insert("MTL_INSPECTION_HEADERS", null, cv);
+            iResult = db.insert("MTL_INSPECTION_HEADERS", null, cv);
         } else {
             cv.put("last_updated_by", param.userId);
             cv.put("last_update_date", creationDate);
-            db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{insId});
+            iResult = db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{insId});
         }
-        db.close();
-        return insId;
+        return iResult > 0 ? insId : null;
     }
 
     /**
@@ -312,11 +314,10 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
      * @param param
      * @return
      */
-    private String saveInspectionLine(ResultEntity param) {
+    private String saveInspectionLine(SQLiteDatabase db, ResultEntity param) {
         String insLineId = null;
         String insId = param.insId;
         clearStringBuffer();
-        SQLiteDatabase db = getWritableDB();
 
         sb.append("select id from MTL_INSPECTION_LINES where ")
                 .append("inspection_id = ? and po_line_id = ?");
@@ -395,7 +396,6 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                 }
             }
         }
-        db.close();
         return insLineId;
     }
 
@@ -404,9 +404,8 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
      *
      * @param param
      */
-    private void saveInspectionCustom(ResultEntity param) {
+    private void saveInspectionCustom(SQLiteDatabase db, ResultEntity param) {
         //1. 扩展信息->每次删除 重新插入
-        SQLiteDatabase db = getReadableDB();
         db.delete("MTL_INSPECTION_LINES_CUSTOM", "inspection_id = ? and inspection_line_id = ?",
                 new String[]{param.insId, param.insLineId});
         ContentValues cv = new ContentValues();
@@ -428,7 +427,5 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         cv.put("inspection_quantity", param.inspectionQuantity);
         db.insert("MTL_INSPECTION_LINES_CUSTOM", null, cv);
         cv.clear();
-        db.close();
-
     }
 }

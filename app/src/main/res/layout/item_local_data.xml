@@ -50,13 +50,13 @@
 
     <View style="@style/ItemSeperatorLayout"/>
 
-    <TextView
-        android:id="@+id/actQuantity"
-        style="@style/TableHeaderStyle"
-        android:layout_width="120dp"
-        android:text="@string/act_quantity" />
+    <!--<TextView-->
+        <!--android:id="@+id/actQuantity"-->
+        <!--style="@style/TableHeaderStyle"-->
+        <!--android:layout_width="120dp"-->
+        <!--android:text="@string/act_quantity" />-->
 
-    <View style="@style/ItemSeperatorLayout"/>
+    <!--<View style="@style/ItemSeperatorLayout"/>-->
 
 
     <TextView

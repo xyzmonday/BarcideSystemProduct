@@ -61,7 +61,7 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         holder.materialGroup.setText(item.materialGroup);
         holder.batchFlag.setText(item.batchFlag);
         holder.totalQuantity.setText(item.quantity);
-        holder.actQuantity.setText(item.actQuantity);
+//        holder.actQuantity.setText(item.actQuantity);
         holder.work.setText(item.workCode);
         holder.location.setText("barcode".equalsIgnoreCase(item.location) ? "" : item.location);
         holder.inv.setText(item.invCode);
@@ -115,8 +115,6 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         holder.recordNum.setText(item.refCode);
         holder.bizType.setText(item.businessTypeDesc);
         holder.refType.setText(item.refTypeDesc);
-        holder.materialDoc.setText(item.materialDoc);
-        holder.transNum.setText(item.transNum);
     }
 
     @Override
@@ -124,12 +122,6 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         return mDatas.size();
     }
 
-    public void setStickyHeaderData(int startPos, int offset, String materialDoc, String transNum) {
-        for (int i = startPos * offset; i < offset; i++) {
-            mDatas.get(i).materialDoc = materialDoc;
-            mDatas.get(i).transNum = transNum;
-        }
-    }
 
     public static class UploadViewHolder extends RecyclerView.ViewHolder {
 
@@ -139,7 +131,7 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         TextView materialDesc;
         TextView materialGroup;
         TextView batchFlag;
-        TextView actQuantity;
+//        TextView actQuantity;
         TextView totalQuantity;
         TextView location;
         TextView work;
@@ -153,7 +145,7 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
             materialDesc = (TextView) itemView.findViewById(R.id.materialDesc);
             materialGroup = (TextView) itemView.findViewById(R.id.materialGroup);
             batchFlag = (TextView) itemView.findViewById(R.id.batchFlag);
-            actQuantity = (TextView) itemView.findViewById(R.id.actQuantity);
+//            actQuantity = (TextView) itemView.findViewById(R.id.actQuantity);
             totalQuantity = (TextView) itemView.findViewById(R.id.totalQuantity);
             location = (TextView) itemView.findViewById(R.id.location);
             work = (TextView) itemView.findViewById(R.id.work);
@@ -166,16 +158,12 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         TextView recordNum;
         TextView bizType;
         TextView refType;
-        TextView materialDoc;
-        TextView transNum;
 
         public UploadHeaderViewHolder(View itemView) {
             super(itemView);
             recordNum = (TextView) itemView.findViewById(R.id.recordNum);
             bizType = (TextView) itemView.findViewById(R.id.bizType);
             refType = (TextView) itemView.findViewById(R.id.refType);
-            materialDoc = (TextView) itemView.findViewById(R.id.materialDoc);
-            transNum = (TextView) itemView.findViewById(R.id.transNum);
         }
     }
 }

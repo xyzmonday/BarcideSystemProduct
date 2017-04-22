@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentTransaction;
 
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,16 +29,6 @@ public class MainPagerViewAdapter<T extends BaseFragment> extends FragmentPagerA
         super(fm);
         this.fm = fm;
         this.mFragments = fragments;
-    }
-
-    public MainPagerViewAdapter(FragmentManager fm) {
-        super(fm);
-        this.fm = fm;
-        this.mFragments = new ArrayList<>();
-    }
-
-    public void addFragmentAndTitle(T fragment) {
-        mFragments.add(fragment);
     }
 
     @Override

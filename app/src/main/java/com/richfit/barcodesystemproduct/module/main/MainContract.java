@@ -6,6 +6,8 @@ import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
 import com.richfit.barcodesystemproduct.base.BaseView;
 import com.richfit.common_lib.IInterface.IPresenter;
 
+import java.util.List;
+
 
 /**
  * Created by monday on 2016/11/10.

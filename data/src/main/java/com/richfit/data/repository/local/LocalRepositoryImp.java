@@ -234,6 +234,10 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<ArrayList<InvEntity>> getInvsByWorkId(String workId, int flag) {
+
+        if(TextUtils.isEmpty(workId)) {
+            return Flowable.error(new Throwable("工厂id为空"));
+        }
         return Flowable.just(workId)
                 .flatMap(id -> {
                     ArrayList<InvEntity> invs = mBasicServiceDao.getInvsByWorkId(id, flag);

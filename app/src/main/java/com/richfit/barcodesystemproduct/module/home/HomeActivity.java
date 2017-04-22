@@ -38,6 +38,7 @@ import com.richfit.common_lib.dialog.BasePopupWindow;
 import com.richfit.common_lib.dialog.SelectDialog;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 
 import java.util.ArrayList;
@@ -153,6 +154,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
      */
     @Override
     public void initModulesSuccess(ArrayList<MenuNode> menuNodes) {
+        L.e("-----");
         if (menuNodes == null || menuNodes.size() == 0) {
             showMessage("您不具有该模式下的权限");
             return;

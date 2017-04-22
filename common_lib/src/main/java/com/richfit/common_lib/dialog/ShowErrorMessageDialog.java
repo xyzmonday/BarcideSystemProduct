@@ -13,7 +13,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.richfit.common_lib.R;
-import com.richfit.common_lib.adapter.TimeLineAdapter;
+import com.richfit.common_lib.adapter.ErrorListAdapter;
 
 import java.util.Arrays;
 
@@ -38,22 +38,12 @@ public class ShowErrorMessageDialog extends DialogFragment {
         return fragment;
     }
 
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        DisplayMetrics dm = new DisplayMetrics();
-//        getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
-//        getDialog().getWindow().setLayout(dm.widthPixels, getDialog().getWindow().getAttributes().height);
-//    }
-
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_show_error, container, false);
-        mRvmessages = (RecyclerView) view.findViewById(R.id.time_line_recycler);
-        //启用窗体的扩展特性。
-        getDialog().requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        View view = inflater.inflate(R.layout.framgent_dialog_show_info, container, false);
+        mRvmessages = (RecyclerView) view.findViewById(R.id.rv_info_list);
         RecyclerView.LayoutManager lm = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
         mRvmessages.setLayoutManager(lm);
         return view;
@@ -62,18 +52,21 @@ public class ShowErrorMessageDialog extends DialogFragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        //注意这里我们需要显示一个title所以不能设置该属性
 //        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        //启用窗体的扩展特性。
+        getDialog().requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         super.onActivityCreated(savedInstanceState);
         //注意这里如果不设置背景Drawable那么使用系统默认有padding的InsetDrawable
 //        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(0x00000000));
         getDialog().getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
         //设置自定义的title  layout
         getDialog().getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
-                R.layout.item_show_message_title);
+                R.layout.fragment_dialiog_error_title);
         //初始化适配器
         String[] messages = getArguments().getStringArray(MESSAGES_KEY);
 
-        TimeLineAdapter adapter = new TimeLineAdapter(Arrays.asList(messages));
+        ErrorListAdapter adapter = new ErrorListAdapter(Arrays.asList(messages));
         mRvmessages.setAdapter(adapter);
     }
 }

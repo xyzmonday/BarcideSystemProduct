@@ -2,6 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
 //apply plugin: 'com.tencent.tinker.patch'
 apply plugin: 'com.antfortune.freeline'
+//获取产品的名字
+def getProductName() {
+    return "bcs"
+}
+//获取当前系统的时间
+def releaseTime() {
+    return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
+}
 
 android {
     compileSdkVersion 25
@@ -14,36 +22,64 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-
         manifestPlaceholders = [CHANNEL: "qinghai"]
     }
+
+    signingConfigs {
+        debug {
+
+        }
+        release {
+//            storeFile file('E:/2017-04/barcodesystem_keystore/barcodesystemproduct.jks')
+//            keyAlias 'xyzmonday'
+//            keyPassword 'yff3445683'
+//            storePassword 'yff3445683'
+            storeFile
+            storePassword
+            keyAlias
+            keyPassword
+        }
+    }
+
+
     buildTypes {
         release {
-            shrinkResources true
+            //启用混淆代码的功能
             minifyEnabled true
+            //压缩对齐生成的apk包
+            zipAlignEnabled true
+            //指定混淆规则，需要压缩优化的混淆要把proguard-android.txt换成proguard-android.txt
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //指定打release包的签名
+            signingConfig signingConfigs.release
+            //移除无用的资源文件
+            shrinkResources true
+            //启用multidex的支持
+            multiDexEnabled true
         }
 
         debug {
-            shrinkResources true
+            shrinkResources false
             minifyEnabled false
         }
     }
 
+
     productFlavors {
         qingyang {
-            buildConfigField "String","SERVER_URL",'"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
-            buildConfigField "String","CONFIG_FILE_NAME",'"bizConfig_QingYang.json"'
+            buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
+            buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingYang.json"'
+
         }
 
         qinghai {
-            buildConfigField "String","SERVER_URL",'"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
-            buildConfigField "String","CONFIG_FILE_NAME",'"bizConfig_QingHai.json"'
+            buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
+            buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingHai.json"'
         }
     }
 
-    productFlavors.all{
-        flavor->flavor.manifestPlaceholders = [CHANNEL:name]
+    productFlavors.all {
+        flavor -> flavor.manifestPlaceholders = [CHANNEL: name]
     }
 
 
@@ -55,28 +91,54 @@ android {
     dexOptions {
         jumboMode = true
         javaMaxHeapSize "4g"
-        jumboMode  true
+        jumboMode true
     }
     packagingOptions {
         exclude('META-INF/rxjava.properties')
     }
 
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
-            minifyEnabled false
-        }
-    }
+
     sourceSets {
         main {
             jniLibs.srcDirs = ['libs']
         }
     }
+
+    //修改生成的apk名字，格式为 app名_版本号_打包时间_渠道名_release.apk
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def oldFile = output.outputFile
+            if (variant.buildType.name.equals('release')) {
+                def releaseApkName = getProductName() + "_v${defaultConfig.versionName}_${releaseTime()}_" + variant.productFlavors[0].name + '_release.apk'
+                output.outputFile = new File(oldFile.parent, releaseApkName)
+                def backReleaseOutputFile = new File('./apk')
+                copy {
+                    from output.outputFile
+                    into backReleaseOutputFile
+                }
+            }
+        }
+    }
 }
+    //配置打包签名
+    File propFile = file('signing.properties');
+    if (propFile.exists()) {
+         def Properties props = new Properties()
+         props.load(new FileInputStream(propFile))
+    if (props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD') &&
+            props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
+        android.signingConfigs.release.storeFile = file(props['STORE_FILE'])
+        android.signingConfigs.release.storePassword = props['STORE_PASSWORD']
+        android.signingConfigs.release.keyAlias = props['KEY_ALIAS']
+        android.signingConfigs.release.keyPassword = props['KEY_PASSWORD']
+    } else {
+        android.buildTypes.release.signingConfig = null
+    }
+    } else {
+        android.buildTypes.release.signingConfig = null
+    }
+
+
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -103,13 +165,13 @@ dependencies {
     //    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
     //    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
 }
-tasks.whenTaskAdded {task ->
-    if(task.name.contains("AndroidTest")) {
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("AndroidTest")) {
         task.enabled = false
     }
 }
 
-public class BuildTimeListener implements TaskExecutionListener,BuildListener {
+public class BuildTimeListener implements TaskExecutionListener, BuildListener {
 
     private Clock mClock;
     private mTimes = [];
@@ -137,8 +199,8 @@ public class BuildTimeListener implements TaskExecutionListener,BuildListener {
     @Override
     void buildFinished(BuildResult result) {
         println "Task spend time"
-        mTimes.each {time->
-            if(time[0] >= 50 ) {
+        mTimes.each { time ->
+            if (time[0] >= 50) {
                 printf "%7sms  %s\n", time
             }
         }
@@ -146,14 +208,14 @@ public class BuildTimeListener implements TaskExecutionListener,BuildListener {
 
     @Override
     void beforeExecute(Task task) {
-            //初始化时钟
+        //初始化时钟
         mClock = new Clock();
     }
 
     @Override
     void afterExecute(Task task, TaskState state) {
         def time = mClock.timeInMs;
-        mTimes.add([time,task.path])
+        mTimes.add([time, task.path])
     }
 }
 

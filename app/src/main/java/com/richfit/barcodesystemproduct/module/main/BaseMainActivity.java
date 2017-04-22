@@ -27,8 +27,8 @@ import butterknife.BindView;
  * Created by monday on 2017/3/10.
  */
 
-public abstract class BaseMainActivity<P extends MainContract.Presenter> extends BaseActivity<P> implements MainContract.View,
-        ViewPager.OnPageChangeListener {
+public abstract class BaseMainActivity<P extends MainContract.Presenter> extends BaseActivity<P> implements
+        MainContract.View, ViewPager.OnPageChangeListener {
 
     /*当前选中的页签下表，用于恢复*/
     public static final String CURRENT_PAGE_INDEX_KEY = "current_page_index";

@@ -120,8 +120,6 @@ public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPrese
         etQuantity.setText(mQuantity);
         tvBatchFlag.setText(batchFlag);
 
-        etLocation.setEnabled(false);
-
         //获取缓存信息
         mPresenter.getTransferInfoSingle(mRefData.bizType, materialNum,
                 Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId,

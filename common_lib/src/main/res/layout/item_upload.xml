@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/len_16"
+    android:paddingRight="@dimen/len_16"
+    tools:ignore="MissingPrefix">
+
+    <ImageView
+        android:id="@+id/item_time_line_mark"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/len_16"
+        android:paddingLeft="@dimen/len_4"
+        android:paddingRight="@dimen/len_4"
+        android:paddingTop="@dimen/len_16"
+        android:background="@mipmap/icon_timeline_mark" />
+
+    <TextView
+        android:id="@+id/item_time_line_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingBottom="@dimen/len_16"
+        android:paddingLeft="@dimen/len_4"
+        android:paddingRight="@dimen/len_4"
+        android:paddingTop="@dimen/len_16"
+        android:textColor="@color/grey_600"
+        android:textSize="@dimen/font_16" />
+
+</LinearLayout>

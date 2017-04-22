@@ -1,7 +1,7 @@
 package com.richfit.barcodesystemproduct.module_local.upload;
 
-import com.richfit.barcodesystemproduct.base.BaseView;
-import com.richfit.common_lib.IInterface.IPresenter;
+import com.richfit.barcodesystemproduct.base.base_detail.IBaseDetailPresenter;
+import com.richfit.barcodesystemproduct.base.base_detail.IBaseDetailView;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
@@ -11,26 +11,27 @@ import java.util.ArrayList;
  */
 
 public interface UploadContract {
-    interface View extends BaseView {
+    interface View extends IBaseDetailView<ResultEntity> {
+        void startUploadData(int totalUploadDataNum);
 
+        void uploadCollectDataSuccess(int taskNum,int totalNum,String message,String transNum);
 
-        void uploadCollectDataSuccess(int taskNum,int offset, String message,String transNum);
+        void uploadCollectDataFail(int taskNum,int totalNum,String message);
 
         void uploadCollectDataComplete();
-
-        void uploadCollectDataFail(String message);
 
         void showUploadData(ArrayList<ResultEntity> results);
 
         void readUploadDataFail(String message);
 
+        void readUploadDataComplete();
 
     }
 
-    interface Presenter extends IPresenter<View> {
-        void readUploadData();
-
+    interface Presenter extends IBaseDetailPresenter<View> {
         void uploadCollectedDataOffLine();
+
+        void readUploadData();
 
         void resetStateAfterUpload();
     }

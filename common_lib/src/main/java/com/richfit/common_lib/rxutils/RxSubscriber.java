@@ -38,10 +38,6 @@ public abstract class RxSubscriber<T> extends ResourceSubscriber<T> {
         final Context context = mWeakContext.get();
         if (context != null)
             LoadingLayoutHelper.showDialogForLoading(context, msg);
-//
-//        if(context != null) {
-//            StyledDialog.buildLoading(context,msg).show();
-//        }
     }
 
     @Override
@@ -52,11 +48,8 @@ public abstract class RxSubscriber<T> extends ResourceSubscriber<T> {
     @Override
     public void onError(Throwable throwable) {
         LoadingLayoutHelper.cancelDialogForLoading();
-//        StyledDialog.dismissLoading();
         //网络异常
-        if (throwable instanceof ConnectException ||
-                throwable instanceof SocketTimeoutException ||
-                throwable instanceof TimeoutException) {
+        if (throwable instanceof ConnectException || throwable instanceof SocketTimeoutException || throwable instanceof TimeoutException) {
             _onNetWorkConnectError(throwable.getMessage());
             //如果没有打开网络
         } else if (throwable instanceof UnknownHostException) {
@@ -75,7 +68,6 @@ public abstract class RxSubscriber<T> extends ResourceSubscriber<T> {
     @Override
     public void onComplete() {
         LoadingLayoutHelper.cancelDialogForLoading();
-//        StyledDialog.dismissLoading();
         _onComplete();
     }
 

@@ -325,6 +325,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
      */
     @Override
     public void bindCommonCollectUI() {
+        L.e("bindCommonCollectUI");
         mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
         etQuantity.setText("");

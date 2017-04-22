@@ -349,12 +349,13 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                     data.transLineId = target.transLineId;
                     data.invId = target.invId;
                     data.invCode = target.invCode;
+
                     //子节点的数据
                     data.transId = loc.transId;
                     data.transLineId = loc.transLineId;
                     data.location = loc.location;
                     data.batchFlag = loc.batchFlag;
-                    data.quantity = loc.quantity;
+                    data.totalQuantity = loc.quantity;
                     data.recLocation = loc.recLocation;
                     data.recBatchFlag = loc.recBatchFlag;
                     data.specialInvFlag = loc.specialInvFlag;

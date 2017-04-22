@@ -1,132 +1,121 @@
 package com.richfit.barcodesystemproduct.module_local.upload;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
+import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.adapter.ShowUploadDataAdapter;
-import com.richfit.barcodesystemproduct.base.BaseActivity;
-import com.richfit.common_lib.adapter.animation.StickyDividerDecoration;
-import com.richfit.common_lib.utils.L;
-import com.richfit.domain.bean.ResultEntity;
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration;
+import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
+import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.common_lib.transformer.CubeTransformer;
+import com.richfit.common_lib.widget.NoScrollViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import butterknife.BindView;
 
 /**
  * 上传离线数据
  * Created by monday on 2017/4/17.
  */
 
-public class UploadActivity extends BaseActivity<UploadPresenterImp>
-        implements UploadContract.View {
+public class UploadActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
-    @BindView(R.id.btn_upload)
-    FloatingActionButton fabUpload;
-    @BindView(R.id.rv_show_upload_data)
-    RecyclerView recyclerView;
-
-    List<ResultEntity> mDatas;
-    ShowUploadDataAdapter mAdapter;
-    private StickyRecyclerHeadersDecoration mStickHeader;
+    TabLayout mTabLayout;
+    NoScrollViewPager mViewPager;
+    List<BaseFragment> mFragments;
+    FloatingActionButton mFabButton;
+    int mCurrrentFragmentIndex = 0;
 
     @Override
-    public void initVariables() {
-        super.initVariables();
-        mDatas = new ArrayList<>();
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_upload);
+        initView();
+        initEvent();
+        initData();
     }
 
-    @Override
-    protected int getContentId() {
-        return R.layout.activity_upload;
+    private void initView() {
+        mTabLayout = (TabLayout) findViewById(R.id.tablayout);
+        mViewPager = (NoScrollViewPager) findViewById(R.id.viewpager);
+        mFabButton = (FloatingActionButton) findViewById(R.id.floating_button);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //设置标题必须在setSupportActionBar之前才有效
+        TextView toolBarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        toolBarTitle.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        toolBarTitle.setText("离线数据上传");
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setHomeButtonEnabled(true); //设置返回键可用
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        /*设置viewPager*/
+        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.addOnPageChangeListener(this);
+        mViewPager.setPageTransformer(true, new CubeTransformer());
+        mTabLayout.setTabMode(TabLayout.MODE_FIXED);
     }
 
-    @Override
-    public void initInjector() {
-        mActivityComponent.inject(this);
-    }
-
-    @Override
-    protected void initViews() {
-        super.initViews();
-        //设置recyclerView
-        RecyclerView.LayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(lm);
-        mAdapter = new ShowUploadDataAdapter(this, R.layout.item_local_data, mDatas);
-        recyclerView.setAdapter(mAdapter);
-        mStickHeader = new StickyRecyclerHeadersDecoration(mAdapter);
-        recyclerView.addItemDecoration(mStickHeader);
-        recyclerView.addItemDecoration(new StickyDividerDecoration(this));
-    }
-
-    @Override
-    public void initData(Bundle savedInstanceState) {
-        mPresenter.readUploadData();
-    }
-
-    @Override
-    public void initEvent() {
-        super.initEvent();
-        RxView.clicks(fabUpload)
+    private void initEvent() {
+        RxView.clicks(mFabButton)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
-                .subscribe(a -> mPresenter.uploadCollectedDataOffLine());
+                .subscribe(a -> {
+                    if (mFragments != null) {
+                        BaseFragment fragment = mFragments.get(mCurrrentFragmentIndex);
+                        fragment.saveCollectedData();
+                    }
+                });
     }
 
-    /**
-     * 显示需要上传的明细数据
-     *
-     * @param results
-     */
-    @Override
-    public void showUploadData(ArrayList<ResultEntity> results) {
-        mDatas.addAll(results);
-        mAdapter.notifyDataSetChanged();
-    }
+    private void initData() {
+        if (mFragments == null) {
+            mFragments = new ArrayList<>();
 
-    /**
-     * 读取需要上传的数据失败
-     *
-     * @param message
-     */
-    @Override
-    public void readUploadDataFail(String message) {
-        mDatas.clear();
-        mAdapter.notifyDataSetChanged();
-    }
-
-
-    @Override
-    public void uploadCollectDataComplete() {
-        showMessage("数据上传成功!!!");
-        mAdapter.notifyDataSetChanged();
-        mPresenter.resetStateAfterUpload();
-    }
-
-    @Override
-    public void uploadCollectDataSuccess(int taskNum, int offset, String materialDoc, String transNum) {
-        L.e("taskNum = " + taskNum + ";offset = " + offset + "; materialDoc = " + materialDoc + "; transNum = " + transNum);
-        mAdapter.setStickyHeaderData(taskNum, offset, materialDoc, transNum);
-        mStickHeader.invalidateHeaders();
-    }
-
-    @Override
-    public void uploadCollectDataFail(String message) {
-        showMessage(message);
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (mDatas != null) {
-            mDatas.clear();
-            mDatas = null;
         }
-        super.onDestroy();
+        mCurrrentFragmentIndex = 0;
+        BaseFragment fragment = null;
+        fragment = BaseFragment.findFragment(getSupportFragmentManager(),
+                "Buzi_Upload_Fragment", "", "", "", "", -1, "出入库业务", BuziUploadFragment.class);
+        mFragments.add(fragment);
+        fragment = BaseFragment.findFragment(getSupportFragmentManager(),
+                "Check_Upload_Fragment", "", "", "", "", -1, "盘点业务", CheckUploadFragment.class);
+        mFragments.add(fragment);
+
+        MainPagerViewAdapter<BaseFragment> adapter = new MainPagerViewAdapter<>(getSupportFragmentManager(), mFragments);
+        mViewPager.setAdapter(adapter);
+        mTabLayout.setupWithViewPager(mViewPager);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        mCurrrentFragmentIndex = position;
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        switch (itemId) {
+            case android.R.id.home:
+                finish();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
