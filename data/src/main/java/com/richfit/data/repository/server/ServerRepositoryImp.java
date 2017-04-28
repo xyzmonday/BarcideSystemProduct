@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.JsonUtil;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.data.net.api.IRequestApi;
 import com.richfit.domain.bean.BizFragmentConfig;
@@ -368,7 +369,7 @@ public class ServerRepositoryImp implements IServerRepository {
         }
         mRequestParam.clear();
         mRequestParam.put("queryType", queryType);
-        mRequestParam.put("requestDate", "");
+        mRequestParam.put("queryDate", requestParam.queryDate);
         mRequestParam.put("queryPage", "queryPage");
         mRequestParam.put("startNum", String.valueOf(0));
         mRequestParam.put("endNum", String.valueOf(0));
@@ -396,6 +397,7 @@ public class ServerRepositoryImp implements IServerRepository {
     public Flowable<List<Map<String, Object>>> loadBasicData(@NonNull LoadDataTask task) {
         mRequestParam.clear();
         mRequestParam.put("queryType", task.queryType);
+        mRequestParam.put("queryDate", task.queryDate);
         mRequestParam.put("pageNum", task.pageNum);
         mRequestParam.put("pageSize", task.pageSize);
         return mRequestApi.loadBasicData(JsonUtil.map2Json(mRequestParam))
@@ -453,7 +455,7 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("userId", userId);
         mRequestParam.put("transToSAPFlag", transToSAPFlag);
 
-        if(extraHeaderMap != null && extraHeaderMap.size() > 0) {
+        if (extraHeaderMap != null && extraHeaderMap.size() > 0) {
             mRequestParam.putAll(extraHeaderMap);
         }
         return mRequestApi.transferCollectionData(JsonUtil.map2Json(mRequestParam))

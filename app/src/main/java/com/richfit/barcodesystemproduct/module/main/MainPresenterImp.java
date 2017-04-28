@@ -1,17 +1,17 @@
 package com.richfit.barcodesystemproduct.module.main;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -33,21 +33,39 @@ public class MainPresenterImp extends BasePresenter<MainContract.View>
     }
 
     @Override
-    public void setupMainContent(FragmentManager fragmentManager, String companyCode,
-                                 String moduleCode, String bizType, String refType,
-                                 String lineNum, int currentPageIndex) {
+    public void setupMainContent(FragmentManager fragmentManager, final Bundle bundle,
+                                 int currentPageIndex,int mode) {
 
         mView = getView();
-        final int mode = isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
+        final String bizType = bundle.getString(Global.EXTRA_BIZ_TYPE_KEY);
+        if (TextUtils.isEmpty(bizType)) {
+            mView.setupMainContentFail("业务类型为空!");
+            return;
+        }
+        final String refType = bundle.getString(Global.EXTRA_REF_TYPE_KEY);
+        final String companyCode = bundle.getString(Global.EXTRA_COMPANY_CODE_KEY);
+        final String moduleCode = bundle.getString(Global.EXTRA_MODULE_CODE_KEY);
+        final String refLineNum = bundle.getString(Global.EXTRA_REF_LINE_NUM_KEY);
+        final String refNum = bundle.getString(Global.EXTRA_REF_NUM_KEY);
+        final String transId = bundle.getString(Global.EXTRA_TRANS_ID_KEY);
+
         ResourceSubscriber<MainPagerViewAdapter> subscriber =
                 mRepository.readBizFragmentConfig(bizType, refType, 1, mode)
                         .filter(bizFragmentConfigs -> bizFragmentConfigs != null && bizFragmentConfigs.size() > 0)
                         .flatMap(bizFragmentConfigs -> Flowable.fromIterable(bizFragmentConfigs))
-                        .map(config -> BaseFragment.findFragment(fragmentManager,
-                                config.fragmentTag, companyCode, moduleCode, bizType, refType,
-                                config.fragmentType,
-                                config.tabTitle,
-                                config.className))
+                        .map(config -> {
+                            Bundle argument  = new Bundle();
+                            argument.putString(Global.EXTRA_COMPANY_CODE_KEY,companyCode);
+                            argument.putString(Global.EXTRA_MODULE_CODE_KEY,moduleCode);
+                            argument.putString(Global.EXTRA_BIZ_TYPE_KEY,config.bizType);
+                            argument.putString(Global.EXTRA_REF_TYPE_KEY,config.refType);
+                            argument.putString(Global.EXTRA_TITLE_KEY, config.tabTitle);
+                            argument.putString(Global.EXTRA_REF_LINE_NUM_KEY,refLineNum);
+                            argument.putString(Global.EXTRA_REF_NUM_KEY,refNum);
+                            argument.putString(Global.EXTRA_TRANS_ID_KEY,transId);
+                            argument.putInt(Global.EXTRA_FRAGMENT_TYPE_KEY, config.fragmentType);
+                            return BaseFragment.findFragment(fragmentManager, config.fragmentTag, argument, config.className);
+                        })
                         .buffer(3)
                         .map(fragments -> {
                             MainPagerViewAdapter adapter = new MainPagerViewAdapter(fragmentManager, fragments);

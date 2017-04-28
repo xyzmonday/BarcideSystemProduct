@@ -137,6 +137,9 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
         bundle.putString(Global.EXTRA_BIZ_TYPE_KEY, bizType);
         bundle.putString(Global.EXTRA_REF_TYPE_KEY, refType);
 
+        //设备id
+        bundle.putString(Global.EXTRA_DEVICE_ID_KEY, node.deviceId);
+
         //入库的子菜单的名称
         bundle.putString(Global.EXTRA_TITLE_KEY, subFunName + "-明细修改");
 
@@ -149,8 +152,8 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
 
         //发出仓位
         bundle.putString(Global.EXTRA_LOCATION_KEY, node.location);
-        bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY,node.specialInvFlag);
-        bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY,node.specialInvNum);
+        bundle.putString(Global.EXTRA_SPECIAL_INV_FLAG_KEY, node.specialInvFlag);
+        bundle.putString(Global.EXTRA_SPECIAL_INV_NUM_KEY, node.specialInvNum);
         //发出批次
         bundle.putString(Global.EXTRA_BATCH_FLAG_KEY, node.batchFlag);
 
@@ -355,6 +358,7 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
                     data.specialInvFlag = loc.specialInvFlag;
                     data.specialInvNum = loc.specialInvNum;
                     data.specialConvert = loc.specialConvert;
+                    data.deviceId = loc.deviceId;
                     //额外字段信息
                     data.mapExt = UiUtil.copyMap(target.mapExt, loc.mapExt);
                     datas.add(data);

@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class LocationInfoEntity {
 
+
     /*保存的id*/
     public String id;
     /*头ID*/
@@ -36,6 +37,7 @@ public class LocationInfoEntity {
     /*仓位的额外字段数据*/
     public Map<String, Object> mapExt;
     public String specialConvert;
+    public String deviceId;
 
     @Override
     public String toString() {
@@ -43,12 +45,18 @@ public class LocationInfoEntity {
                 "id='" + id + '\'' +
                 ", transId='" + transId + '\'' +
                 ", transLineId='" + transLineId + '\'' +
+                ", transLineSplitId='" + transLineSplitId + '\'' +
                 ", location='" + location + '\'' +
                 ", batchFlag='" + batchFlag + '\'' +
                 ", quantity='" + quantity + '\'' +
                 ", recLocation='" + recLocation + '\'' +
                 ", recBatchFlag='" + recBatchFlag + '\'' +
+                ", specialInvFlag='" + specialInvFlag + '\'' +
+                ", specialInvNum='" + specialInvNum + '\'' +
+                ", locationCombine='" + locationCombine + '\'' +
                 ", mapExt=" + mapExt +
+                ", specialConvert='" + specialConvert + '\'' +
+                ", deviceId='" + deviceId + '\'' +
                 '}';
     }
 }

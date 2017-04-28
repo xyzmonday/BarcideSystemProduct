@@ -2,7 +2,6 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit;
 
 
 import com.richfit.barcodesystemproduct.base.base_edit.IBaseEditPresenter;
-import com.richfit.domain.bean.ResultEntity;
 
 /**
  * Created by monday on 2016/11/21.
@@ -35,7 +34,7 @@ public interface IDSEditPresenter extends IBaseEditPresenter<IDSEditView> {
      * @param batchFlag:批次
      * @param location：仓位
      */
-    void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,
+    void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,String materialNum,
                                String batchFlag, String location, String refDoc, int refDocItem, String userId);
 
 }

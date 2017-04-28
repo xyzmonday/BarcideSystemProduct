@@ -41,7 +41,7 @@ public interface IDSCollectPresenter extends IPresenter<IDSCollectView> {
      * @param batchFlag:批次
      * @param location：仓位
      */
-    void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,
+    void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,String materialNum,
                                String batchFlag, String location, String refDoc, int refDocItem, String userId);
 
     /**

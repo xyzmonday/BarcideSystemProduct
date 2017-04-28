@@ -12,4 +12,7 @@ public interface IBaseHeaderView extends BaseView {
      * 上传数据成功后，清空抬头所有的信息
      */
     void clearAllUIAfterSubmitSuccess();
+
+    void uploadEditedHeadDataFail(String message);
+    void uploadEditedHeadComplete();
 }

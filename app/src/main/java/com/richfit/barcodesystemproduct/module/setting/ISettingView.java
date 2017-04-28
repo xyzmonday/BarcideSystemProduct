@@ -21,13 +21,13 @@ public interface ISettingView extends BaseView {
     //下载最新的app
     void prepareLoadApp();
     void loadLatestAppFail(String message);
-    void showLoadProgress(DownloadStatus status);
-    void loadComplete();
+    void showLoadAppProgress(DownloadStatus status);
+    void loadAppComplete();
 
     //下载基础数据
     void onStartLoadBasicData(int maxProgress);
     void loadBasicDataProgress(float progress);
     void loadBasicDataFail(String message);
-    void loadBasicDataSuccess();
+    void loadBasicDataComplete();
 
 }

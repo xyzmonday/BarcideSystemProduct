@@ -16,7 +16,6 @@ public class QingHaiAS103HeaderFragment extends BaseASHeaderFragment{
         mFragmentComponent.inject(this);
     }
 
-
     @Override
     protected void initView() {
         super.initView();
@@ -29,6 +28,4 @@ public class QingHaiAS103HeaderFragment extends BaseASHeaderFragment{
     protected String getMoveType() {
         return "1";
     }
-
-
 }

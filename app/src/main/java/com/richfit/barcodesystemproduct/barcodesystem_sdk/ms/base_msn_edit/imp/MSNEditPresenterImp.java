@@ -13,6 +13,7 @@ import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -121,10 +122,70 @@ public class MSNEditPresenterImp extends BaseEditPresenterImp<IMSNEditView>
 
                             @Override
                             public void _onComplete() {
+                                if(mView != null) {
+                                    mView.loadInventoryComplete();
+                                }
+                            }
+                        });
+        addSubscriber(subscriber);
+    }
+    @Override
+    public void getInventoryInfoOnRecLocation(String queryType, String workId, String invId, String workCode,
+                                              String invCode, String storageNum, String materialNum,
+                                              String materialId, String location, String batchFlag,
+                                              String specialInvFlag, String specialInvNum, String invType,
+                                              String deviceId) {
+        mView = getView();
+
+        RxSubscriber<List<String>> subscriber =
+                mRepository.getInventoryInfo(queryType, workId, invId, workCode, invCode, storageNum, materialNum,
+                        materialId, "", "", batchFlag, location, specialInvFlag, specialInvNum, invType, deviceId)
+                        .filter(list -> list != null && list.size() > 0)
+                        .map(list -> convert2Strings(list))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<List<String>>(mContext) {
+                            @Override
+                            public void _onNext(List<String> list) {
+                                if (mView != null) {
+                                    mView.showRecLocations(list);
+                                }
+                            }
+
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_LOAD_REC_INVENTORY_ACTION);
+                                }
+                            }
+
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.loadRecLocationsFail(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.loadRecLocationsFail(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onComplete() {
 
                             }
                         });
         addSubscriber(subscriber);
+    }
+
+    private ArrayList<String> convert2Strings(List<InventoryEntity> list) {
+        ArrayList<String> tmp = new ArrayList<>();
+        for (InventoryEntity item : list) {
+            tmp.add(item.location);
+        }
+        return tmp;
     }
 
     @Override

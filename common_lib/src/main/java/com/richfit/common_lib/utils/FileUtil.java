@@ -16,33 +16,7 @@ public class FileUtil {
 
     private static final String INSPECTION_IMAGE_CACHE_ROOT = "inspectionCacheImage";
     private static final String LOCAL_INSPECTION_IMAGE_CACHE_ROOT = "inspectionCacheLocalImage";
-    private static final String APK_CACHE_ROOT = "BarcodeSystemApk";
-
-    /**
-     * 获取缓存目录路径
-     * ！注意：若不存在，则返回null
-     *
-     * @param context
-     * @return 返回:/storage/sdcard0/Android/data/you_packageName/cache/
-     */
-    public static File getStorageCacheDir(Context context) {
-        if (!isAvailable()) {
-            return getDataCacheDir(context);
-        }
-
-        File path = Environment.getExternalStorageDirectory();
-        if (path == null) {
-            return getDataCacheDir(context);
-        }
-
-        return new File(path.getAbsolutePath() + File.separator + "Android" + File.separator + "data" + File.separator
-                + context.getPackageName() + File.separator + "cache" + File.separator);
-    }
-
-    static File getDataCacheDir(Context context) {
-        return context.getCacheDir();
-    }
-
+    private static final String APK_CACHE_ROOT = "barcodeSystemApk";
 
     /**
      * 获取apk缓存的路径
@@ -158,6 +132,7 @@ public class FileUtil {
         }
         return cacheDir;
     }
+
 
     /**
      * 删除整单缓存图片

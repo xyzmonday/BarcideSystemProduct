@@ -24,9 +24,13 @@ public class QingYangMSN301EditFragment extends BaseMSNEditFragment<MSNEditPrese
 
     @Override
     public boolean checkCollectedDataBeforeSave() {
-        final String recLocation = getString(etRecLoc);
+        final String recLocation = getString(autoRecLoc);
         if (!TextUtils.isEmpty(recLocation) && recLocation.length() != 11) {
             showMessage("修改失败,请先检查接收仓位是否合理");
+            return false;
+        }
+        if (TextUtils.isEmpty(mDeviceId)) {
+            showMessage("设备Id为空");
             return false;
         }
         return super.checkCollectedDataBeforeSave();

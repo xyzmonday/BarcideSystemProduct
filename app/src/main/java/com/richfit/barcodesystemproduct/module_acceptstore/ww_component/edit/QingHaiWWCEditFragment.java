@@ -73,9 +73,9 @@ public class QingHaiWWCEditFragment extends BaseEditFragment<QingHaiWWCEditPrese
         mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);
         mLocationId = bundle.getString(Global.EXTRA_LOCATION_ID_KEY);
 
-        if (mRefData != null && mPosition >= 0) {
+        if (mRefDetail != null && mPosition >= 0) {
             /*单据数据中的库存地点不一定有，而且用户可以录入新的库存地点，所以只有子节点的库存地点才是正确的*/
-            final RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
+            final RefDetailEntity lineData = mRefDetail.get(mPosition);
             //拿到上架总数
             tvMaterialNum.setText(lineData.materialNum);
 

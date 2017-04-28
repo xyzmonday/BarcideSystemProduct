@@ -25,29 +25,41 @@ import java.util.Set;
 public interface IBasicServiceDao {
 
     /**
+     * 下载额外字段的配置信息
+     *
+     * @param companyId:公司Id
+     * @return
+     */
+    ArrayList<RowConfig> loadExtraConfig(String companyId);
+
+    /**
      * 读取用户登陆信息
+     *
      * @param userName
      * @param password
      * @return
      */
     ArrayList<String> readUserInfo(String userName, String password);
 
-    UserEntity login(String userName,String password);
+    UserEntity login(String userName, String password);
 
     /**
      * 保存用户登陆信息
+     *
      * @param userEntity
      */
     void saveUserInfo(UserEntity userEntity);
 
     /**
      * 保存扩展字段配置信息
+     *
      * @param configs
      */
     void saveExtraConfigInfo(List<RowConfig> configs);
 
     /**
      * 读取扩展字段配置信息
+     *
      * @param companyCode
      * @param bizType
      * @param refType
@@ -59,6 +71,7 @@ public interface IBasicServiceDao {
 
     /**
      * 读取扩展字段字典数据
+     *
      * @param propertyCode
      * @param dictionaryCode
      * @return
@@ -67,6 +80,7 @@ public interface IBasicServiceDao {
 
     /**
      * 获取该类基础数据上一次下载的日期
+     *
      * @param queryType
      * @return
      */
@@ -74,13 +88,15 @@ public interface IBasicServiceDao {
 
     /**
      * 保存该类基础数据本次下载的日期
-     * @param queryType
+     *
+     * @param queryTypes
      * @param queryDate
      */
-    void saveLoadBasicDataTaskDate(String queryType, String queryDate);
+    void saveLoadBasicDataTaskDate(String queryDate,List<String> queryTypes);
 
     /**
      * 保存基础数据
+     *
      * @param maps
      * @return
      */
@@ -88,12 +104,14 @@ public interface IBasicServiceDao {
 
     /**
      * 跟新扩展字段基础数据表字段
+     *
      * @param map
      */
     void updateExtraConfigTable(Map<String, Set<String>> map);
 
     /**
      * 获取该工厂下的所有库存地点
+     *
      * @param workId
      * @param flag
      * @return
@@ -102,6 +120,7 @@ public interface IBasicServiceDao {
 
     /**
      * 获取工厂列表
+     *
      * @param flag
      * @return
      */
@@ -110,6 +129,7 @@ public interface IBasicServiceDao {
 
     /**
      * 检查接收库位和发出库位实发在同一个仓库
+     *
      * @param sendWorkId
      * @param sendInvCode
      * @param recWorkId
@@ -121,6 +141,7 @@ public interface IBasicServiceDao {
 
     /**
      * 获取供应商列表
+     *
      * @param workCode
      * @param keyWord
      * @param defaultItemNum
@@ -131,6 +152,7 @@ public interface IBasicServiceDao {
 
     /**
      * 获取成本中心列表
+     *
      * @param workCode
      * @param keyWord
      * @param defaultItemNum
@@ -141,6 +163,7 @@ public interface IBasicServiceDao {
 
     /**
      * 获取项目好列表
+     *
      * @param workCode
      * @param keyWord
      * @param defaultItemNum
@@ -151,6 +174,7 @@ public interface IBasicServiceDao {
 
     /**
      * 保存页面配置信息
+     *
      * @param bizFragmentConfigs
      * @return
      */
@@ -158,16 +182,18 @@ public interface IBasicServiceDao {
 
     /**
      * 读取页面配置信息
+     *
      * @param bizType
      * @param refType
      * @param fragmentType
      * @return
      */
-    ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode);
+    ArrayList<BizFragmentConfig> readBizFragmentConfig(String bizType, String refType, int fragmentType, int mode);
 
 
     /**
      * 获取该库位下的仓库号
+     *
      * @param workId
      * @param workCode
      * @param invId
@@ -178,6 +204,7 @@ public interface IBasicServiceDao {
 
     /**
      * 获取仓库号列表
+     *
      * @param flag
      * @return
      */
@@ -185,6 +212,7 @@ public interface IBasicServiceDao {
 
     /**
      * 保存菜单信息
+     *
      * @param menus
      * @param loginId
      * @param mode
@@ -193,6 +221,7 @@ public interface IBasicServiceDao {
 
     /**
      * 读取菜单信息
+     *
      * @param loginId
      * @param mode
      * @return
@@ -201,6 +230,7 @@ public interface IBasicServiceDao {
 
     /**
      * 读取该用户离线模式的所有业务类型
+     *
      * @param loginId
      * @return
      */
@@ -208,6 +238,7 @@ public interface IBasicServiceDao {
 
     /**
      * 检查仓位是否存在
+     *
      * @param queryType
      * @param workId
      * @param invId
@@ -217,5 +248,5 @@ public interface IBasicServiceDao {
      */
     boolean getLocationInfo(String queryType, String workId, String invId, String storageNum, String location);
 
-    MaterialEntity getMaterialInfo(String queryType,String materialNum);
+    MaterialEntity getMaterialInfo(String queryType, String materialNum);
 }

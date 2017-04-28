@@ -9,7 +9,7 @@ import retrofit2.http.Streaming;
 public interface IRetrofitDownloadApi {
 
     @Streaming
-    @GET("{fileName}")
+    @GET("download/{fileName}")
     Flowable<ResponseBody> downLoadApk(@Path("fileName") String fileName);
 
 }

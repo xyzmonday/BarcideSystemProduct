@@ -16,6 +16,8 @@ public class LoadBasicDataWrapper {
     public int pageNum;
     /*指定该页加载多少条数据*/
     public int pageSize;
+    /*本次请求日期*/
+    public String queryDate;
 
 
 }

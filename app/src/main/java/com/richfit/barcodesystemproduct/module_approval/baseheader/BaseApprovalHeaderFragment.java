@@ -9,7 +9,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.barcodesystemproduct.module_approval.baseheader.imp.ApprovalHeaderPresenterImp;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
@@ -30,7 +30,7 @@ import butterknife.BindView;
  * Created by monday on 2016/11/23.
  */
 
-public abstract class BaseApprovalHeaderFragment extends BaseFragment<ApprovalHeaderPresenterImp>
+public abstract class BaseApprovalHeaderFragment extends BaseHeaderFragment<ApprovalHeaderPresenterImp>
         implements IApprovalHeaderView {
 
     private static final String[] APPROVAL_TYPES = {"仓库验收", "检测验收"};

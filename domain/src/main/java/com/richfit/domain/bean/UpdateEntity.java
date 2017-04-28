@@ -8,6 +8,7 @@ public class UpdateEntity {
     public String appUpdateDesc;
     public String appDownloadUrl;
     public String appName;
+    public int appNum;
 
     @Override
     public String toString() {
@@ -16,6 +17,7 @@ public class UpdateEntity {
                 ", appUpdateDesc='" + appUpdateDesc + '\'' +
                 ", appDownloadUrl='" + appDownloadUrl + '\'' +
                 ", appName='" + appName + '\'' +
+                ", appNum='" + appNum + '\'' +
                 '}';
     }
 }

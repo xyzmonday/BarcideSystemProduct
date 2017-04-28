@@ -1,12 +1,17 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit;
 
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.text.TextUtils;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
@@ -24,6 +29,7 @@ import com.richfit.domain.bean.ResultEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -55,8 +61,8 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     TextView tvInvQuantity;
     @BindView(R.id.tv_location_quantity)
     protected TextView tvLocQuantity;
-    @BindView(R.id.et_rec_location)
-    protected EditText etRecLoc;
+    @BindView(R.id.auto_rec_location)
+    protected AppCompatAutoCompleteTextView autoRecLoc;
     @BindView(R.id.tv_rec_batch_flag)
     protected TextView tvRecBatchFlag;
 
@@ -79,7 +85,8 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     protected String mSpecialInvFlag;
     protected String mSpecialInvNum;
     protected boolean isWareHouseSame;
-
+    /*接收仓位*/
+    protected String mDeviceId;
 
     @Override
     protected int getContentId() {
@@ -110,6 +117,18 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
                     //获取缓存
                     loadLocationQuantity(position);
                 });
+        //点击自动提示控件，显示默认列表
+        RxView.clicks(autoRecLoc)
+                .filter(a -> autoRecLoc.getAdapter() != null)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
+                .subscribe(a -> {
+                    hideKeyboard(autoRecLoc);
+                    showAutoCompleteConfig(autoRecLoc);
+                });
+
+        //用户选择自动提示控件的某一条数据，隐藏输入法
+        RxAutoCompleteTextView.itemClickEvents(autoRecLoc)
+                .subscribe(a -> hideKeyboard(autoRecLoc));
     }
 
     @Override
@@ -129,6 +148,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         final String recLocation = bundle.getString(Global.EXTRA_REC_LOCATION_KEY);
         //接收批次
         final String recBatchFlag = bundle.getString(Global.EXTRA_REC_BATCH_FLAG_KEY);
+        mDeviceId = bundle.getString(Global.EXTRA_DEVICE_ID_KEY);
         //移库数量
         mQuantity = bundle.getString(Global.EXTRA_QUANTITY_KEY);
         //其他子节点的发出仓位列表
@@ -147,11 +167,11 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         tvSendBatchFlag.setText(batchFlag);
         isWareHouseSame = TextUtils.isEmpty(recLocation) ? false : true;
         if (isWareHouseSame) {
-            etRecLoc.setText(recLocation);
-            etRecLoc.setEnabled(true);
+            autoRecLoc.setText(recLocation);
+            autoRecLoc.setEnabled(true);
         } else {
-            etRecLoc.setText("");
-            etRecLoc.setEnabled(false);
+            autoRecLoc.setText("");
+            autoRecLoc.setEnabled(false);
         }
         tvRecBatchFlag.setText(recBatchFlag);
 
@@ -233,9 +253,92 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         }
     }
 
+    /**
+     * 加载发出库存完毕
+     */
+    @Override
+    public void loadInventoryComplete() {
+        //开始加载接收的库存
+        if (mRefData == null) {
+            showMessage("请先在抬头界面选择合适的移库数据");
+            return;
+        }
+        if (TextUtils.isEmpty(mRefData.recWorkId)) {
+            showMessage("接收工厂为空");
+            return;
+        }
+        if (TextUtils.isEmpty(mRefData.recInvId)) {
+            showMessage("接收库位为空");
+            return;
+        }
+        mPresenter.getInventoryInfoOnRecLocation(getInventoryQueryType(), mRefData.recWorkId, mRefData.recInvId,
+                mRefData.recWorkCode, mRefData.recInvCode, "", getString(tvMaterialNum),
+                CommonUtil.Obj2String(tvMaterialNum.getTag()), "",
+                getString(tvSendBatchFlag), "", "", getInvType(), mDeviceId);
+    }
+
     @Override
     public void loadInventoryFail(String message) {
         showMessage(message);
+    }
+
+
+
+    @Override
+    public void showRecLocations(List<String> recLocations) {
+        ArrayList<String> tmp = new ArrayList<>();
+        tmp.addAll(recLocations);
+        if (mHistoryDetailList != null) {
+            for (RefDetailEntity detail : mHistoryDetailList) {
+                List<LocationInfoEntity> locationList = detail.locationList;
+                if (locationList != null && locationList.size() > 0) {
+                    for (LocationInfoEntity locationInfo : locationList) {
+                        if(!TextUtils.isEmpty(locationInfo.recLocation) &&!recLocations.contains(locationInfo.recLocation)) {
+                            tmp.add(locationInfo.recLocation);
+                        }
+                    }
+                }
+            }
+        }
+        if (tmp.size() > 0)
+            setAutoCompleteConfig(autoRecLoc, tmp, autoRecLoc.getWidth());
+    }
+
+    @Override
+    public void loadRecLocationsFail(String message) {
+        //清除显示下拉列表
+        autoRecLoc.setAdapter(null);
+        ArrayList<String> tmp = new ArrayList<>();
+        if (mHistoryDetailList != null) {
+            for (RefDetailEntity detail : mHistoryDetailList) {
+                List<LocationInfoEntity> locationList = detail.locationList;
+                if (locationList != null && locationList.size() > 0) {
+                    for (LocationInfoEntity locationInfo : locationList) {
+                        if(!TextUtils.isEmpty(locationInfo.recLocation)) {
+                            tmp.add(locationInfo.recLocation);
+                        }
+                    }
+                }
+            }
+        }
+        if (tmp.size() > 0)
+            setAutoCompleteConfig(autoRecLoc, tmp, autoRecLoc.getWidth());
+    }
+
+    /**
+     * 设置auto控件适配器以及下拉列表的宽度
+     *
+     * @param autoComplete
+     * @param datas
+     * @param width
+     */
+    private void setAutoCompleteConfig(AutoCompleteTextView autoComplete, List<String> datas, int width) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(mActivity,
+                android.R.layout.simple_dropdown_item_1line, datas);
+        autoRecLoc.setAdapter(adapter);
+        autoComplete.setThreshold(1);
+        autoComplete.setDropDownWidth(width);
+        autoComplete.isPopupShowing();
     }
 
     /**
@@ -295,8 +398,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         bindExtraUI(mSubFunEntity.collectionConfigs, mExtraLineMap);
         tvLocQuantity.setText(locQuantity);
         //注意如果缓存中没有接收批次或者接收仓位，或者已经手动赋值,那么不用缓存更新它们
-        if (!TextUtils.isEmpty(recLocation) && !TextUtils.isEmpty(getString(etRecLoc)))
-            etRecLoc.setText(recLocation);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(tvRecBatchFlag)))
             tvRecBatchFlag.setText(recBatchFlag);
     }
@@ -327,7 +428,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             return true;
         for (String location : mRecLocations) {
             if (recLocation.equalsIgnoreCase(location)) {
-                etRecLoc.setText("");
+                autoRecLoc.setText("");
                 return false;
             }
         }
@@ -355,7 +456,7 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
 
 
         //检查接收仓位
-        if (!isValidatedRecLocation(getString(etRecLoc))) {
+        if (!isValidatedRecLocation(getString(autoRecLoc))) {
             showMessage("您输入的接收仓位不合理,请重新输入");
             return false;
         }
@@ -396,19 +497,19 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             result.userId = Global.USER_ID;
             result.workId = mRefData.workId;
             result.locationId = mLocationId;
-            result.invType =
-                    result.invId = CommonUtil.Obj2String(tvSendInv.getTag());
+            result.invType = result.invId = CommonUtil.Obj2String(tvSendInv.getTag());
             result.recWorkId = mRefData.recWorkId;
             result.recInvId = mRefData.recInvId;
             result.materialId = CommonUtil.Obj2String(tvMaterialNum.getTag());
             result.batchFlag = getString(tvSendBatchFlag);
+            result.deviceId = mDeviceId;
             int locationPos = spSendLoc.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;
             result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
             result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
                     "Y" : "N";
-            result.recLocation = getString(etRecLoc);
+            result.recLocation = getString(autoRecLoc);
             result.recBatchFlag = getString(tvRecBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";
@@ -430,7 +531,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     }
 
 
-
     @Override
     public void retry(String retryAction) {
         switch (retryAction) {
@@ -441,6 +541,18 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
                 break;
             case Global.RETRY_SAVE_COLLECTION_DATA_ACTION:
                 saveCollectedData();
+                break;
+            case Global.RETRY_LOAD_INVENTORY_ACTION:
+                mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId,
+                        CommonUtil.Obj2String(tvSendInv.getTag()), mRefData.workCode, getString(tvSendInv),
+                        "", getString(tvMaterialNum), tvMaterialNum.getTag().toString(),
+                        "", getString(tvSendBatchFlag), "", "", getInvType(), "");
+                break;
+            case Global.RETRY_LOAD_REC_INVENTORY_ACTION:
+                mPresenter.getInventoryInfoOnRecLocation(getInventoryQueryType(), mRefData.recWorkId, mRefData.recInvId,
+                        mRefData.recWorkCode, mRefData.recInvCode, "", getString(tvMaterialNum),
+                        CommonUtil.Obj2String(tvMaterialNum.getTag()), "",
+                        getString(tvSendBatchFlag), "", "", getInvType(), mDeviceId);
                 break;
         }
         super.retry(retryAction);

@@ -585,8 +585,9 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         cursor.close();
         if (TextUtils.isEmpty(refData.transId)) {
             // 如果没有查询到缓存 则只赋值物料信息
-            sb.append("select distinct id,material_num,material_desc,material_group,unit ")
-                    .append(" from BASE_MATERIAL_CODE ")
+            sb.append("select distinct M.id,M.material_num,M.material_desc,M.material_group,U.long_desc")
+                    .append(" from BASE_MATERIAL_CODE M")
+                    .append(" left join BASE_UNIT_CODE U on M.unit = U.id ")
                     .append(" where material_num = ?");
             cursor = db.rawQuery(sb.toString(), new String[]{materialNum});
             RefDetailEntity item;

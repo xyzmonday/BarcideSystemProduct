@@ -106,6 +106,9 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     //该页签名称
     protected String mTabTitle;
     protected boolean mIsOpenBatchManager = Global.BATCH_FLAG;
+    /*离线修改需要的数据*/
+    protected String mLocalTransId;
+    protected String mLocalRefNum;
 
     public static BaseFragment findFragment(FragmentManager fm, String tag, String companyCode, String moduleCode,
                                             String bizType, String refType, int fragmentType, String title, Class clazz) {
@@ -240,6 +243,8 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
             mRefType = bundle.getString(Global.EXTRA_REF_TYPE_KEY);
             mTabTitle = bundle.getString(Global.EXTRA_TITLE_KEY);
             mFragmentType = bundle.getInt(Global.EXTRA_FRAGMENT_TYPE_KEY);
+            mLocalTransId = bundle.getString(Global.EXTRA_TRANS_ID_KEY);
+            mLocalRefNum = bundle.getString(Global.EXTRA_REF_NUM_KEY);
         }
         initVariable(savedInstanceState);
     }
@@ -414,6 +419,9 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
      */
     protected RefDetailEntity getLineData(String lineNum) {
         int lineIndex = getIndexByLineNum(lineNum);
+        if (lineIndex < 0) {
+            mRefData.billDetailList.get(0);
+        }
         return mRefData.billDetailList.get(lineIndex);
     }
 
@@ -711,9 +719,6 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         }
     }
 
-    private void setSelection(MaterialSpinner spinner, List<String> values, String selectedItem) {
-
-    }
 
     /**
      * 清除额外字段绑定的数据
@@ -1216,7 +1221,7 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     /**
      * 设置view的可见性
      */
-    protected void setVisibility(int visibility,View... views) {
+    protected void setVisibility(int visibility, View... views) {
         if (views == null || views.length == 0)
             return;
         for (View view : views) {

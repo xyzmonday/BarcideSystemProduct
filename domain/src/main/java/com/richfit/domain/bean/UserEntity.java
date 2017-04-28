@@ -22,4 +22,19 @@ public class UserEntity {
     public String batchFlag;
     public List<MobileMenuEntity> listMenu;
 
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "userName='" + userName + '\'' +
+                ", userId='" + userId + '\'' +
+                ", password='" + password + '\'' +
+                ", loginId='" + loginId + '\'' +
+                ", authOrgs='" + authOrgs + '\'' +
+                ", lastLoginDate=" + lastLoginDate +
+                ", companyId='" + companyId + '\'' +
+                ", companyCode='" + companyCode + '\'' +
+                ", batchFlag='" + batchFlag + '\'' +
+                ", listMenu=" + listMenu +
+                '}';
+    }
 }

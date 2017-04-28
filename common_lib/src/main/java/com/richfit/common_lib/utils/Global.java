@@ -7,6 +7,8 @@ package com.richfit.common_lib.utils;
 public class Global {
 
     public final static String RETURN_SUCCESS_CODE = "S";
+    /*App是否第一次启动*/
+    public final static String IS_APP_FIRST_KEY = "is_app_first";
 
     public static String USER_ID;
     public static String LOGIN_ID;
@@ -45,6 +47,9 @@ public class Global {
     public static final int ONLINE_MODE = 0x0;
     public static final int OFFLINE_MODE = 0x1;
 
+    /*地区公司*/
+    public static final String QINGYANG = "qingyang";
+    public static final String QINGHAI = "qinghai";
 
     /*配置文件类型*/
     public static final String HEADER_CONFIG_TYPE = "0";
@@ -73,6 +78,10 @@ public class Global {
     public static final String RETRY_REGISTER_ACTION = "retry_register_action";
     /*登陆*/
     public static final String RETRY_LOGIN_ACTION = "retry_login_action";
+    /*初始化主菜单*/
+    public static final String RETRY_SETUP_MENUS_ACTION = "retry_setup_menus_action";
+    /*同步基础数据*/
+    public static final String RETRY_SYNC_BASIC_DATA_ACTION = "retry_sync_basic_data_action";
     /*查询物料信息*/
     public static final String RETRY_QUERY_MATERIAL_INFO = "retry_query_material_info";
     /*抬头界面获取单据数据*/
@@ -89,8 +98,11 @@ public class Global {
     public static final String RETRY_UPLOAD_DATA_ACTION = "retry_upload_data_action";
     /*数据采集界面获取库存*/
     public static final String RETRY_LOAD_INVENTORY_ACTION = "retry_load_inventory_action";
+    public static final String RETRY_LOAD_REC_INVENTORY_ACTION = "retry_load_rec_inventory_action";
     /*数据修改*/
     public static final String RETRY_EDIT_DATA_ACTION = "retry_edit_data_action";
+   /*离线结束本次操作*/
+    public static final String RETRY_SET_TRANS_FLAG_ACTION = "retry_set_trans_flag_action";
 
     /*
      * 父节点的布局类型,存在两种状态的父节点
@@ -140,13 +152,16 @@ public class Global {
     public static final String EXTRA_INV_QUANTITY_KEY = "extra_inv_quantity";
     public static final String EXTRA_BIZ_TYPE_KEY = "extra_biz_type";
     public static final String EXTRA_REF_TYPE_KEY = "extra_ref_type";
+    public static final String START_DATE_KEY = "start_date_key";
+    public static final String EXTRA_DEVICE_ID_KEY = "extra_device_id_key";
+    public static final String END_DATE_KEY = "end_date_key";
 
     public static final String EXTRA_REC_LOCATION_KEY = "extra_rec_location";
     public static final String EXTRA_REC_BATCH_FLAG_KEY = "extra_rec_batch_flag";
     public static final String EXTRA_TOTAL_QUANTITY_KEY = "extra_total_quantity";
     /*特殊库存标识*/
     public static final String EXTRA_SPECIAL_INV_FLAG_KEY = "extra_special_inv_flag_key";
-    public static final String EXTRA_SPECIAL_INV_NUM_KEY  = "extra_special_inv_num_key";
+    public static final String EXTRA_SPECIAL_INV_NUM_KEY = "extra_special_inv_num_key";
     /*制造商*/
     public static final String EXTRA_MANUFUCTURER_KEY = "extra_manufucturer";
     /*抽检数量*/
@@ -198,12 +213,16 @@ public class Global {
     public static final String EXTRA_MOVE_CAUSE_DESC_KEY = "extra_move_cause_desc";
     public static final String EXTRA_MOVE_CAUSE_KEY = "extra_move_cause";
     public static final String EXTRA_DECISION_CAUSE_KEY = "extra_decision_cause";
-    public static final String EXTRA_CAPTION_KEY  = "extra_caption";
+    public static final String EXTRA_CAPTION_KEY = "extra_caption";
+    public static final String EXTRA_TRANS_ID_KEY = "extra_trans_id";
+    public static final String EXTRA_MODE_KEY = "extra_mode_key";
 
     /*扫描物料和批次位置*/
     public static final int MATERIAL_POS = 2;
     public static final int BATCHFALG_POS = 12;
     public static final int LOCATION_POS = 0;
+    /*料签*/
     public static final int MATERIAL_POS_L = 4;
     public static final int BATCHFALG_POS_L = 6;
+
 }

@@ -36,11 +36,23 @@ public class LoadDataTask {
         this.endNum = endNum;
         this.pageNum = pageNum;
         this.pageSize = pageSize;
-
         this.isLoadByPage = isLoadByPage;
         this.isFirstPage = isFirstPage;
     }
 
+    public LoadDataTask(int id, String queryType,String queryDate, String queryPage, int startNum, int endNum,
+                        int pageSize,int pageNum, boolean isLoadByPage, boolean isFirstPage) {
+        this.id = id;
+        this.queryType = queryType;
+        this.queryPage = queryPage;
+        this.queryDate = queryDate;
+        this.startNum = startNum;
+        this.endNum = endNum;
+        this.pageNum = pageNum;
+        this.pageSize = pageSize;
+        this.isLoadByPage = isLoadByPage;
+        this.isFirstPage = isFirstPage;
+    }
 
     @Override
     public String toString() {

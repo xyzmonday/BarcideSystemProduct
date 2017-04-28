@@ -4,13 +4,15 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.setting.ISettingPresenter;
 import com.richfit.barcodesystemproduct.module.setting.ISettingView;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.LoadDataTask;
 import com.richfit.domain.bean.UpdateEntity;
@@ -49,70 +51,83 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
     @Override
     protected void onStart() {
         super.onStart();
-        mRxDownload = RxDownload.getInstance()
-                .maxThread(3)
-                .maxRetryCount(3)
-                .context(mContext)    // 自动安装需要Context
-                .autoInstall(true); //下载完成自动安装
+        mRxDownload = RxDownload.getInstance(mContext)
+                .maxThread(1)
+                .maxRetryCount(3);
+
         mTaskId = 0;
     }
 
     /**
      * 下载基础数据。
-     *  具体的控制逻辑是:用户传递过来需要下载的基础数据的类型，
-     *  调用preparePageLoad方法请求到分页数据的基本信息(如果不需要分页那么系统自动返回合适的下载信息)，
-     *  根据返回的信息生成下载任务(如果分页下载的数据为0,那么下载任务为0)，
-     *  下载完成后，保存到本地数据库
+     * 具体的控制逻辑是:用户传递过来需要下载的基础数据的类型，
+     * 调用preparePageLoad方法请求到分页数据的基本信息(如果不需要分页那么系统自动返回合适的下载信息)，
+     * 根据返回的信息生成下载任务(如果分页下载的数据为0,那么下载任务为0)，
+     * 下载完成后，保存到本地数据库
      *
-     *
-     * @param requestParam
+     * @param requestParams
      */
     @Override
-    public void loadAndSaveBasicData(ArrayList<LoadBasicDataWrapper> requestParam) {
+    public void loadAndSaveBasicData(final ArrayList<LoadBasicDataWrapper> requestParams) {
         mView = getView();
+        ResourceSubscriber<Integer> subscriber =
+                Flowable.fromIterable(requestParams)
+                        .concatMap(param ->
+                                Flowable.just(param)
+                                        .zipWith(Flowable.just(mRepository.getLoadBasicDataTaskDate(param.queryType)), (loadBasicDataWrapper, queryDate) -> {
+                                            loadBasicDataWrapper.queryDate = queryDate;
+                                            return loadBasicDataWrapper;
+                                        }).flatMap(p -> mRepository.preparePageLoad(p)))
+                        .concatMap(param -> Flowable.fromIterable(addTask(param.queryType, param.queryDate, param.totalCount, param.isByPage)))
+                        .concatMap(task -> mRepository.loadBasicData(task))
+                        .flatMap(sourceMap -> mRepository.saveBasicData(sourceMap))
+                        .doOnComplete(() -> {
+                            String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE4);
+                            ArrayList<String> queryTypes = new ArrayList<>();
+                            for (LoadBasicDataWrapper param : requestParams) {
+                                queryTypes.add(param.queryType);
+                            }
+                            mRepository.saveLoadBasicDataTaskDate(currentDate, queryTypes);
+                        })
+                        .retryWhen(new RetryWhenNetworkException(3, 2000))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<Integer>() {
 
-        ResourceSubscriber<Integer> subscriber = Flowable.fromIterable(requestParam)
-                .concatMap(param -> mRepository.preparePageLoad(param))
-                .concatMap(param -> Flowable.fromIterable(addTask(param.queryType, param.totalCount, param.isByPage)))
-                .concatMap(task -> mRepository.loadBasicData(task))
-                .flatMap(sourceMap -> mRepository.saveBasicData(sourceMap))
-                .retryWhen(new RetryWhenNetworkException(3, 2000))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<Integer>() {
+                            @Override
+                            protected void onStart() {
+                                super.onStart();
+                                if (mView != null) {
+                                    mView.onStartLoadBasicData(mTaskId);
+                                }
+                            }
 
-                    @Override
-                    protected void onStart() {
-                        super.onStart();
-                        if (mView != null) {
-                            mView.onStartLoadBasicData(mTaskId);
-                        }
-                    }
+                            @Override
+                            public void onNext(Integer integer) {
+                                L.e("percent = " + integer + "; mTaskId = " + mTaskId);
+                                if (mView != null && mTaskId != 0) {
+                                    float percent = (integer.intValue() * 100.0F) / (mTaskId * 1.0F);
+                                    mView.loadBasicDataProgress(percent);
+                                }
+                            }
 
-                    @Override
-                    public void onNext(Integer integer) {
-//                        L.e("percent = " + integer + "; mTaskId = " + mTaskId);
-                        if (mView != null && mTaskId != 0 ) {
-                            float percent = (integer.intValue() * 100.0F) / (mTaskId * 1.0F);
-                            mView.loadBasicDataProgress(percent);
-                        }
-                    }
+                            @Override
+                            public void onError(Throwable t) {
+                                mTaskId = 0;
+                                if (mView != null) {
+                                    mView.loadBasicDataFail(t.getMessage());
+                                }
+                            }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        mTaskId = 0;
-                        if (mView != null) {
-                            mView.loadBasicDataFail(t.getMessage());
-                        }
-                    }
+                            @Override
+                            public void onComplete() {
+                                mTaskId = 0;
+                                if (mView != null) {
+                                    mView.loadBasicDataComplete();
+                                }
+                            }
+                        });
 
-                    @Override
-                    public void onComplete() {
-                        mTaskId = 0;
-                        if (mView != null) {
-                            mView.loadBasicDataSuccess();
-                        }
-                    }
-                });
+
         addSubscriber(subscriber);
     }
 
@@ -167,6 +182,8 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
             mView.loadLatestAppFail("未获取到保存文件的名称");
             return;
         }
+
+
         mUpdateDisposable = mRxDownload.download(url, saveName, savePath)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -183,7 +200,7 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
                     @Override
                     public void onNext(DownloadStatus status) {
                         if (mView != null) {
-                            mView.showLoadProgress(status);
+                            mView.showLoadAppProgress(status);
                         }
                     }
 
@@ -197,7 +214,7 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
                     @Override
                     public void onComplete() {
                         if (mView != null) {
-                            mView.loadComplete();
+                            mView.loadAppComplete();
                         }
                     }
                 });
@@ -224,7 +241,7 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
      * @param queryType
      * @param totalCount
      */
-    private LinkedList<LoadDataTask> addTask(String queryType, int totalCount, boolean isByPage) {
+    private LinkedList<LoadDataTask> addTask(String queryType, String queryDate, int totalCount, boolean isByPage) {
 
         LinkedList<LoadDataTask> tasks = new LinkedList<>();
         if (!isByPage) {
@@ -238,17 +255,17 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
         int ptr = 0;
         if (count == 0) {
             // 说明数据长度小于PATCH_MAX_LENGTH，直接写入即可
-            tasks.addLast(new LoadDataTask(++mTaskId, queryType, "getPage", 1
+            tasks.addLast(new LoadDataTask(++mTaskId, queryType, queryDate, "getPage", 1
                     , totalCount, totalCount, 1, true, true));
         } else if (count > 0) {
             for (; ptr < count; ptr++) {
-                tasks.addLast(new LoadDataTask(++mTaskId, queryType, "getPage",
+                tasks.addLast(new LoadDataTask(++mTaskId, queryType, queryDate, "getPage",
                         Global.MAX_PATCH_LENGTH * ptr + 1, Global.MAX_PATCH_LENGTH * (ptr + 1)
-                        , Global.MAX_PATCH_LENGTH, ptr + 1, true, ptr == 0 ? true : false));
+                        , Global.MAX_PATCH_LENGTH, ptr + 1, true, ptr == 0));
             }
             if (residual > 0) {
                 // 说明还有剩余的数据
-                tasks.addLast(new LoadDataTask(++mTaskId, queryType, "getPage",
+                tasks.addLast(new LoadDataTask(++mTaskId, queryType, queryDate, "getPage",
                         Global.MAX_PATCH_LENGTH * ptr + 1, Global.MAX_PATCH_LENGTH * ptr + residual
                         , Global.MAX_PATCH_LENGTH, ptr + 1, true, false));
             }

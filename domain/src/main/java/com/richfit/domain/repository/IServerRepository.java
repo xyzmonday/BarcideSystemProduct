@@ -8,7 +8,6 @@ import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.LoadDataTask;
 import com.richfit.domain.bean.RefNumEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.UpdateEntity;
 
 import java.util.ArrayList;
@@ -24,13 +23,7 @@ import io.reactivex.Flowable;
 
 public interface IServerRepository extends IRepository {
 
-    /**
-     * 下载额外字段的配置信息
-     *
-     * @param companyId:公司Id
-     * @return
-     */
-    Flowable<ArrayList<RowConfig>> loadExtraConfig(String companyId);
+
 
     Flowable<ArrayList<BizFragmentConfig>> loadBizFragmentConfig(String companyId, int mode);
 
@@ -176,4 +169,5 @@ public interface IServerRepository extends IRepository {
 
 
     Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results);
+
 }

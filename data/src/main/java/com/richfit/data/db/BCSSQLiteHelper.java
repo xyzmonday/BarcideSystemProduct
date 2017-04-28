@@ -16,7 +16,7 @@ public class BCSSQLiteHelper extends SQLiteOpenHelper {
     private final static int DB_VERSION = 1;
     private Context mContext;
     private static BCSSQLiteHelper sInstance;
-    private final static String DB_NAME = "barcodesystem.db";
+    public final static String DB_NAME = "barcodesystem.db";
     private final static String Create = "create.sql";
     private final static String Drop = "drop.sql";
 

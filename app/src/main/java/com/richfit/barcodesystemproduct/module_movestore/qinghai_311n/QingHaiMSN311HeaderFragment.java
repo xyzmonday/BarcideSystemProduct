@@ -72,6 +72,7 @@ public class QingHaiMSN311HeaderFragment extends BaseMSNHeaderFragment {
     @Override
     public void _onPause() {
         super._onPause();
+        //工厂内移库，默认接收工厂默认等于接收工厂
         if(mRefData != null) {
             mRefData.recWorkName = mRefData.workName;
             mRefData.recWorkCode = mRefData.workCode;

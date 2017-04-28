@@ -8,7 +8,7 @@ def getProductName() {
 }
 //获取当前系统的时间
 def releaseTime() {
-    return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
+    return new Date().format("yyyy-MM-dd-HH-mm-ss")
 }
 
 android {
@@ -26,39 +26,45 @@ android {
     }
 
     signingConfigs {
-        debug {
-
+        //签名1
+        sign_qingyang {
+            keyAlias 'xyzmonday'
+            keyPassword 'yff3445683'
+            storeFile file('E:\\2017-04\\barcodesystem_keystore\\bcs_qingyang_key.jks')//签名文件路径
+            storePassword 'yff3445683'
         }
-        release {
-//            storeFile file('E:/2017-04/barcodesystem_keystore/barcodesystemproduct.jks')
-//            keyAlias 'xyzmonday'
-//            keyPassword 'yff3445683'
-//            storePassword 'yff3445683'
-            storeFile
-            storePassword
-            keyAlias
-            keyPassword
+        //签名2
+        sign_qinghai {
+            keyAlias 'xyzmonday'
+            keyPassword 'yff3445683'
+            storeFile file('E:\\2017-04\\barcodesystem_keystore\\bcs_qinghai_key.jks')//签名文件路径
+            storePassword 'yff3445683'
         }
     }
 
 
     buildTypes {
         release {
-            //启用混淆代码的功能
-            minifyEnabled true
-            //压缩对齐生成的apk包
-            zipAlignEnabled true
-            //指定混淆规则，需要压缩优化的混淆要把proguard-android.txt换成proguard-android.txt
+            // 正式版不显示log
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            //指定打release包的签名
-            signingConfig signingConfigs.release
-            //移除无用的资源文件
-            shrinkResources true
-            //启用multidex的支持
-            multiDexEnabled true
+            //修改生成的apk名字，格式为 app名_版本号_打包时间_渠道名_release.apk
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def oldFile = output.outputFile
+                    if (variant.buildType.name.equals('release')) {
+                        def releaseApkName = getProductName() + "_v${defaultConfig.versionName}_${releaseTime()}_" + variant.productFlavors[0].name + '_release.apk'
+                        output.outputFile = new File(oldFile.parent, releaseApkName)
+                    }
+                }
+            }
         }
 
         debug {
+            // 正式版不显示log
+            buildConfigField "boolean", "LOG_DEBUG", "true"
             shrinkResources false
             minifyEnabled false
         }
@@ -69,12 +75,15 @@ android {
         qingyang {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingYang.json"'
-
+            buildConfigField "String","APP_NAME",'"qingyang"'
+            signingConfig signingConfigs.sign_qingyang
         }
 
         qinghai {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingHai.json"'
+            buildConfigField "String","APP_NAME",'"qinghai"'
+            signingConfig signingConfigs.sign_qinghai
         }
     }
 
@@ -95,49 +104,24 @@ android {
     }
     packagingOptions {
         exclude('META-INF/rxjava.properties')
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
     }
-
 
     sourceSets {
         main {
             jniLibs.srcDirs = ['libs']
         }
     }
-
-    //修改生成的apk名字，格式为 app名_版本号_打包时间_渠道名_release.apk
-    applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            def oldFile = output.outputFile
-            if (variant.buildType.name.equals('release')) {
-                def releaseApkName = getProductName() + "_v${defaultConfig.versionName}_${releaseTime()}_" + variant.productFlavors[0].name + '_release.apk'
-                output.outputFile = new File(oldFile.parent, releaseApkName)
-                def backReleaseOutputFile = new File('./apk')
-                copy {
-                    from output.outputFile
-                    into backReleaseOutputFile
-                }
-            }
-        }
-    }
 }
-    //配置打包签名
-    File propFile = file('signing.properties');
-    if (propFile.exists()) {
-         def Properties props = new Properties()
-         props.load(new FileInputStream(propFile))
-    if (props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD') &&
-            props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
-        android.signingConfigs.release.storeFile = file(props['STORE_FILE'])
-        android.signingConfigs.release.storePassword = props['STORE_PASSWORD']
-        android.signingConfigs.release.keyAlias = props['KEY_ALIAS']
-        android.signingConfigs.release.keyPassword = props['KEY_PASSWORD']
-    } else {
-        android.buildTypes.release.signingConfig = null
-    }
-    } else {
-        android.buildTypes.release.signingConfig = null
-    }
-
 
 
 dependencies {

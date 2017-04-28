@@ -8,8 +8,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.imp.ASHeaderPresenterImp;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -17,6 +17,7 @@ import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
+import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import butterknife.BindView;
  * Created by monday on 2016/11/11.
  */
 
-public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresenterImp>
+public abstract class BaseASHeaderFragment extends BaseHeaderFragment<ASHeaderPresenterImp>
         implements IASHeaderView {
 
     @BindView(R.id.et_ref_num)
@@ -101,7 +102,7 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
     protected void getRefData(String refNum) {
         mRefData = null;
         clearAllUI();
-        mPresenter.getReference(refNum, mRefType, mBizType, getMoveType(),"", Global.USER_ID);
+        mPresenter.getReference(refNum, mRefType, mBizType, getMoveType(), "", Global.USER_ID);
     }
 
     /**
@@ -126,6 +127,15 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
         mSubFunEntity.headerConfigs = null;
     }
 
+    @Override
+    public void readConfigsComplete() {
+        if (mPresenter.isLocal() && !TextUtils.isEmpty(mLocalTransId)
+                && !TextUtils.isEmpty(mLocalRefNum)) {
+            etRefNum.setText(mLocalRefNum);
+            getRefData(mLocalRefNum);
+        }
+    }
+
     /**
      * 获取单据数据成功
      *
@@ -141,7 +151,7 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
         boolean isQmFlag = false;
         for (RefDetailEntity item : refData.billDetailList) {
             isQmFlag = "X".equalsIgnoreCase(item.qmFlag);
-            if(isQmFlag)
+            if (isQmFlag)
                 break;
         }
         mRefData = refData;
@@ -264,6 +274,16 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
         }
     }
 
+
+    @Override
+    public void operationOnHeader(String companyCode) {
+        mLocalHeaderResult = new ResultEntity();
+        mLocalHeaderResult.transId = mLocalTransId;
+        mLocalHeaderResult.businessType = mBizType;
+        mLocalHeaderResult.voucherDate = getString(etTransferDate);
+        super.operationOnHeader(companyCode);
+    }
+
     /**
      * 网络错误重试
      *
@@ -273,7 +293,7 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
     public void retry(String action) {
         switch (action) {
             case Global.RETRY_LOAD_REFERENCE_ACTION:
-                mPresenter.getReference(getString(etRefNum), mRefType, mBizType, getMoveType(),"", Global.LOGIN_ID);
+                mPresenter.getReference(getString(etRefNum), mRefType, mBizType, getMoveType(), "", Global.LOGIN_ID);
                 break;
         }
         super.retry(action);
@@ -282,8 +302,13 @@ public abstract class BaseASHeaderFragment extends BaseFragment<ASHeaderPresente
 
     @Override
     public boolean isNeedShowFloatingButton() {
+        //如果是离线，而且是修改过来的那么需要显示按钮
+        if (mPresenter.isLocal() && !TextUtils.isEmpty(mLocalTransId)) {
+            return true;
+        }
         return false;
     }
+
 
     /*返回移动类型*/
     @CheckResult

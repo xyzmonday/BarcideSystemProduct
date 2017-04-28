@@ -79,7 +79,9 @@ public class LoginActivity extends BaseActivity<LoginPresenterImp> implements Lo
     public void initData(Bundle savedInstanceState) {
         super.initData(savedInstanceState);
         mPresenter.readUserInfos();
-        mPresenter.uploadCrashLogFiles();
+        //如果没有网络，不需要上传奔溃日志
+        if (!mPresenter.isLocal())
+            mPresenter.uploadCrashLogFiles();
     }
 
     @Override

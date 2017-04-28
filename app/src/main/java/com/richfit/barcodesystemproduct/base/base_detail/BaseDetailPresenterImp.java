@@ -1,10 +1,14 @@
 package com.richfit.barcodesystemproduct.base.base_detail;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.main.MainActivity;
+import com.richfit.common_lib.rxutils.RxSubscriber;
+import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 
@@ -68,8 +72,54 @@ public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePrese
             MainActivity activity = (MainActivity) mContext;
             activity.showFragmentByPosition(position);
             if (mSimpleRxBus.hasSubscribers()) {
-                mSimpleRxBus.post(new BaseDetailFragment.ClearHeaderUIEvent());
+                mSimpleRxBus.post(true);
             }
         }
+    }
+
+    @Override
+    public void setTransFlag(String bizType,String transFlag) {
+        mView = getView();
+        if(TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transFlag)) {
+            return;
+        }
+        RxSubscriber<String> subscriber = mRepository.setTransFlag(bizType, transFlag)
+                .compose(TransformerHelper.io2main())
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在结束本次操作") {
+                    @Override
+                    public void _onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void _onNetWorkConnectError(String message) {
+                        if (mView != null) {
+                            mView.networkConnectError(Global.RETRY_SET_TRANS_FLAG_ACTION);
+                        }
+                    }
+
+                    @Override
+                    public void _onCommonError(String message) {
+                        if(mView != null) {
+                            mView.setTransFlagFail(message);
+                        }
+                    }
+
+                    @Override
+                    public void _onServerError(String code, String message) {
+                        if(mView != null) {
+                            mView.setTransFlagFail(message);
+                        }
+                    }
+
+                    @Override
+                    public void _onComplete() {
+                        if(mView != null) {
+                            mView.setTransFlagsComplete();
+                        }
+                    }
+                });
+        addSubscriber(subscriber);
+
     }
 }

@@ -14,8 +14,6 @@ import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.common_lib.adapter.animation.StickyDividerDecoration;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.JsonUtil;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -124,8 +122,7 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
      */
     @Override
     public void getReferenceInfoSuccess(ReferenceEntity data) {
-        //4700002598
-        L.e("获取到的单据数据 = " + JsonUtil.object2Json(data));
+        showMessage("下载成功");
     }
 
 

@@ -31,4 +31,16 @@ public interface IMSNEditView extends IBaseEditView {
     void showInventory(List<InventoryEntity> list);
 
     void loadInventoryFail(String message);
+
+    /**
+     * 加载库存完毕
+     */
+    void loadInventoryComplete();
+
+    /**
+     * 显示接收库存
+     * */
+    void showRecLocations(List<String> recLocations);
+    void loadRecLocationsFail(String message);
+
 }

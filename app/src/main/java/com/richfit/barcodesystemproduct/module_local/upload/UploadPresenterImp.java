@@ -11,6 +11,7 @@ import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
+import com.richfit.domain.bean.UploadMsgEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,11 +37,12 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     UploadContract.View mView;
     List<ReferenceEntity> mRefDatas;
     /*返回给用户的信息*/
-    SparseArray<String> mMessageArray;
+    SparseArray<UploadMsgEntity> mMessageArray;
     /*过账额外的字段信息*/
     HashMap<String, Object> mExtraTransMap;
     /*需要回传的总数*/
     int mTotalUploadDataNum;
+    UploadMsgEntity info;
 
     @Inject
     public UploadPresenterImp(@ContextLife("Activity") Context context) {
@@ -55,10 +57,10 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     }
 
     @Override
-    public void readUploadData() {
+    public void readUploadData(int bizType) {
         mView = getView();
 
-        addSubscriber(mRepository.readTransferedData()
+        addSubscriber(mRepository.readTransferedData(bizType)
                 .filter(list -> list != null && list.size() > 0)
                 .flatMap(list -> Flowable.fromIterable(list))
                 .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
@@ -93,6 +95,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     public void uploadCollectedDataOffLine() {
         mView = getView();
         mTaskNum = -1;
+        info = null;
         if (mRefDatas != null && mRefDatas.size() == 0) {
             mView.uploadCollectDataComplete();
             return;
@@ -103,6 +106,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                         .map(refData -> wrapper2Results(refData, false))
                         .flatMap(results -> {
                             mTaskNum++;
+                            mMessageArray.get(mTaskNum).taskId = mTaskNum;
                             return mRepository.uploadCollectionDataOffline(results);
                         })
                         .flatMap(message -> submitData2SAPInner(message))
@@ -121,16 +125,22 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
 
                             @Override
                             public void onNext(String transNum) {
-                                if (mView != null) {
-                                    mView.uploadCollectDataSuccess(mTaskNum, mTotalUploadDataNum,
-                                            mMessageArray.get(mTaskNum), transNum);
+                                L.e("onNext mTaskNum = " + mTaskNum + ";info = " + info);
+                                UploadMsgEntity info = mMessageArray.get(mTaskNum);
+                                if (mView != null && info != null) {
+                                    info.transNum = transNum;
+                                    mView.uploadCollectDataSuccess(info);
                                 }
                             }
 
                             @Override
                             public void onError(Throwable t) {
-                                if (mView != null) {
-                                    mView.uploadCollectDataFail(mTaskNum, mTotalUploadDataNum, mMessageArray.get(mTaskNum) + ";" + t.getMessage());
+                                UploadMsgEntity info = mMessageArray.get(mTaskNum);
+                                L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
+                                if (mView != null && info != null) {
+                                    info.errorMsg = t.getMessage();
+                                    info.isEror = true;
+                                    mView.uploadCollectDataFail(mMessageArray.get(mTaskNum));
                                 }
                             }
 
@@ -146,9 +156,20 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     }
 
     @Override
+    public void uploadInspectionDataOffLine() {
+
+    }
+
+    @Override
+    public void uploadCheckDataOffline() {
+
+    }
+
+    @Override
     public void resetStateAfterUpload() {
         mRefDatas.clear();
         mTaskNum = -1;
+        info = null;
         mMessageArray.clear();
     }
 
@@ -178,12 +199,12 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
         mExtraTransMap.put("projectNum", projectNum);
         HashMap<String, String> map = getDescByCode(bizType, refType);
         String transToSapFlag = map.get(TRANSTOSAPFLAG_KEY);
-        mMessageArray.put(mTaskNum, mMessageArray.get(mTaskNum) + "," + materialDoc);
+        mMessageArray.get(mTaskNum).materialDoc = materialDoc;
         if (TextUtils.isEmpty(transToSapFlag)) {
             //表示该业务不需要转储
-            return mRepository.setTransFlag(transId).flatMap(a -> Flowable.just("完成!"));
+            return mRepository.setTransFlag(bizType,transId).flatMap(a -> Flowable.just("完成!"));
         }
-        return mRepository.setTransFlag(transId).flatMap(a -> Flowable.just("完成!")).zipWith(mRepository.transferCollectionData(transId, bizType, refType,
+        return mRepository.setTransFlag(bizType,transId).flatMap(a -> Flowable.just("完成!")).zipWith(mRepository.transferCollectionData(transId, bizType, refType,
                 userId, voucherDate, transToSapFlag, mExtraTransMap), (s1, s2) -> s2);
     }
 
@@ -201,9 +222,16 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
         if (isSave) {
             mRefDatas.add(refData);
             //记录所有的抬头信息
-            String message = TextUtils.isEmpty(map.get(REFTYPEDESC_KEY)) ? map.get(BIZTYPEDESC_KEY) : map.get(BIZTYPEDESC_KEY) +
-                    "-" + map.get(REFTYPEDESC_KEY);
-            mMessageArray.put(mTotalUploadDataNum++, message);
+            info = new UploadMsgEntity();
+            info.bizType = refData.bizType;
+            info.refType = refData.refType;
+            info.transId = refData.transId;
+            info.refNum = refData.recordNum;
+            info.refCodeId = refData.refCodeId;
+            info.bizTypeDesc = map.get(BIZTYPEDESC_KEY);
+            info.refTypeDesc = map.get(REFTYPEDESC_KEY);
+            mMessageArray.put(mTotalUploadDataNum++, info);
+            info.totalTaskNum = mTotalUploadDataNum;
         }
 
         ArrayList<ResultEntity> results = new ArrayList<>();

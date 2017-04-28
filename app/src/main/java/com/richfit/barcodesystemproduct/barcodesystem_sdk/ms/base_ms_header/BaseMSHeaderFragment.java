@@ -8,8 +8,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_ms_header.imp.MSHeaderPresenterImp;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -28,7 +28,7 @@ import butterknife.BindView;
  * Created by monday on 2017/2/9.
  */
 
-public abstract class BaseMSHeaderFragment extends BaseFragment<MSHeaderPresenterImp>
+public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPresenterImp>
         implements IMSHeaderView {
 
 

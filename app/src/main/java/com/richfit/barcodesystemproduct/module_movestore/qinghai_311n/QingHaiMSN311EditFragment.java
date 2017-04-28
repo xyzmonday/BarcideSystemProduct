@@ -30,7 +30,7 @@ public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresen
 
     @Override
     public void initData() {
-        etRecLoc.setEnabled(false);
+        autoRecLoc.setEnabled(false);
         super.initData();
     }
 
@@ -69,7 +69,7 @@ public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresen
 
     @Override
     public boolean checkCollectedDataBeforeSave() {
-        final String recLocation = getString(etRecLoc);
+        final String recLocation = getString(autoRecLoc);
         if(TextUtils.isEmpty(recLocation) || recLocation.length() > 10) {
             showMessage("您输入的接收仓位不合理");
             return false;
@@ -100,7 +100,7 @@ public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresen
             result.specialInvFlag = mInventoryDatas.get(locationPos).specialInvFlag;
             result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.specialConvert = specialConvert;
-            result.recLocation = getString(etRecLoc);
+            result.recLocation = getString(autoRecLoc);
             result.recBatchFlag = getString(tvRecBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";

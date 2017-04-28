@@ -210,10 +210,10 @@ public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCo
         }
         tvLocQuantity.setText(locQuantity);
         //默认给接收仓位为发出仓位
-        etRecLoc.setText(sendLocation);
+        autoRecLoc.setText(sendLocation);
         //注意如果缓存中没有接收批次或者接收仓位，或者已经手动赋值,那么不用缓存更新它们
         if (!TextUtils.isEmpty(recLocation))
-            etRecLoc.setText(recLocation);
+            autoRecLoc.setText(recLocation);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(etRecBatchFlag)))
             etRecBatchFlag.setText(recBatchFlag);
     }
@@ -321,7 +321,7 @@ public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCo
             result.materialId = etMaterialNum.getTag().toString();
             result.batchFlag = CommonUtil.toUpperCase(getString(etSendBatchFlag));
             result.recBatchFlag = CommonUtil.toUpperCase(getString(etRecBatchFlag));
-            result.recLocation = CommonUtil.toUpperCase(getString(etRecLoc));
+            result.recLocation = CommonUtil.toUpperCase(getString(autoRecLoc));
             result.quantity = getString(etQuantity);
             result.invType = getInvType();
             result.modifyFlag = "N";

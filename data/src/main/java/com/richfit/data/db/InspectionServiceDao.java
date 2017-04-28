@@ -10,10 +10,12 @@ import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.ImageEntity;
+import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.repository.IInspectionServiceDao;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -256,6 +258,31 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         }
         db.close();
         return true;
+    }
+
+    @Override
+    public List<ReferenceEntity> readTransferedData() {
+        SQLiteDatabase db = getWritableDB();
+
+
+
+        db.close();
+        return null;
+    }
+
+    @Override
+    public boolean setTransFlag(String transId) {
+        SQLiteDatabase db = getWritableDB();
+        ContentValues cv = new ContentValues();
+        cv.put("ins_flag", "3");
+        int iResult = db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{transId});
+        db.close();
+        return iResult > 0;
+    }
+
+    @Override
+    public boolean uploadEditedHeadData(ResultEntity resultEntity) {
+        return false;
     }
 
     /**

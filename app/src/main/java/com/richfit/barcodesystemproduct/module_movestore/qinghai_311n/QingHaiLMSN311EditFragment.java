@@ -64,7 +64,7 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
 
     @Override
     public void initData() {
-        etRecLoc.setEnabled(false);
+        autoRecLoc.setEnabled(false);
         super.initData();
         etSpecialInvFlag.setText(mSpecialInvFlag);
         etSpecialInvNum.setText(mSpecialInvNum);
@@ -125,8 +125,8 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
         //绑定额外字段数据
         tvLocQuantity.setText(locQuantity);
         //注意如果缓存中没有接收批次或者接收仓位，或者已经手动赋值,那么不用缓存更新它们
-        if (!TextUtils.isEmpty(recLocation) && !TextUtils.isEmpty(getString(etRecLoc)))
-            etRecLoc.setText(recLocation);
+        if (!TextUtils.isEmpty(recLocation) && !TextUtils.isEmpty(getString(autoRecLoc)))
+            autoRecLoc.setText(recLocation);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(tvRecBatchFlag)))
             tvRecBatchFlag.setText(recBatchFlag);
     }
@@ -169,7 +169,7 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
             showMessage("您输入的发出仓位不合理");
             return false;
         }
-        final String recLocation = getString(etRecLoc);
+        final String recLocation = getString(autoRecLoc);
         if (TextUtils.isEmpty(recLocation) || recLocation.length() > 10) {
             showMessage("您输入的接收仓位不合理");
             return false;
@@ -195,7 +195,7 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
         }
 
         //检查接收仓位
-        if (!isValidatedRecLocation(getString(etRecLoc))) {
+        if (!isValidatedRecLocation(getString(autoRecLoc))) {
             showMessage("您输入的接收仓位不合理,请重新输入");
             return false;
         }
@@ -226,7 +226,7 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
             result.specialInvFlag = getString(etSpecialInvFlag);
             result.specialInvNum = getString(etSpecialInvNum);
             result.specialConvert = specialConvert;
-            result.recLocation = getString(etRecLoc);
+            result.recLocation = getString(autoRecLoc);
             result.recBatchFlag = getString(tvRecBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";

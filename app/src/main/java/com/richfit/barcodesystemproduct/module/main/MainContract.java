@@ -1,12 +1,11 @@
 package com.richfit.barcodesystemproduct.module.main;
 
+import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 
 import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
 import com.richfit.barcodesystemproduct.base.BaseView;
 import com.richfit.common_lib.IInterface.IPresenter;
-
-import java.util.List;
 
 
 /**
@@ -22,7 +21,7 @@ public interface MainContract {
     }
 
     interface Presenter extends IPresenter<View> {
-        void setupMainContent(FragmentManager fragmentManager, String companyCode, String moduleCode,
-                              String bizType, String refType, String lineNum, int currentPageIndex);
+        void setupMainContent(FragmentManager fragmentManager, Bundle bundle, int currentPageIndex,
+                              int mode);
     }
 }

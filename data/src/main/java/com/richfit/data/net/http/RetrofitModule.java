@@ -1,11 +1,13 @@
 package com.richfit.data.net.http;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.NetworkStateUtil;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.data.net.api.IRequestApi;
 import com.richfit.data.net.api.IRetrofitDownloadApi;
 import com.richfit.data.net.api.IRetrofitUploadApi;
@@ -40,7 +42,7 @@ public class RetrofitModule {
      *
      * @return
      */
-    public static IRequestApi getRequestApiwithCacheConfig(Context context,String baseUrl) {
+    public static IRequestApi getRequestApiwithCacheConfig(Context context, String baseUrl) {
 
         File httpCacheDirectory = new File(context.getCacheDir(), "responses");
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
@@ -115,30 +117,31 @@ public class RetrofitModule {
     /**
      * 一般网络请求 get/post/...
      */
-    public static IRequestApi getRequestApi(Context context,String baseUrl) {
+    public static IRequestApi getRequestApi(Context context, String baseUrl) {
         if (request == null) {
+            if (TextUtils.isEmpty(Global.MAC_ADDRESS)) {
+                Global.MAC_ADDRESS = UiUtil.getMacAddress();
+            }
             //拦截器
-            Interceptor interceptor = new Interceptor() {
-                @Override
-                public Response intercept(Chain chain) throws IOException {
-                    Request oldRequest = chain.request();
-                    // 添加新的参数
-                    HttpUrl.Builder authorizedUrlBuilder = oldRequest.url()
-                            .newBuilder()
-                            .scheme(oldRequest.url().scheme())
-                            .host(oldRequest.url().host())
-                            .addQueryParameter("macAddress", Global.MAC_ADDRESS)
-                            .addQueryParameter("userId",Global.USER_ID);
+            Interceptor interceptor = chain -> {
+                Request oldRequest = chain.request();
+                // 添加新的参数
+                HttpUrl.Builder authorizedUrlBuilder = oldRequest.url()
+                        .newBuilder()
+                        .scheme(oldRequest.url().scheme())
+                        .host(oldRequest.url().host())
+                        .addQueryParameter("macAddress", Global.MAC_ADDRESS)
+                        .addQueryParameter("userId",Global.USER_ID);
 
-                    // 新的请求
-                    Request newRequest = oldRequest.newBuilder()
-                            .method(oldRequest.method(), oldRequest.body())
-                            .header("registeredChannels", "2")//来自1：iOS,2:Android,3:web
-                            .url(authorizedUrlBuilder.build())
-                            .build();
 
-                    return chain.proceed(newRequest);
-                }
+                // 新的请求
+                Request newRequest = oldRequest.newBuilder()
+                        .method(oldRequest.method(), oldRequest.body())
+                        .header("registeredChannels", "2")//来自1：iOS,2:Android,3:web
+                        .url(authorizedUrlBuilder.build())
+                        .build();
+
+                return chain.proceed(newRequest);
             };
             //打印拦截器
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> L.i(message));
@@ -167,6 +170,36 @@ public class RetrofitModule {
     /**
      * 下载文件
      */
+    public static IRetrofitDownloadApi getDownloadApi(String baseUrl,final ProgressResponseBody.ProgressListener progressListener) {
+        //打印拦截器
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .addNetworkInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Response originalResponse = chain.proceed(chain.request());
+                        return originalResponse.newBuilder()
+                                .body(new ProgressResponseBody(originalResponse.body(),progressListener))
+                                .build();
+                    }
+                })
+                .readTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
+                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .client(httpClient)
+                .build();
+        return retrofit.create(IRetrofitDownloadApi.class);
+    }
+
     public static IRetrofitDownloadApi getDownloadApi(String baseUrl) {
         //打印拦截器
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();

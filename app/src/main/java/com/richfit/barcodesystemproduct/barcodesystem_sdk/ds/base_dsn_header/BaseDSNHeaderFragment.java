@@ -14,7 +14,7 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_header.imp.DSNHeaderPresenterImp;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -38,7 +38,7 @@ import butterknife.BindView;
  * Created by monday on 2017/2/23.
  */
 
-public abstract class BaseDSNHeaderFragment extends BaseFragment<DSNHeaderPresenterImp>
+public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeaderPresenterImp>
         implements IDSNHeaderView {
 
 
@@ -95,17 +95,17 @@ public abstract class BaseDSNHeaderFragment extends BaseFragment<DSNHeaderPresen
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> showAutoCompleteConfig(etAutoComp));
 
-        //修改自动提示控件，说明用户需要锁乳关键字进行搜索，如果默认的列表中存在，那么不在向数据库进行查询
+        //用户选择自动提示控件的某一条数据，隐藏输入法
+        RxAutoCompleteTextView.itemClickEvents(etAutoComp)
+                .subscribe(a -> hideKeyboard(etAutoComp));
+
+        //修改自动提示控件，说明用户需要用关键字进行搜索，如果默认的列表中存在，那么不在向数据库进行查询
         RxTextView.textChanges(etAutoComp)
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .filter(str -> !TextUtils.isEmpty(str) && mAutoDatas != null &&
                         mAutoDatas.size() > 0 && !filterKeyWord(str) && spWork.getSelectedItemPosition() > 0)
                 .subscribe(a -> mPresenter.getAutoCompleteList(mWorks.get(spWork.getSelectedItemPosition()).workCode,
                         getString(etAutoComp), 100, getOrgFlag(), mBizType));
-
-        //用户选择自动提示控件的某一条数据，隐藏输入法
-        RxAutoCompleteTextView.itemClickEvents(etAutoComp)
-                .subscribe(a -> hideKeyboard(etAutoComp));
 
         //删除历史数据
         mPresenter.deleteCollectionData("", mBizType, Global.USER_ID, mCompanyCode);

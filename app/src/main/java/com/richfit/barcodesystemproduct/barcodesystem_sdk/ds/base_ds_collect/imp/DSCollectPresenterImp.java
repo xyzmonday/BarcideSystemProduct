@@ -3,12 +3,12 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.im
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.IDSCollectPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.IDSCollectView;
+import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.InventoryEntity;
@@ -68,7 +68,7 @@ public class DSCollectPresenterImp extends BasePresenter<IDSCollectView>
     @Override
     public void getInventoryInfo(String queryType, String workId, String invId, String workCode, String invCode, String storageNum,
                                  String materialNum, String materialId, String location, String batchFlag,
-                                 String specialInvFlag, String specialInvNum, String invType,String deviceId) {
+                                 String specialInvFlag, String specialInvNum, String invType, String deviceId) {
         mView = getView();
         RxSubscriber<List<InventoryEntity>> subscriber;
         if ("04".equals(queryType)) {
@@ -76,14 +76,14 @@ public class DSCollectPresenterImp extends BasePresenter<IDSCollectView>
                     .filter(num -> !TextUtils.isEmpty(num))
                     .flatMap(num -> mRepository.getInventoryInfo(queryType, workId, invId,
                             workCode, invCode, num, materialNum, materialId, "", "", batchFlag, location,
-                            specialInvFlag, specialInvNum, invType,deviceId))
+                            specialInvFlag, specialInvNum, invType, deviceId))
                     .compose(TransformerHelper.io2main())
                     .subscribeWith(new InventorySubscriber(mContext, "正在获取库存"));
 
         } else {
             subscriber = mRepository.getInventoryInfo(queryType, workId, invId,
                     workCode, invCode, storageNum, materialNum, materialId, "", "", batchFlag, location,
-                    specialInvFlag, specialInvNum, invType,deviceId)
+                    specialInvFlag, specialInvNum, invType, deviceId)
                     .compose(TransformerHelper.io2main())
                     .subscribeWith(new InventorySubscriber(mContext, "正在获取库存"));
         }
@@ -132,11 +132,11 @@ public class DSCollectPresenterImp extends BasePresenter<IDSCollectView>
 
     @Override
     public void getTransferInfoSingle(String refCodeId, String refType, String bizType, String refLineId,
-                                      String batchFlag, String location,String refDoc,int refDocItem, String userId) {
+                                      String materialNum, String batchFlag, String location, String refDoc, int refDocItem, String userId) {
         mView = getView();
         RxSubscriber<RefDetailEntity> subscriber =
                 mRepository.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
-                        "", "", "", "", "", batchFlag, location,refDoc,refDocItem, userId)
+                        "", "", "", "", materialNum, batchFlag, location, refDoc, refDocItem, userId)
                         .filter(refData -> refData != null && refData.billDetailList != null)
                         .flatMap(refData -> getMatchedLineData(refLineId, refData))
                         .compose(TransformerHelper.io2main())
@@ -222,6 +222,7 @@ public class DSCollectPresenterImp extends BasePresenter<IDSCollectView>
                         });
         addSubscriber(subscriber);
     }
+
 
 
 }

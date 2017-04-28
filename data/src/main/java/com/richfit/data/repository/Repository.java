@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.ImageEntity;
@@ -59,12 +60,13 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     public void setLocal(boolean local) {
+        L.e("isLocal = " + local);
         isLocal = local;
     }
 
     @Override
     public Flowable<UserEntity> Login(String userName, String password) {
-        return mServerRepository.Login(userName, password);
+        return isLocal ? mLocalRepository.Login(userName, password) : mServerRepository.Login(userName, password);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<ArrayList<RowConfig>> loadExtraConfig(String companyId) {
-        return mServerRepository.loadExtraConfig(companyId);
+        return isLocal ? mLocalRepository.loadExtraConfig(companyId) : mServerRepository.loadExtraConfig(companyId);
     }
 
     @Override
@@ -105,8 +107,16 @@ public class Repository implements ILocalRepository, IServerRepository {
 
         final String queryType = task.queryType;
         final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE4);
+        String queryDate = currentDate;
         //针对增量更新的基础数据，使用上一次请求的日期
-        final String queryDate = "CW".equals(queryType) ? getLoadBasicDataTaskDate(queryType) : currentDate;
+        switch (queryType) {
+            case "WL":
+            case "CW":
+            case "CC":
+            case "XM":
+                queryDate = getLoadBasicDataTaskDate(queryType);
+                break;
+        }
         //保存查询日期
         task.queryDate = queryDate;
         final Map<String, Object> tmp = new HashMap<>();
@@ -119,13 +129,8 @@ public class Repository implements ILocalRepository, IServerRepository {
                 .zipWith(Flowable.just(tmp), (maps, map) -> {
                     maps.add(0, map);
                     return maps;
-                })
-                .onBackpressureBuffer()
-                .doOnNext(map -> {
-                    if (!"CW".equals(queryType))
-                        return;
-                    saveLoadBasicDataTaskDate(queryType, currentDate);
-                });
+                }).onBackpressureBuffer();
+
     }
 
     @Override
@@ -239,8 +244,7 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
-        return isLocal ? mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location)) :
-                mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location));
+        return mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location));
     }
 
     @Override
@@ -358,12 +362,16 @@ public class Repository implements ILocalRepository, IServerRepository {
     /**
      * 保存基础数据的下载日期
      *
-     * @param requestType
+     * @param queryTypes
      * @param requestDate
      */
     @Override
-    public void saveLoadBasicDataTaskDate(@NonNull String requestType, @NonNull String requestDate) {
-        mLocalRepository.saveLoadBasicDataTaskDate(requestType, requestDate);
+    public void saveLoadBasicDataTaskDate(String requestDate, List<String> queryTypes) {
+        if (queryTypes.size() <= 0) {
+            return;
+        }
+        //保存增量更新对应的基础数据的请求日期
+        mLocalRepository.saveLoadBasicDataTaskDate(requestDate, queryTypes);
     }
 
     /**
@@ -489,8 +497,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<List<ReferenceEntity>> readTransferedData() {
-        return mLocalRepository.readTransferedData();
+    public Flowable<List<ReferenceEntity>> readTransferedData(int bizType) {
+        return mLocalRepository.readTransferedData(bizType);
     }
 
     @Override
@@ -499,8 +507,13 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<String> setTransFlag(String transId) {
-        return mLocalRepository.setTransFlag(transId);
+    public Flowable<String> setTransFlag(String bizType, String transId) {
+        return mLocalRepository.setTransFlag(bizType, transId);
+    }
+
+    @Override
+    public Flowable<String> uploadEditedHeadData(ResultEntity resultEntity) {
+        return mLocalRepository.uploadEditedHeadData(resultEntity);
     }
 
     @Override

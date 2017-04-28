@@ -14,9 +14,10 @@ import android.view.WindowManager;
 import com.richfit.common_lib.R;
 import com.richfit.common_lib.adapter.TimeLineAdapter;
 import com.richfit.common_lib.adapter.animation.DividerVerticalTimeLine;
-import com.richfit.common_lib.basetreerv.MultiItemTypeTreeAdapter;
 import com.richfit.common_lib.utils.AppCompat;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
+import com.richfit.domain.bean.UploadMsgEntity;
 
 import java.util.ArrayList;
 
@@ -25,15 +26,14 @@ import java.util.ArrayList;
  * Created by monday on 2017/4/20.
  */
 
-public class UploadFragmentDialog extends DialogFragment implements MultiItemTypeTreeAdapter.OnItemClickListener{
+public class UploadFragmentDialog extends DialogFragment implements TimeLineAdapter.ItemClickListener {
     private static final String UPLOAD_INFO_KEY = "upload_info";
-    private ArrayList<String> mDatas;
+    private ArrayList<UploadMsgEntity> mDatas;
     private TimeLineAdapter mAdapter;
 
-
-    public static UploadFragmentDialog newInstance(String data) {
+    public static UploadFragmentDialog newInstance(UploadMsgEntity data) {
         Bundle bundle = new Bundle();
-        bundle.putString(UPLOAD_INFO_KEY, data);
+        bundle.putParcelable(UPLOAD_INFO_KEY, data);
         UploadFragmentDialog fragment = new UploadFragmentDialog();
         fragment.setArguments(bundle);
         return fragment;
@@ -51,12 +51,11 @@ public class UploadFragmentDialog extends DialogFragment implements MultiItemTyp
         View view = inflater.inflate(R.layout.framgent_dialog_show_info, container, false);
         RecyclerView rv = (RecyclerView) view.findViewById(R.id.rv_info_list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.addItemDecoration(new DividerVerticalTimeLine(AppCompat.getColor(R.color.blue_a200, getContext()), 60,
-                UiUtil.dpToPx(3), AppCompat.getDrawable(getContext(),R.mipmap.icon_timeline_mark)));
-        mAdapter = new TimeLineAdapter(mDatas);
-
+                UiUtil.dpToPx(3), AppCompat.getDrawable(getContext(), R.mipmap.icon_timeline_mark)));
+        mAdapter = new TimeLineAdapter(getContext(), mDatas);
+        mAdapter.setOnItemClickListener(this);
         rv.setLayoutManager(layoutManager);
         rv.setAdapter(mAdapter);
         return view;
@@ -72,26 +71,49 @@ public class UploadFragmentDialog extends DialogFragment implements MultiItemTyp
 
         //设置数据
         Bundle arguments = getArguments();
-        String data = arguments.getString(UPLOAD_INFO_KEY);
+        UploadMsgEntity data = arguments.getParcelable(UPLOAD_INFO_KEY);
         mDatas.clear();
         mDatas.add(data);
         mAdapter.notifyDataSetChanged();
     }
 
-    public void addMessage(String message) {
+    public void addMessage(UploadMsgEntity info) {
         if (mAdapter != null) {
-            mDatas.add(message);
+            mDatas.add(info);
             mAdapter.notifyDataSetChanged();
         }
     }
 
-    @Override
-    public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
 
+    @Override
+    public void onItemLongClick(int position, UploadMsgEntity info) {
+        if (info == null || !info.isEror)
+            return;
+        if (mOnEditLocalDataListener != null) {
+            mOnEditLocalDataListener.onItemClick(info);
+        }
     }
 
     @Override
-    public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
-        return false;
+    public void onDestroyView() {
+        L.e("UploadFragmentDialog onDestroyView");
+        if (mAdapter != null) {
+            mAdapter.setOnItemClickListener(null);
+        }
+        mOnEditLocalDataListener = null;
+        super.onDestroyView();
+    }
+
+    private OnEditLocalDataListener mOnEditLocalDataListener;
+
+    public void setOnEditLocalDataListener(OnEditLocalDataListener listener) {
+        this.mOnEditLocalDataListener = listener;
+    }
+
+    /**
+     * 用户修改离线采集的数据
+     */
+    public interface OnEditLocalDataListener {
+        void onItemClick(UploadMsgEntity info);
     }
 }

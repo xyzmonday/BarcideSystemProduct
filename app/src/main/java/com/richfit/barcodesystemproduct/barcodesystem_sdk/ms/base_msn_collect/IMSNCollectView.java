@@ -27,6 +27,13 @@ public interface IMSNCollectView extends BaseView {
      */
     void showInventory(List<InventoryEntity> list);
     void loadInventoryFail(String message);
+    void loadInventoryComplete();
+
+    /**
+     * 显示接收库存
+     * */
+    void showRecLocations(List<String> recLocations);
+    void loadRecLocationsFail(String message);
 
     /**
      * 输入物料获取缓存后，刷新界面

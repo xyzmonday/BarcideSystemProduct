@@ -37,5 +37,28 @@ public interface IMSNEditPresenter extends IBaseEditPresenter<IMSNEditView> {
                           String invCode, String storageNum, String materialNum, String materialId,
                           String location, String batchFlag, String specialInvFlag, String specialInvNum,
                           String invType, String deviceId);
+
+    /**
+     * 获取接收仓位的库存
+     * @param queryType
+     * @param workId
+     * @param invId
+     * @param workCode
+     * @param invCode
+     * @param storageNum
+     * @param materialNum
+     * @param materialId
+     * @param location
+     * @param batchFlag
+     * @param specialInvFlag
+     * @param specialInvNum
+     * @param invType
+     * @param deviceId
+     */
+    void getInventoryInfoOnRecLocation(String queryType, String workId, String invId, String workCode,
+                                       String invCode, String storageNum, String materialNum, String materialId,
+                                       String location, String batchFlag, String specialInvFlag, String specialInvNum,
+                                       String invType, String deviceId);
+
 }
 

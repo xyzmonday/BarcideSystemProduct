@@ -12,7 +12,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.MoveTypeAdapter;
 import com.richfit.barcodesystemproduct.adapter.MultiArrayAdapter;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.barcodesystemproduct.module_acceptstore.qingyang_asn.header.imp.ASNHeaderPresenterImp;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
@@ -35,7 +35,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * Created by monday on 2016/11/16.
  */
 
-public class QingYangASNHeaderFragment extends BaseFragment<ASNHeaderPresenterImp>
+public class QingYangASNHeaderFragment extends BaseHeaderFragment<ASNHeaderPresenterImp>
         implements IASNHeaderView {
 
     private static final String MOVE_TYPE = "5";

@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
+import com.richfit.barcodesystemproduct.BuildConfig;
 import com.richfit.barcodesystemproduct.di.component.ActivityComponent;
 import com.richfit.barcodesystemproduct.di.component.DaggerActivityComponent;
 import com.richfit.barcodesystemproduct.di.module.ActivityModule;
@@ -78,6 +79,23 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
                 .appComponent(BarcodeSystemApplication.getAppComponent())
                 .build();
         super.onCreate(savedInstanceState);
+
+
+        int layoutId = getContentId();
+        if (layoutId > 0) {
+            setContentView(getContentId());
+            mUnbinder = ButterKnife.bind(this);
+        }
+
+
+        //注册接收扫描结构的结果的广播
+        IntentFilter scanDataIntentFilter = new IntentFilter();
+        scanDataIntentFilter.addAction(WZ_RECT_DATA_ACTION);
+        scanDataIntentFilter.addAction(DQ_RECE_DATA_ACTION);
+        registerReceiver(receiver, scanDataIntentFilter);
+        initInjector();
+        if (mPresenter != null)
+            mPresenter.attachView(BaseActivity.this);
         //恢复全局的数据
         if (savedInstanceState != null) {
             Global.USER_ID = savedInstanceState.getString("user_id_key");
@@ -88,22 +106,9 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
             Global.MAC_ADDRESS = savedInstanceState.getString("mac_address_key");
             Global.AUTH_ORG = savedInstanceState.getString("auth_org_key");
             Global.BATCH_FLAG = savedInstanceState.getBoolean("batch_flag_key");
+            if (mPresenter != null)
+                mPresenter.setLocal(savedInstanceState.getBoolean("is_local_flag"));
         }
-
-        int layoutId = getContentId();
-        if (layoutId > 0) {
-            setContentView(getContentId());
-            mUnbinder = ButterKnife.bind(this);
-        }
-
-        //注册接收扫描结构的结果的广播
-        IntentFilter scanDataIntentFilter = new IntentFilter();
-        scanDataIntentFilter.addAction(WZ_RECT_DATA_ACTION);
-        scanDataIntentFilter.addAction(DQ_RECE_DATA_ACTION);
-        registerReceiver(receiver, scanDataIntentFilter);
-        initInjector();
-        if (mPresenter != null)
-            mPresenter.attachView(BaseActivity.this);
         initVariables();
         initViews();
         initData(savedInstanceState);
@@ -133,6 +138,7 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         outState.putString("mac_address_key", Global.MAC_ADDRESS);
         outState.putString("auth_org_key", Global.AUTH_ORG);
         outState.putBoolean("batch_flag_key", Global.BATCH_FLAG);
+        outState.putBoolean("is_local_flag", mPresenter.isLocal());
         super.onSaveInstanceState(outState);
 
     }
@@ -428,15 +434,41 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
             return;
 
         //仓位和单据不加密
-
         int length = info.split("\\|", -1).length;
         String barcodeInfo;
-        if (length > 1) {
-            barcodeInfo = CharTrans(info);
-        } else {
+        if (length <= 1) {
             barcodeInfo = info;
+        } else {
+            switch (BuildConfig.APP_NAME) {
+                //庆阳单独处理，而且必须保证前两个竖线没有任何值
+                case Global.QINGYANG:
+                    if (TextUtils.isEmpty(info)) {
+                        showMessage("单据条码信息为空");
+                        return;
+                    }
+                    String tmp[] = info.split("\\|", -1);
+                    String materialNum = tmp[Global.MATERIAL_POS];
+                    if (TextUtils.isEmpty(materialNum)) {
+                        showMessage("获取物料条码为空");
+                        return;
+                    }
+                    if (materialNum.length() <= 10) {
+                        //说明此时扫描到的是加密的
+                        barcodeInfo = CharTrans(info);
+                    } else {
+                        barcodeInfo = info;
+                    }
+                    break;
+                default:
+                    barcodeInfo = CharTrans(info);
+                    break;
+            }
         }
-        L.e("扫描得到解密之后的数据 barcodeInfo " + barcodeInfo);
+        if (TextUtils.isEmpty(barcodeInfo)) {
+            showMessage("单据条码信息为空");
+            return;
+        }
+        L.e("扫描条码的内容 = " + barcodeInfo);
         String a[] = barcodeInfo.split("\\|", -1);
         handleBarCodeScanResult(mType, a);
     }

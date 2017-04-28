@@ -7,7 +7,6 @@ import android.content.Intent;
 import com.richfit.barcodesystemproduct.crash.CrashManager;
 import com.richfit.barcodesystemproduct.crash.HttpCrashReport;
 import com.richfit.common_lib.utils.SPrefUtil;
-import com.richfit.data.cache.RxCache;
 
 /**
  * 初始化app的服务。
@@ -39,21 +38,11 @@ public class InitializeService extends IntentService {
 
     private void performInit() {
         initSPrefUtils();
-//        initLogger();
-//        initRxCache();
         initCrashManage();
     }
 
     private void initSPrefUtils() {
         SPrefUtil.initSharePreference(getApplication());
-    }
-
-    private void initLogger() {
-//        Logger.init("yff");
-    }
-
-    private void initRxCache() {
-        RxCache.init(getApplication());
     }
 
     private void initCrashManage() {

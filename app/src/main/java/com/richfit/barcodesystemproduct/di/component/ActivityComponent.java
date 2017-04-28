@@ -11,7 +11,6 @@ import com.richfit.barcodesystemproduct.module.main.MainActivity;
 import com.richfit.barcodesystemproduct.module.setting.SettingActivity;
 import com.richfit.barcodesystemproduct.module.splash.SplashActivity;
 import com.richfit.barcodesystemproduct.module.welcome.WelcomeActivity;
-import com.richfit.barcodesystemproduct.module_acceptstore.ww_component.WWComponentActivity;
 import com.richfit.barcodesystemproduct.module_local.loaddown.LoadLocalRefDataActivity;
 import com.richfit.barcodesystemproduct.module_local.upload.UploadActivity;
 import com.richfit.common_lib.scope.ActivityScope;
@@ -38,11 +37,11 @@ public interface ActivityComponent {
     void inject(WelcomeActivity activity);
     void inject(HomeActivity activity);
 
-    void inject(MainActivity activity);
+
     void inject(SettingActivity activity);
     void inject(EditActivity activity);
-    void inject(WWComponentActivity activity);
     void inject(LoadLocalRefDataActivity activity);
+    void inject(MainActivity activity);
 
     void inject(UploadActivity activity);
 

@@ -83,6 +83,6 @@ public class QingYangMSN301DetailFragment extends BaseMSNDetailFragment<QingYang
 
     @Override
     protected String getSubFunName() {
-        return "301无参考移库";
+        return "期初物资移库";
     }
 }

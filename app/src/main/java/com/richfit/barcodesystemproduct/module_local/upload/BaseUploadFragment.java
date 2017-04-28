@@ -1,20 +1,25 @@
 package com.richfit.barcodesystemproduct.module_local.upload;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.ShowUploadDataAdapter;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
+import com.richfit.barcodesystemproduct.module.main.MainActivity;
 import com.richfit.common_lib.adapter.animation.Animation.animators.FadeInDownAnimator;
 import com.richfit.common_lib.adapter.animation.StickyDividerDecoration;
 import com.richfit.common_lib.dialog.UploadFragmentDialog;
+import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ResultEntity;
+import com.richfit.domain.bean.UploadMsgEntity;
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration;
 
 import java.util.ArrayList;
@@ -26,7 +31,7 @@ import java.util.List;
  */
 
 public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresenterImp, ResultEntity>
-        implements UploadContract.View {
+        implements UploadContract.View, UploadFragmentDialog.OnEditLocalDataListener {
 
     private static final String UPLOAD_INFO_FRAGMENT_DIALOG = "upload_info_fragment_dialog";
     /*公共数据*/
@@ -75,13 +80,6 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
         startAutoRefresh();
     }
 
-    /**
-     * 响应自动下拉刷新动作，并且开始请求接口获取整单缓存
-     */
-    @Override
-    public void onRefresh() {
-        mPresenter.readUploadData();
-    }
 
     /**
      * 显示需要上传的明细数据
@@ -90,7 +88,6 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
      */
     @Override
     public void showUploadData(ArrayList<ResultEntity> results) {
-        L.e("showUploadData");
         if (results == null || results.size() == 0)
             return;
         mDatas.addAll(results);
@@ -119,7 +116,6 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
      */
     @Override
     public void readUploadDataComplete() {
-        L.e("readUploadDataComplete");
         showMessage("读取离线数据完成!");
         mExtraContainer.setVisibility(View.VISIBLE);
         mSwipeRefreshLayout.setRefreshing(false);
@@ -136,37 +132,32 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
         FragmentManager fragmentManager = appCompatActivity.getSupportFragmentManager();
         mUploadDialog = (UploadFragmentDialog) fragmentManager.findFragmentByTag(UPLOAD_INFO_FRAGMENT_DIALOG);
         if (mUploadDialog == null) {
-            mUploadDialog = UploadFragmentDialog.newInstance("您有" + String.valueOf(totalUploadDataNum) + "笔单数据正在上传...");
+            UploadMsgEntity msgEntity = new UploadMsgEntity();
+            msgEntity.totalTaskNum = totalUploadDataNum;
+            mUploadDialog = UploadFragmentDialog.newInstance(msgEntity);
         }
         if (!mUploadDialog.isAdded())
             mUploadDialog.show(fragmentManager, UPLOAD_INFO_FRAGMENT_DIALOG);
+        mUploadDialog.setOnEditLocalDataListener(this);
     }
 
     /**
      * 每一单数据上传成功
-     *
-     * @param taskNum
-     * @param message
-     * @param transNum
      */
     @Override
-    public void uploadCollectDataSuccess(int taskNum, int totalNum, String message, String transNum) {
+    public void uploadCollectDataSuccess(UploadMsgEntity info) {
         if (mUploadDialog != null && mUploadDialog.isVisible()) {
-            mUploadDialog.addMessage(String.valueOf(taskNum + 1) + "/" + String.valueOf(totalNum) + ":"
-                    + message + "\n" + transNum);
+            mUploadDialog.addMessage(info);
         }
     }
 
     /**
      * 数据上传失败
-     *
-     * @param taskNum
-     * @param message
      */
     @Override
-    public void uploadCollectDataFail(int taskNum, int totalNum, String message) {
+    public void uploadCollectDataFail(UploadMsgEntity info) {
         if (mUploadDialog != null && mUploadDialog.isVisible()) {
-            mUploadDialog.addMessage(String.valueOf(taskNum + 1) + "/" + String.valueOf(totalNum) + ":" + message);
+            mUploadDialog.addMessage(info);
         }
     }
 
@@ -188,6 +179,36 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
         mPresenter.resetStateAfterUpload();
     }
 
+    @Override
+    public void onItemClick(UploadMsgEntity info) {
+        L.e("点击的数据 = " + info);
+        if (TextUtils.isEmpty(info.bizType) || TextUtils.isEmpty(info.transId)) {
+            return;
+        }
+        Intent intent = new Intent(getContext(), MainActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString(Global.EXTRA_COMPANY_CODE_KEY, Global.COMPANY_CODE);
+        bundle.putString(Global.EXTRA_MODULE_CODE_KEY, "");
+        bundle.putString(Global.EXTRA_BIZ_TYPE_KEY, info.bizType);
+        bundle.putString(Global.EXTRA_REF_TYPE_KEY, info.refType);
+        bundle.putString(Global.EXTRA_CAPTION_KEY, info.bizTypeDesc);
+        bundle.putString(Global.EXTRA_TRANS_ID_KEY, info.transId);
+        bundle.putString(Global.EXTRA_REF_NUM_KEY, info.refNum);
+        bundle.putInt(Global.EXTRA_MODE_KEY, Global.OFFLINE_MODE);
+        intent.putExtras(bundle);
+        if (mDatas != null) {
+            mDatas.clear();
+            mDatas = null;
+        }
+        if (mUploadDialog != null) {
+            mUploadDialog.setOnEditLocalDataListener(null);
+            mUploadDialog.dismiss();
+            mUploadDialog = null;
+        }
+        mActivity.startActivity(intent);
+        mActivity.finish();
+    }
+
 
     @Override
     public void onDestroyView() {
@@ -197,6 +218,7 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
             mDatas = null;
         }
         if (mUploadDialog != null) {
+            mUploadDialog.setOnEditLocalDataListener(null);
             mUploadDialog.dismiss();
             mUploadDialog = null;
         }

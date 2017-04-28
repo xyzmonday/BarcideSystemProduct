@@ -114,9 +114,9 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
                         insLosts.add(insLot);
                 }
             } else {
-                final String lineNum = entity.lineNum;
+                final String insLot = entity.insLot;
                 //如果明细中没有打开了批次管理,那么只匹配物料编码
-                if (materialNum.equalsIgnoreCase(entity.materialNum) && !TextUtils.isEmpty(lineNum))
+                if (materialNum.equalsIgnoreCase(entity.materialNum) && !TextUtils.isEmpty(insLot))
                     insLosts.add(entity.lineNum);
 
             }

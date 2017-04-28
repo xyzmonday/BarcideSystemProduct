@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 public interface ISplashPresenter extends IPresenter<ISplashView> {
 
-    void setLocalFlag(boolean isLocal);
 
     /**
      * 同步服务器时间
@@ -28,4 +27,9 @@ public interface ISplashPresenter extends IPresenter<ISplashView> {
      * @param requestParam
      */
     void loadAndSaveBasicData(ArrayList<LoadBasicDataWrapper> requestParam);
+
+    /**
+     * 下载基础数据库,仅仅在app第一次启动的时候同步
+     */
+    void downloadInitialDB();
 }

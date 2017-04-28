@@ -10,7 +10,6 @@ import com.richfit.common_lib.basetreerv.RecycleTreeViewHelper;
 import com.richfit.common_lib.rxutils.SimpleRxBus;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.data.repository.Repository;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -54,6 +53,7 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
     @Inject
     protected SimpleRxBus mSimpleRxBus;
 
+
     @Inject
     public BasePresenter(Context context) {
         this.mContext = context;
@@ -73,8 +73,14 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
 
     }
 
+    @Override
     public boolean isLocal() {
         return mRepository.isLocal();
+    }
+
+    @Override
+    public void setLocal(boolean isLocal) {
+        mRepository.setLocal(isLocal);
     }
 
     //解除view与presenter的绑定
@@ -111,6 +117,9 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
     public void unSubscribe() {
         if (mCompositeDisposable != null && !mCompositeDisposable.isDisposed()) {
             mCompositeDisposable.dispose();
+        }
+        if(mSimpleRxBus.hasSubscribers()) {
+            mSimpleRxBus.unregisterAll();
         }
     }
 
@@ -188,7 +197,7 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
         List<RefDetailEntity> list = refData.billDetailList;
         if (list != null && list.size() > 0) {
             for (RefDetailEntity entity : list) {
-                pos++;
+                ++pos;
                 if (refLineId.equals(entity.refLineId))
                     return pos;
             }
@@ -285,7 +294,6 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
         if (TextUtils.isEmpty(refLineId))
             return Flowable.error(new Throwable("该行的行Id不存在,请检查该单据是否正确"));
         List<RefDetailEntity> list = refData.billDetailList;
-        L.e("refLineId = " + refLineId);
         for (RefDetailEntity entity : list) {
             if (refLineId.equals(entity.refLineId))
                 return Flowable.just(entity);

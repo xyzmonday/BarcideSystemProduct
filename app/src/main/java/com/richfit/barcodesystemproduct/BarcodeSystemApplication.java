@@ -23,6 +23,7 @@ public class BarcodeSystemApplication extends Application {
     private static RefWatcher mRefWatcher;
     private final static String baseUrl = BuildConfig.SERVER_URL;
 //    private final static String baseUrl = "http://10.88.53.10:8080/ktbk/MobileProcess/";
+//    private final static String baseUrl = "http://11.11.177.98:8088/ktbk/MobileProcess/";
 
     @Override
     protected void attachBaseContext(Context base) {

@@ -14,6 +14,8 @@ import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.GUIUtils;
 import com.richfit.common_lib.utils.Global;
 
+import java.util.concurrent.TimeUnit;
+
 import butterknife.BindView;
 
 /**
@@ -43,20 +45,26 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
 
     @Override
     public void initEvent() {
-
+        switch (BuildConfig.APP_NAME) {
+            case Global.QINGYANG:
+                btnOfflineMode.setVisibility(View.GONE);
+                break;
+        }
         RxView.clicks(btnOnlineMode)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.ONLINE_MODE;
                     mPresenter.loadFragmentConfig(Global.COMPANY_ID, BuildConfig.CONFIG_FILE_NAME);
                 });
 
         RxView.clicks(btnOfflineMode)
-
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.OFFLINE_MODE;
                     mPresenter.loadFragmentConfig(Global.COMPANY_ID, BuildConfig.CONFIG_FILE_NAME);
                 });
     }
+
 
     @Override
     public void loadFragmentConfigSuccess() {

@@ -4,13 +4,14 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_header.BaseDSHeaderFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_header.imp.DSHeaderPresenterImp;
 
 /**
  * 青海委外出库抬头界面
  * Created by monday on 2017/3/5.
  */
 
-public class QingHaiDSWWHeaderFragment extends BaseDSHeaderFragment {
+public class QingHaiDSWWHeaderFragment extends BaseDSHeaderFragment<DSHeaderPresenterImp> {
 
     @Override
     public void initInjector() {
@@ -34,5 +35,6 @@ public class QingHaiDSWWHeaderFragment extends BaseDSHeaderFragment {
     protected String getMoveType() {
         return "2";
     }
+
 
 }

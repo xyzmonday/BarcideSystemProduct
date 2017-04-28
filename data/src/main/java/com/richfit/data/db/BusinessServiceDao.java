@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.richfit.common_lib.scope.ContextLife;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -199,6 +198,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             //修改
             cv = new ContentValues();
             cv.put("id", transId);
+            //注意这里修改也需要刷新抬过账日期
+            cv.put("voucher_date", param.voucherDate);
             cv.put("last_updated_by", param.userId);
             cv.put("last_update_date", creationDate);
             int iResult = db.update("mtl_transaction_headers", cv, "id = ?", new String[]{transId});
@@ -962,14 +963,39 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         db.close();
     }
 
+    /**
+     * 修改缓存抬头表的transFlag标识
+     *
+     * @param transId
+     * @return
+     */
     @Override
     public boolean setTransFlag(String transId) {
-        L.e("setTransFlag = " + transId);
         SQLiteDatabase db = getWritableDB();
         ContentValues cv = new ContentValues();
         cv.put("trans_flag", "3");
         int iResult = db.update("MTL_TRANSACTION_HEADERS", cv, "id = ?", new String[]{transId});
         db.close();
         return iResult > 0;
+    }
+
+    /**
+     * 保存离线的抬头修改数据
+     *
+     * @param resultEntity
+     * @return
+     */
+    @Override
+    public boolean uploadEditedHeadData(ResultEntity resultEntity) {
+        final String transId = resultEntity.transId;
+        if (TextUtils.isEmpty(transId)) {
+            return false;
+        }
+        SQLiteDatabase db = getWritableDB();
+        ContentValues cv = new ContentValues();
+        cv.put("voucher_date", resultEntity.voucherDate);
+        db.update("MTL_TRANSACTION_HEADERS", cv, "id = ?", new String[]{transId});
+        db.close();
+        return true;
     }
 }

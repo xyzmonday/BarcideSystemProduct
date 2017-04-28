@@ -158,6 +158,7 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<ArrayList<MenuNode>> getMenuInfo(String loginId, int mode) {
+
         return Flowable.just(loginId)
                 .flatMap(id -> {
                     ArrayList<MenuNode> list = mBasicServiceDao.getMenuInfo(id, mode);
@@ -217,8 +218,8 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public void saveLoadBasicDataTaskDate(@NonNull String queryType, @NonNull String queryDate) {
-        mBasicServiceDao.saveLoadBasicDataTaskDate(queryType, queryDate);
+    public void saveLoadBasicDataTaskDate(String queryDate, List<String> queryTypes) {
+        mBasicServiceDao.saveLoadBasicDataTaskDate(queryDate, queryTypes);
     }
 
     @Override
@@ -235,7 +236,7 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<ArrayList<InvEntity>> getInvsByWorkId(String workId, int flag) {
 
-        if(TextUtils.isEmpty(workId)) {
+        if (TextUtils.isEmpty(workId)) {
             return Flowable.error(new Throwable("工厂id为空"));
         }
         return Flowable.just(workId)
@@ -306,6 +307,7 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType, int mode) {
+
         return Flowable.just(bizType)
                 .flatMap(type -> {
                     ArrayList<BizFragmentConfig> fragmentConfigs = mBasicServiceDao.readBizFragmentConfig(type, refType, fragmentType, mode);
@@ -380,7 +382,20 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<UserEntity> Login(String userName, String password) {
         return Flowable.just(userName)
-                .flatMap(name -> Flowable.just(mBasicServiceDao.login(name, password)));
+                .flatMap(name -> {
+                    UserEntity login = mBasicServiceDao.login(name, password);
+                    if (login == null) {
+                        return Flowable.error(new Throwable("登陆失败，未查询到该用户登录历史"));
+                    } else {
+                        return Flowable.just(login);
+                    }
+                });
+    }
+
+    @Override
+    public Flowable<ArrayList<RowConfig>> loadExtraConfig(String companyId) {
+        return Flowable.just(companyId)
+                .flatMap(id -> Flowable.just(mBasicServiceDao.loadExtraConfig(id)));
     }
 
     /**
@@ -461,11 +476,22 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public Flowable<List<ReferenceEntity>> readTransferedData() {
-        return Flowable.just(1)
-                .flatMap(a -> {
-                    List<ReferenceEntity> datas = mBusinessServiceDao.readTransferedData();
-                    if (datas.size() == 0) {
+    public Flowable<List<ReferenceEntity>> readTransferedData(int bizType) {
+        return Flowable.just(bizType)
+                .flatMap(type -> {
+                    List<ReferenceEntity> datas = null;
+                    switch (type) {
+                        case 0:
+                            datas = mBusinessServiceDao.readTransferedData();
+                            break;
+                        case 1:
+                            datas = mInspectionServiceDao.readTransferedData();
+                            break;
+                        case 2:
+                            datas = mCheckServiceDao.readTransferedData();
+                            break;
+                    }
+                    if (datas == null || datas.size() == 0) {
                         return Flowable.error(new Throwable("您还未采集过数据"));
                     }
                     return Flowable.just(datas);
@@ -478,9 +504,22 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public Flowable<String> setTransFlag(String transId) {
-        if (TextUtils.isEmpty(transId)) {
+    public Flowable<String> setTransFlag(String bizType, String transId) {
+        if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transId)) {
             return Flowable.error(new Throwable("修改失败"));
+        }
+        switch (bizType) {
+            case "00":
+            case "01":
+                //验收
+                break;
+            case "C01":
+            case "C02":
+                //盘点
+                break;
+            default:
+                //出入库业务
+                break;
         }
         return Flowable.just(transId)
                 .flatMap(id -> {
@@ -492,6 +531,44 @@ public class LocalRepositoryImp implements ILocalRepository {
                 });
     }
 
+    @Override
+    public Flowable<String> uploadEditedHeadData(ResultEntity result) {
+        final String bizType = result.businessType;
+        if (TextUtils.isEmpty(bizType)) {
+            return Flowable.error(new Throwable("修改失败"));
+        }
+
+        return Flowable.just(result)
+                .flatMap(res -> {
+                    boolean flag = uploadEditedHeadDataInner(res);
+                    if (flag) {
+                        return Flowable.just("修改成功");
+                    }
+                    return Flowable.error(new Throwable("修改失败"));
+                });
+    }
+
+
+    private boolean uploadEditedHeadDataInner(ResultEntity result) {
+        boolean isSuccess;
+        switch (result.businessType) {
+            case "00":
+            case "01":
+                //验收
+                isSuccess = mInspectionServiceDao.uploadEditedHeadData(result);
+                break;
+            case "C01":
+            case "C02":
+                //盘点
+                isSuccess = mCheckServiceDao.uploadEditedHeadData(result);
+                break;
+            default:
+                //出入库业务
+                isSuccess = mBusinessServiceDao.uploadEditedHeadData(result);
+                break;
+        }
+        return isSuccess;
+    }
 
     /**
      * 获取单条缓存
@@ -752,6 +829,21 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     private boolean uploadCollectionDataSingleInner(ResultEntity param) {
+        if (TextUtils.isEmpty(param.batchFlag)) {
+            param.batchFlag = null;
+        }
+        if (TextUtils.isEmpty(param.recBatchFlag)) {
+            param.recBatchFlag = null;
+        }
+        if (TextUtils.isEmpty(param.refDoc)) {
+            param.refDoc = null;
+        }
+        if (TextUtils.isEmpty(param.specialInvFlag)) {
+            param.specialInvFlag = null;
+        }
+        if (TextUtils.isEmpty(param.specialInvNum)) {
+            param.specialInvNum = null;
+        }
         boolean isSuccess = false;
         // 接收传入参数
         switch (param.businessType) {

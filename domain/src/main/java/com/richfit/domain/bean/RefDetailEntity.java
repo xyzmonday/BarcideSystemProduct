@@ -148,11 +148,13 @@ public class RefDetailEntity extends TreeNode {
     public String recQuantity;
     public String transLineSplitId;
     public String specialConvert;
+    public String deviceId;
 
     @Override
     public String toString() {
         return "RefDetailEntity{" +
                 "recordNum='" + recordNum + '\'' +
+                ", lineNum105='" + lineNum105 + '\'' +
                 ", isChecked=" + isChecked +
                 ", refLineId='" + refLineId + '\'' +
                 ", transId='" + transId + '\'' +
@@ -172,6 +174,7 @@ public class RefDetailEntity extends TreeNode {
                 ", inspectionResult='" + inspectionResult + '\'' +
                 ", inspectionStandard='" + inspectionStandard + '\'' +
                 ", specialInvFlag='" + specialInvFlag + '\'' +
+                ", specialInvNum='" + specialInvNum + '\'' +
                 ", lineInspectFlag='" + lineInspectFlag + '\'' +
                 ", orderQuantity='" + orderQuantity + '\'' +
                 ", remark='" + remark + '\'' +
@@ -182,6 +185,12 @@ public class RefDetailEntity extends TreeNode {
                 ", invId='" + invId + '\'' +
                 ", invCode='" + invCode + '\'' +
                 ", invName='" + invName + '\'' +
+                ", recWorkId='" + recWorkId + '\'' +
+                ", recWorkCode='" + recWorkCode + '\'' +
+                ", recWorkName='" + recWorkName + '\'' +
+                ", recInvId='" + recInvId + '\'' +
+                ", recInvCode='" + recInvCode + '\'' +
+                ", recInvName='" + recInvName + '\'' +
                 ", photoFlag='" + photoFlag + '\'' +
                 ", totalQuantity='" + totalQuantity + '\'' +
                 ", location='" + location + '\'' +
@@ -206,9 +215,11 @@ public class RefDetailEntity extends TreeNode {
                 ", instructions='" + instructions + '\'' +
                 ", qmCertificate='" + qmCertificate + '\'' +
                 ", claimNum='" + claimNum + '\'' +
+                ", lineType='" + lineType + '\'' +
                 ", unqualifiedQuantity='" + unqualifiedQuantity + '\'' +
                 ", returnQuantity='" + returnQuantity + '\'' +
                 ", insLotQuantity='" + insLotQuantity + '\'' +
+                ", invType='" + invType + '\'' +
                 ", insLot='" + insLot + '\'' +
                 ", decisionCode='" + decisionCode + '\'' +
                 ", projectText='" + projectText + '\'' +
@@ -217,7 +228,13 @@ public class RefDetailEntity extends TreeNode {
                 ", refDoc='" + refDoc + '\'' +
                 ", refDocItem=" + refDocItem +
                 ", locationList=" + locationList +
+                ", refCodeId='" + refCodeId + '\'' +
+                ", lastFlag='" + lastFlag + '\'' +
                 ", mapExt=" + mapExt +
+                ", recQuantity='" + recQuantity + '\'' +
+                ", transLineSplitId='" + transLineSplitId + '\'' +
+                ", specialConvert='" + specialConvert + '\'' +
+                ", deviceId='" + deviceId + '\'' +
                 '}';
     }
 }

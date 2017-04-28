@@ -14,7 +14,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.BottomMenuAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
-import com.richfit.barcodesystemproduct.module_acceptstore.ww_component.WWComponentActivity;
+import com.richfit.barcodesystemproduct.module.main.MainActivity;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BottomMenuEntity;
@@ -153,7 +153,7 @@ public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectP
             return;
         }
 
-        Intent intent = new Intent(mActivity, WWComponentActivity.class);
+        Intent intent = new Intent(mActivity, MainActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(Global.EXTRA_COMPANY_CODE_KEY, COMPANY_CODE);
         bundle.putString(Global.EXTRA_MODULE_CODE_KEY, "");

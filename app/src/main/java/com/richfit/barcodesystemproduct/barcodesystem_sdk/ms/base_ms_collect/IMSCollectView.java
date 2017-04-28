@@ -48,6 +48,8 @@ public interface IMSCollectView extends BaseView {
      */
     void showInvs(ArrayList<InvEntity> list);
 
+
+
     void checkLocationFail(String message);
     void checkLocationSuccess(String batchFlag, String location);
     /**

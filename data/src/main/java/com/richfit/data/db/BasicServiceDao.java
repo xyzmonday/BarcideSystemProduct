@@ -108,13 +108,41 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         //获取当前的时间
         final long lastLoginDate = System.currentTimeMillis();
         StringBuffer sb = new StringBuffer();
-        sb.append("INSERT OR REPLACE INTO T_USER(login_id,user_id,last_login_date,user_name,company_id,company_code,auth_orgs,batch_flag) ");
+        sb.append("INSERT OR REPLACE INTO T_USER(user_id,login_id,last_login_date,user_name,company_id,company_code,auth_orgs,batch_flag) ");
         sb.append(" values(?,?,?,?,?,?,?,?)");
-        db.execSQL(sb.toString(), new Object[]{userEntity.loginId,
-                userEntity.userId, lastLoginDate, userEntity.userName, userEntity.companyId,
+        db.execSQL(sb.toString(), new Object[]{userEntity.userId, userEntity.loginId,
+                lastLoginDate, userEntity.userName, userEntity.companyId,
                 userEntity.companyCode, userEntity.authOrgs, userEntity.batchFlag});
         sb.setLength(0);
         db.close();
+    }
+
+    @Override
+    public ArrayList<RowConfig> loadExtraConfig(String companyId) {
+        ArrayList<RowConfig> configs = new ArrayList<>();
+        SQLiteDatabase db = getWritableDB();
+        Cursor cursor = db.rawQuery("select * from T_CONFIG where company_id = ?", new String[]{companyId});
+        RowConfig item;
+        while (cursor.moveToNext()) {
+            item = new RowConfig();
+            item.id = cursor.getString(0);
+            item.propertyName = cursor.getString(1);
+            item.propertyCode = cursor.getString(2);
+            item.displayFlag = cursor.getString(3);
+            item.inputFlag = cursor.getString(4);
+            item.companyId = cursor.getString(5);
+            item.businessType = cursor.getString(6);
+            item.refType = cursor.getString(7);
+            item.configType = cursor.getString(8);
+            item.uiType = cursor.getString(9);
+            item.colNum = cursor.getString(10);
+            item.colName = cursor.getString(11);
+            item.dataSource = cursor.getString(12);
+            configs.add(item);
+        }
+        cursor.close();
+        db.close();
+        return configs;
     }
 
     /**
@@ -162,14 +190,15 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
     public UserEntity login(String userName, String password) {
         SQLiteDatabase db = getWritableDB();
         clearStringBuffer();
-        sb.append("select login_id,user_id,user_name,company_id,company_code,auth_orgs,batch_flag ")
-                .append("from T_USER where user_name = ?");
-        UserEntity user = new UserEntity();
+        sb.append("select user_id,login_id,user_name,company_id,company_code,auth_orgs,batch_flag ")
+                .append("from T_USER where user_name = ? limit 0,1");
+        UserEntity user = null;
         Cursor cursor = db.rawQuery(sb.toString(), new String[]{userName});
 
         while (cursor.moveToNext()) {
-            user.loginId = cursor.getString(0);
-            user.userId = cursor.getString(1);
+            user = new UserEntity();
+            user.userId = cursor.getString(0);
+            user.loginId = cursor.getString(1);
             user.userName = cursor.getString(2);
             user.companyId = cursor.getString(3);
             user.companyCode = cursor.getString(4);
@@ -304,7 +333,6 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
     @Override
     public String getLoadBasicDataTaskDate(String queryType) {
         SQLiteDatabase db = getWritableDB();
-
         Cursor cursor = db.rawQuery("select query_date from REQUEST_DATE where query_type = ?",
                 new String[]{queryType});
 
@@ -328,17 +356,20 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
     /**
      * 设置当前基础数据更新的日期
      *
-     * @param queryType:查询基础数据类型
+     * @param queryTypes:查询基础数据类型
      * @param queryDate：查询日期
      */
     @Override
-    public void saveLoadBasicDataTaskDate(String queryType, String queryDate) {
+    public void saveLoadBasicDataTaskDate(String queryDate,List<String> queryTypes) {
+        L.e("saveLoadBasicDataTaskDate");
         SQLiteDatabase db = getWritableDB();
-        db.delete("REQUEST_DATE", "query_type = ?", new String[]{queryType});
-        ContentValues cv = new ContentValues();
-        cv.put("query_type", queryType);
-        cv.put("query_date", queryDate);
-        db.insert("REQUEST_DATE", null, cv);
+        for (String type : queryTypes) {
+            db.delete("REQUEST_DATE", "query_type = ?", new String[]{type});
+            ContentValues cv = new ContentValues();
+            cv.put("query_type", type);
+            cv.put("query_date", queryDate);
+            db.insert("REQUEST_DATE", null, cv);
+        }
         db.close();
     }
 
@@ -451,8 +482,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                 //注意对于成本中心和供应商，由于是分页加载数据，所有仅仅是在第一页加载的时候需要删除数据。
                 sql.append("INSERT INTO ")
                         .append(tableName)
-                        .append(" (id,org_id,cost_center_code,cost_center_desc)")
-                        .append(" VALUES (?,?,?,?)");
+                        .append(" (id,org_id,cost_center_code,cost_center_desc,start_date,end_date)")
+                        .append(" VALUES (?,?,?,?,?,?)");
 
                 break;
             case 4:
@@ -470,8 +501,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                 }
                 sql.append("INSERT INTO ")
                         .append(tableName)
-                        .append(" (id,org_id,supplier_code,supplier_desc,creation_date,last_update_date)")
-                        .append(" VALUES (?,?,?,?,?,?)");
+                        .append(" (id,org_id,supplier_code,supplier_desc)")
+                        .append(" VALUES (?,?,?,?)");
                 break;
             case 6:
                 tableName = "T_EXTRA_DATA_SOURCE";
@@ -570,7 +601,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         stmt.clearBindings();
                     }
                     break;
-                case 8:
+
                 case 3:
                     //成本中心
                     for (int i = start; i < end; i++) {
@@ -579,6 +610,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         stmt.bindString(2, item.get(Global.PARENTID_KEY).toString());
                         stmt.bindString(3, item.get(Global.CODE_KEY).toString());
                         stmt.bindString(4, item.get(Global.NAME_KEY).toString());
+                        stmt.bindString(5, CommonUtil.Obj2String(item.get(Global.START_DATE_KEY)));
+                        stmt.bindString(6, CommonUtil.Obj2String(item.get(Global.END_DATE_KEY)));
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -619,7 +652,18 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         stmt.clearBindings();
                     }
                     break;
-
+                case 8:
+                    //项目编号
+                    for (int i = start; i < end; i++) {
+                        item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.PARENTID_KEY).toString());
+                        stmt.bindString(3, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(4, item.get(Global.NAME_KEY).toString());
+                        stmt.execute();
+                        stmt.clearBindings();
+                    }
+                    break;
             }
         } catch (Exception e) {
             L.d("插入基础数据报错 = " + e.getMessage());
@@ -847,20 +891,24 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         SQLiteDatabase db = getReadableDB();
         StringBuffer sb = new StringBuffer();
         String tableName = flag == 0 ? PAuthOrgKey : PAuthOrg2Key;
+        String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE3);
         Cursor cursor = null;
         try {
             sb.append("select B.org_id , B.cost_center_code,B.cost_center_desc from ")
                     .append(tableName)
                     .append("  P,BASE_COST_CENTER B ")
                     .append(" where P.parent_id = B.org_id ")
-                    .append(" and P.org_level = 2 and P.org_code = ? ");
+                    .append(" and P.org_level = 2 and P.org_code = ? and start_date >= ")
+                    .append(currentDate)
+                    .append(" and end_date <= ")
+                    .append(currentDate);
             if (!TextUtils.isEmpty(keyWord)) {
                 sb.append("like ").append("'%").append(keyWord).append("%'");
             } else if (defaultItemNum > 0) {
                 sb.append(" limit 0, ")
                         .append(defaultItemNum);
             }
-            cursor = db.rawQuery(sb.toString(), new String[]{workCode});
+            cursor = db.rawQuery(sb.toString(), new String[]{workCode, currentDate, currentDate});
             while (cursor.moveToNext()) {
                 SimpleEntity entity = new SimpleEntity();
                 entity.id = cursor.getString(0);

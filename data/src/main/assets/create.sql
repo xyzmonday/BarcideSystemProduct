@@ -1,10 +1,3 @@
-create table IF not exists T_LOCAL_DELETE
-(
-  delete_id       VARCHAR2(32) PRIMARY KEY NOT NULL,
-  biz_type        TEXT,
-  ref_type        TEXT
-);
-
 create table IF not exists T_EXTRA_HEADER
 (
   id               VARCHAR2(32) PRIMARY KEY NOT NULL,
@@ -77,8 +70,19 @@ create table BASE_COST_CENTER
   id                VARCHAR2(32) PRIMARY KEY NOT NULL,
   org_id            VARCHAR2(32),
   cost_center_code  TEXT,
-  cost_center_desc  TEXT
+  cost_center_desc  TEXT,
+  start_date        DATE,
+  end_date          DATE
 );
+
+
+create table BASE_UNIT_CODE
+(
+  id                VARCHAR2(32) PRIMARY KEY NOT NULL,
+  unit              VARCHAR2(30),
+  long_desc         VARCHAR2(120)
+);
+
 
 create table BASE_PROJECT_NUM
 (
@@ -114,11 +118,7 @@ create table IF not exists BASE_SUPPLIER
   id               VARCHAR2(32)  PRIMARY KEY NOT NULL,
   org_id           VARCHAR2(32),
   supplier_code    TEXT,
-  supplier_desc    TEXT,
-  created_by       TEXT,
-  creation_date    TEXT,
-  last_updated_by  TEXT,
-  last_update_date TEXT
+  supplier_desc    TEXT
 );
 
 create table IF not exists BASE_WAREHOUSE_GROUP
@@ -133,15 +133,8 @@ create table IF not exists BASE_LOCATION
   id                VARCHAR2(32) PRIMARY KEY NOT NULL,
   location          TEXT,
   storage_num       TEXT,
-  created_by        TEXT,
   work_id           TEXT,
-  inv_id            TEXT,
-  creation_date     TEXT,
-  last_updated_by   TEXT,
-  last_update_date  TEXT,
-  sap_update_date   TEXT,
-  sap_creation_date TEXT,
-  location_type     TEXT
+  inv_id            TEXT
 );
 
 create table IF not exists P_AUTH_ORG
@@ -188,8 +181,8 @@ create table IF not exists P_AUTH_ORG2
 
 create table IF not exists T_USER
 (
-  login_id           VARCHAR2(32) PRIMARY KEY NOT NULL,
-  user_id            TEXT,
+  user_id            VARCHAR2(32) PRIMARY KEY NOT NULL,
+  login_id           TEXT,
   last_login_date    INTEGER,
   user_name          TEXT,
   company_id         TEXT,
@@ -266,7 +259,7 @@ create table MTL_CHECK_HEADER
   upload_by        VARCHAR2(32),
   upload_date      INTEGER,
   check_level      VARCHAR2(2),
-  trans_flag      VARCHAR2(2)
+  trans_flag       VARCHAR2(2)
 );
 
 create table MTL_CHECK_LINES

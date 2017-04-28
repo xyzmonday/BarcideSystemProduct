@@ -13,7 +13,7 @@ import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.header.imp.QingHaiRSNPresenterImp;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
@@ -35,7 +35,7 @@ import butterknife.BindView;
  * Created by monday on 2017/3/2.
  */
 
-public class QingHaiRSNHeaderFragment extends BaseFragment<QingHaiRSNPresenterImp>
+public class QingHaiRSNHeaderFragment extends BaseHeaderFragment<QingHaiRSNPresenterImp>
         implements IQingHaiRSNHeaderView {
 
     private static final int ORG_FLAG = 0;

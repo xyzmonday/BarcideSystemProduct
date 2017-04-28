@@ -127,7 +127,7 @@ public class QingHaiWWCDetailPresenterImp extends BaseDetailPresenterImp<QingHai
     }
 
     @Override
-    public void editNode(ArrayList<String> sendLocations,ArrayList<String> refLocations,
+    public void editNode(ArrayList<String> sendLocations, ArrayList<String> refLocations,
                          ReferenceEntity refData, RefDetailEntity node, String companyCode,
                          String bizType, String refType, String subFunName, int position) {
         if (refData != null) {
@@ -226,19 +226,18 @@ public class QingHaiWWCDetailPresenterImp extends BaseDetailPresenterImp<QingHai
      */
     @Override
     protected RefDetailEntity getLineDataByRefLineId(RefDetailEntity refLineData, ReferenceEntity cachedRefData) {
-        if (refLineData == null) {
+        //第一步先用refLineId找到成品对应的缓存
+        RefDetailEntity data = super.getLineDataByRefLineId(refLineData, cachedRefData);
+        if (data == null) {
             return null;
         }
-
+        //第二步获取对应组件的缓存
         final String refDocItem = String.valueOf(refLineData.refDocItem);
         if ("null".equals(refDocItem))
             return null;
         //通过refDocItem匹配出缓存中的明细行
-        List<RefDetailEntity> detail = cachedRefData.billDetailList;
-        for (RefDetailEntity entity : detail) {
-            if (refDocItem.equals(String.valueOf(entity.refDocItem))) {
-                return entity;
-            }
+        if (refDocItem.equals(String.valueOf(data.refDocItem))) {
+            return data;
         }
         return null;
     }

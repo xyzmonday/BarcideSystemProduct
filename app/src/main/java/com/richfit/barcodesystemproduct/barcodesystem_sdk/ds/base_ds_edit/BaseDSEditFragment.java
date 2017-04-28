@@ -9,12 +9,12 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.imp.DSEditPresenterImp;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.LocationInfoEntity;
@@ -34,11 +34,11 @@ import io.reactivex.FlowableOnSubscribe;
  * Created by monday on 2016/11/21.
  */
 
-public abstract class BaseDSEditFragment extends BaseEditFragment<DSEditPresenterImp>
+public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends BaseEditFragment<P>
         implements IDSEditView {
 
     @BindView(R.id.tv_ref_line_num)
-    TextView tvRefLineNum;
+    protected TextView tvRefLineNum;
     @BindView(R.id.tv_material_num)
     TextView tvMaterialNum;
     @BindView(R.id.tv_material_desc)
@@ -102,7 +102,7 @@ public abstract class BaseDSEditFragment extends BaseEditFragment<DSEditPresente
                     tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
                     //获取缓存
                     mPresenter.getTransferInfoSingle(mRefData.refCodeId, mRefData.refType,
-                            mRefData.bizType, mRefLineId, getString(tvBatchFlag), mInventoryDatas.get(position).locationCombine,
+                            mRefData.bizType, mRefLineId, getString(tvMaterialNum), getString(tvBatchFlag), mInventoryDatas.get(position).locationCombine,
                             "", -1, Global.USER_ID);
                 });
     }
@@ -136,6 +136,7 @@ public abstract class BaseDSEditFragment extends BaseEditFragment<DSEditPresente
         final String invId = bundle.getString(Global.EXTRA_INV_ID_KEY);
         final String invCode = bundle.getString(Global.EXTRA_INV_CODE_KEY);
         mPosition = bundle.getInt(Global.EXTRA_POSITION_KEY);
+        L.e("位置pos = " + mPosition);
         mQuantity = bundle.getString(Global.EXTRA_QUANTITY_KEY);
         mLocations = bundle.getStringArrayList(Global.EXTRA_LOCATION_LIST_KEY);
         mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);

@@ -74,4 +74,7 @@ public interface IBaseDetailView<T> extends BaseView {
     void upAndDownLocationFail(String[] messages);
     void upAndDownLocationSuccess();
 
+    void setTransFlagFail(String message);
+    void setTransFlagsComplete();
+
 }

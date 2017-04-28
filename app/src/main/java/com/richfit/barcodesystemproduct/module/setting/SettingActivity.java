@@ -1,6 +1,7 @@
 package com.richfit.barcodesystemproduct.module.setting;
 
-import android.os.Bundle;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
@@ -18,12 +19,12 @@ import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.module.setting.imp.SettingPresenterImp;
 import com.richfit.common_lib.dialog.ProgressDialogFragment;
 import com.richfit.common_lib.utils.FileUtil;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.ButtonCircleProgressBar;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.UpdateEntity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -88,8 +89,10 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
         setupToolBar();
     }
 
+
     @Override
     public void initEvent() {
+
         /*获取版本信息*/
         RxView.clicks(mCheckUpdateApk)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
@@ -118,11 +121,6 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
                 });
     }
 
-    @Override
-    public void initData(Bundle savedInstanceState) {
-        String currentVersionName = UiUtil.getCurrentVersionName(this.getApplicationContext());
-        mCheckUpdateApk.setText(mCheckUpdateApk.getText().toString() + "(" + currentVersionName + ")");
-    }
 
     private void startLoadBasicData() {
         ArrayList<LoadBasicDataWrapper> requestParams = new ArrayList<>();
@@ -136,7 +134,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             mMessage += "供应商;";
         }
 
-        if(sbCostCenter.isOpened()) {
+        if (sbCostCenter.isOpened()) {
             task = new LoadBasicDataWrapper();
             task.isByPage = true;
             task.queryType = "CZ";
@@ -144,7 +142,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             mMessage += "成本中心;";
         }
 
-        if(sbProjectNum.isOpened()) {
+        if (sbProjectNum.isOpened()) {
             task = new LoadBasicDataWrapper();
             task.isByPage = true;
             task.queryType = "XM";
@@ -152,7 +150,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             mMessage += "项目编号;";
         }
 
-        if(sbLocation.isOpened()) {
+        if (sbLocation.isOpened()) {
             task = new LoadBasicDataWrapper();
             task.isByPage = true;
             task.queryType = "CW";
@@ -201,8 +199,8 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     public void checkAppVersion(UpdateEntity info) {
         //获取当前的版本号
         mUpdateInfo = info;
-        String currentVersion = UiUtil.getCurrentVersionName(this.getApplicationContext());
-        if (UiUtil.convertToFloat(info.appVersion, 0.0f) > UiUtil.convertToFloat(currentVersion, 0.0f)) {
+        int currentVersion = UiUtil.getCurrentVersionCode(this.getApplicationContext());
+        if (info.appNum > currentVersion) {
             //提示用户需要更新
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             dialog.setTitle("检测到最新的版本:" + info.appVersion);
@@ -235,19 +233,56 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     }
 
     @Override
-    public void showLoadProgress(DownloadStatus status) {
+    public void showLoadAppProgress(DownloadStatus status) {
         mCurrentLoadStatus = LOAD_STATUS_LADING;
         mProgressBar.setMax((int) status.getTotalSize());
         mProgressBar.setProgress((int) status.getDownloadSize());
     }
 
     @Override
-    public void loadComplete() {
+    public void loadAppComplete() {
         mCurrentLoadStatus = LOAD_STATUS_END;
         mProgressBar.setStatus(ButtonCircleProgressBar.Status.End);
         mProgressBar.setVisibility(View.INVISIBLE);
+        //自动安装
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("温馨提示")
+                .setMessage("下载成功,是否现在安装?")
+                .setPositiveButton("现在安装", (dialog1, which) -> {
+                    dialog1.dismiss();
+                    autoInstall();
+                }).setNegativeButton("取消安装", (dialog12, which) -> {
+            dialog12.dismiss();
+            deleteApp();
+        }).show();
     }
 
+    private void autoInstall() {
+        String apkCacheDir = FileUtil.getApkCacheDir(this.getApplicationContext());
+        String appName = mUpdateInfo.appName;
+        File file = new File(apkCacheDir, appName);
+        if (file == null || !file.exists()) {
+            showMessage("文件不存在");
+            return;
+        }
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(android.content.Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(file),
+                "application/vnd.android.package-archive");
+        startActivity(intent);
+    }
+
+    private void deleteApp() {
+        String apkCacheDir = FileUtil.getApkCacheDir(this.getApplicationContext());
+        String appName = mUpdateInfo.appName;
+        File file = new File(apkCacheDir, appName);
+        if (file == null || !file.exists()) {
+            showMessage("文件不存在");
+            return;
+        }
+        file.delete();
+    }
 
     private void start(String url, String saveName) {
         mCurrentLoadStatus = LOAD_STATUS_START;
@@ -280,7 +315,6 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
 
     @Override
     public void loadBasicDataProgress(float progress) {
-        L.e("下载进度 = " + progress);
         mProgressDialog.setProgress(progress);
     }
 
@@ -293,7 +327,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     }
 
     @Override
-    public void loadBasicDataSuccess() {
+    public void loadBasicDataComplete() {
         new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
                 .setTitleText("下载成功")
                 .setContentText(mMessage + "基础数据下载成功,请进行其他的操作")

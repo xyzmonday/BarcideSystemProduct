@@ -7,6 +7,7 @@ import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
+import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
 import com.richfit.domain.bean.UserEntity;
@@ -75,10 +76,10 @@ public interface ILocalRepository extends IRepository {
     /**
      * 保存本次基础数据下载的下载日期
      *
-     * @param queryType:下载基础数据的请求类型
+     * @param queryTypes:下载基础数据的请求类型
      * @param queryDate：本次下载基础数据的日期
      */
-    void saveLoadBasicDataTaskDate(String queryType, String queryDate);
+    void saveLoadBasicDataTaskDate(String queryDate,List<String> queryTypes);
 
     /**
      * 保存基础数据
@@ -159,7 +160,7 @@ public interface ILocalRepository extends IRepository {
      * @param refType
      * @return
      */
-    Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType,int mode);
+    Flowable<ArrayList<BizFragmentConfig>> readBizFragmentConfig(String bizType, String refType, int fragmentType, int mode);
 
     /**
      * 验收抬头界面删除该单据的所有缓存图片
@@ -247,30 +248,47 @@ public interface ILocalRepository extends IRepository {
 
     /**
      * 保存单据数据到本地数据库
+     *
      * @param refData:原始单据数据
      * @param bizType:业务类型
      * @param refType:单据类型
      */
-    void saveReferenceInfo(ReferenceEntity refData,String bizType,String refType);
+    void saveReferenceInfo(ReferenceEntity refData, String bizType, String refType);
 
     /**
      * 读取离线模式中该用户可操作的业务类型列表
+     *
      * @param loginId
      * @return
      */
     Flowable<ArrayList<MenuNode>> readMenuInfo(String loginId);
 
-    Flowable<List<ReferenceEntity>> readTransferedData();
+    /**
+     * 读取需要上传的离线数据
+     * @param bizType:0表示出入库,1表示验收,2表示盘点
+     * @return
+     */
+    Flowable<List<ReferenceEntity>> readTransferedData(int bizType);
 
     /**
      * 离线数据上传成功删除本地所有的缓存和单据数据
+     *
      * @param transId:缓存抬头id
      */
-    void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId);
+    void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId);
 
     /**
      * 01成功后修改抬头的缓存标识
+     *
      * @param transId
      */
-    Flowable<String> setTransFlag(String transId);
+    Flowable<String> setTransFlag(String bizType,String transId);
+
+    /**
+     * 保存离线抬头修改后的抬头数据
+     * @param resultEntity
+     * @return
+     */
+    Flowable<String> uploadEditedHeadData(ResultEntity resultEntity);
+
 }

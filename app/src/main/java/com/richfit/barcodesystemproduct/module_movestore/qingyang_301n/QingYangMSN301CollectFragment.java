@@ -9,7 +9,6 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.BaseMSNCollectFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect.imp.MSNCollectPresenterImp;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ResultEntity;
 
 import butterknife.BindView;
@@ -51,9 +50,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
                 return;
             }
             final String materialNum = list[Global.MATERIAL_POS];
-            final String batchFlag = list[Global.BATCHFALG_POS];
             mDeviceId = list[list.length - 2];
-            L.e("扫描到的设备Id = " + mDeviceId);
             //如果设备Id为空那么不允许在操作.isContinue为true表示设备Id不为空可以继续该业务
             final boolean isContinue = !isEmpty(mDeviceId);
             //这里通过设备Id禁用掉获取物料信息
@@ -68,13 +65,12 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
                 saveCollectedData();
             } else {
                 etMaterialNum.setText(materialNum);
-//                etSendBatchFlag.setText(BATCH_FLAG);
                 loadMaterialInfo(materialNum, "");
             }
         } else if (list != null && list.length == 1 & !cbSingle.isChecked()) {
             final String location = list[0];
-            if (etRecLoc.isFocused()) {
-                etRecLoc.setText(location);
+            if (autoRecLoc.isFocused()) {
+                autoRecLoc.setText(location);
                 return;
             }
             //扫描发出仓位
@@ -226,12 +222,12 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
         }
 
         //检查接收仓位
-        if (isWareHouseSame && TextUtils.isEmpty(getString(etRecLoc))) {
+        if (isWareHouseSame && TextUtils.isEmpty(getString(autoRecLoc))) {
             showMessage("请输入接收仓位");
             return false;
         }
 
-        if(isWareHouseSame && getString(etRecLoc).length() != 11) {
+        if(isWareHouseSame && getString(autoRecLoc).length() != 11) {
             showMessage("您输入的接收仓位格式不对");
             return false;
         }

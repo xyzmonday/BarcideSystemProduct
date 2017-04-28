@@ -2,6 +2,7 @@ package com.richfit.barcodesystemproduct.base.base_detail;
 
 import android.app.Dialog;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -64,7 +65,7 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
     /*底部提示菜单数据源*/
     protected List<BottomMenuEntity> mBottomMenus;
     /*数据上传01/05等业务，在开发后期需要增加的字段*/
-    protected HashMap<String,Object> mExtraTansMap = new HashMap<>();
+    protected HashMap<String, Object> mExtraTansMap = new HashMap<>();
 
     /**
      * 初始化公共的组件，这里统一设置RecyclerView的基本配置；自动下拉刷新接口
@@ -154,7 +155,7 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
         //不论成功或者失败都应该关闭下拉加载动画
         mSwipeRefreshLayout.setRefreshing(false);
         showMessage(message);
-        if(mAdapter != null && !isSuccess) {
+        if (mAdapter != null && !isSuccess) {
             //清空历史明细数据
             mAdapter.removeAllVisibleNodes();
         }
@@ -177,37 +178,48 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
      */
     @Override
     public void showOperationMenuOnDetail(final String companyCode) {
-        View rootView = LayoutInflater.from(mActivity).inflate(R.layout.menu_bottom, null);
-        GridView menu = (GridView) rootView.findViewById(R.id.gridview);
-        if (mBottomMenus == null)
-            mBottomMenus = provideDefaultBottomMenu();
-        BottomMenuAdapter adapter = new BottomMenuAdapter(mActivity, R.layout.item_bottom_menu, mBottomMenus);
-        menu.setAdapter(adapter);
+        if (mPresenter.isLocal()) {
+            //如果是离线
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("温馨提示")
+                    .setMessage("您是否要结束本次操作?")
+                    .setPositiveButton("结束本次操作", (dialog, which) -> {
+                        dialog.dismiss();
+                        mPresenter.setTransFlag(mBizType, "3");
+                    }).setNegativeButton("取消", (dialog, which) -> dialog.dismiss()).show();
+        } else {
+            View rootView = LayoutInflater.from(mActivity).inflate(R.layout.menu_bottom, null);
+            GridView menu = (GridView) rootView.findViewById(R.id.gridview);
+            if (mBottomMenus == null)
+                mBottomMenus = provideDefaultBottomMenu();
+            BottomMenuAdapter adapter = new BottomMenuAdapter(mActivity, R.layout.item_bottom_menu, mBottomMenus);
+            menu.setAdapter(adapter);
 
-        final Dialog dialog = new Dialog(mActivity, R.style.MaterialDialogSheet);
-        dialog.setContentView(rootView);
-        dialog.setCancelable(true);
-        dialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        dialog.getWindow().setGravity(Gravity.BOTTOM);
-        dialog.show();
+            final Dialog dialog = new Dialog(mActivity, R.style.MaterialDialogSheet);
+            dialog.setContentView(rootView);
+            dialog.setCancelable(true);
+            dialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            dialog.getWindow().setGravity(Gravity.BOTTOM);
+            dialog.show();
 
-        menu.setOnItemClickListener((adapterView, view, position, id) -> {
-            switch (position) {
-                case 0:
-                    //1. 过账
-                    submit2BarcodeSystem(mBottomMenus.get(position).transToSapFlag);
-                    break;
-                case 1:
-                    //2. 上架(下架)
-                    submit2SAP(mBottomMenus.get(position).transToSapFlag);
-                    break;
-                case 3:
-                    //3. 转储
-                    sapUpAndDownLocation(mBottomMenus.get(position).transToSapFlag);
-                    break;
-            }
-            dialog.dismiss();
-        });
+            menu.setOnItemClickListener((adapterView, view, position, id) -> {
+                switch (position) {
+                    case 0:
+                        //1. 过账
+                        submit2BarcodeSystem(mBottomMenus.get(position).transToSapFlag);
+                        break;
+                    case 1:
+                        //2. 上架(下架)
+                        submit2SAP(mBottomMenus.get(position).transToSapFlag);
+                        break;
+                    case 3:
+                        //3. 转储
+                        sapUpAndDownLocation(mBottomMenus.get(position).transToSapFlag);
+                        break;
+                }
+                dialog.dismiss();
+            });
+        }
     }
 
 
@@ -231,6 +243,16 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
         mInspectionNum = inspectionNum;
     }
 
+    @Override
+    public void setTransFlagFail(String message) {
+        showMessage(message);
+    }
+
+    @Override
+    public void setTransFlagsComplete() {
+        showMessage("结束本次操作!");
+    }
+
     /**
      * 重试赴过账和数据上传
      *
@@ -244,6 +266,9 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
                 break;
             case Global.RETRY_UPLOAD_DATA_ACTION:
                 submit2SAP(mBottomMenus.get(1).transToSapFlag);
+                break;
+            case Global.RETRY_SET_TRANS_FLAG_ACTION:
+                mPresenter.setTransFlag(mBizType, "3");
                 break;
         }
         super.retry(retryAction);
@@ -301,7 +326,4 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
      */
     protected abstract void sapUpAndDownLocation(String transToSapFlag);
 
-    /*当明细界面数据上传成功后，发送事件给抬头界面*/
-    public static class ClearHeaderUIEvent {
-    }
 }

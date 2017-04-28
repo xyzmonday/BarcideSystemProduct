@@ -165,11 +165,11 @@
                 style="@style/LeftTextViewItemStyle"
                 android:text="@string/rec_loc" />
 
-            <EditText
-                android:id="@+id/et_rec_location"
-                style="@style/RightEditTextItemStyle"
-                android:gravity="center_horizontal"
-                android:inputType="numberDecimal" />
+
+            <android.support.v7.widget.AppCompatAutoCompleteTextView
+                android:id="@+id/auto_rec_location"
+                android:clickable="true"
+                style="@style/RightEditTextItemStyle" />
 
         </LinearLayout>
 

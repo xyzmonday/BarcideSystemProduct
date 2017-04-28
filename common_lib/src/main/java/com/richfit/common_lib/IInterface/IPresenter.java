@@ -26,4 +26,7 @@ public interface IPresenter<T extends IView> {
     void readExtraConfigs(String companyCode, String bizType, String refType, String... configTypes);
 
     void readExtraDataSourceDictionary(List<RowConfig> configs);
+
+    void setLocal(boolean isLocal);
+    boolean isLocal();
 }

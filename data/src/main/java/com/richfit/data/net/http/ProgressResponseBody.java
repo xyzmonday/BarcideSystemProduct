@@ -23,9 +23,9 @@ public class ProgressResponseBody extends ResponseBody {
     }
 
     private ResponseBody responseBody;
-    private RxManager mRxManager;
     private ProgressListener mProgressListener;
     private BufferedSource bufferedSource;
+    private  RxManager mRxManager;
 
     public ProgressResponseBody(ResponseBody responseBody, ProgressListener progressListener) {
         this.responseBody = responseBody;
@@ -62,7 +62,6 @@ public class ProgressResponseBody extends ResponseBody {
             @Override
             public long read(Buffer sink, long byteCount) throws IOException {
                 final long bytesRead = super.read(sink, byteCount);
-                // read() returns the number of bytes read, or -1 if this source is exhausted.
                 bytesReaded += bytesRead != -1 ? bytesRead : 0;
                 if(mProgressListener != null)
                     mProgressListener.update(bytesReaded, responseBody.contentLength(), bytesRead == -1);

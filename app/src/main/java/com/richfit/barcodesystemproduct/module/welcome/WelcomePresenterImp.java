@@ -57,31 +57,33 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
             mView.loadExtraConfigFail("未获取到公司id");
             return;
         }
-        ResourceSubscriber<List<RowConfig>> subscriber = mRepository.loadExtraConfig(companyId)
-                .doOnNext(configs -> mRepository.saveExtraConfigInfo(configs))
-                .doOnNext(configs -> updateExtraConfigTable(configs))
-                .retryWhen(new RetryWhenNetworkException(3,2000))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<List<RowConfig>>() {
-                    @Override
-                    public void onNext(List<RowConfig> rowConfigs) {
+        ResourceSubscriber<List<RowConfig>> subscriber =
+                mRepository.loadExtraConfig(companyId)
+                        .filter(configs -> configs != null && configs.size() > 0)
+                        .doOnNext(configs -> mRepository.saveExtraConfigInfo(configs))
+                        .doOnNext(configs -> updateExtraConfigTable(configs))
+                        .retryWhen(new RetryWhenNetworkException(3, 2000))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<List<RowConfig>>() {
+                            @Override
+                            public void onNext(List<RowConfig> rowConfigs) {
 
-                    }
+                            }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        if(mView != null) {
-                            mView.loadExtraConfigFail(t.getMessage());
-                        }
-                    }
+                            @Override
+                            public void onError(Throwable t) {
+                                if (mView != null) {
+                                    mView.loadExtraConfigFail(t.getMessage());
+                                }
+                            }
 
-                    @Override
-                    public void onComplete() {
-                        if(mView != null) {
-                            mView.loadExtraConfigSuccess();
-                        }
-                    }
-                });
+                            @Override
+                            public void onComplete() {
+                                if (mView != null) {
+                                    mView.loadExtraConfigSuccess();
+                                }
+                            }
+                        });
         addSubscriber(subscriber);
 
     }
@@ -101,29 +103,29 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
 
         ResourceSubscriber<Boolean> subscriber =
                 Flowable.just(configFileName)
-                .map(name -> LocalFileUtil.getStringFormAsset(mContext, name))
-                .map(json -> parseJson(json))
-                .flatMap(list -> mRepository.saveBizFragmentConfig(list))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<Boolean>() {
-                    @Override
-                    public void onNext(Boolean aBoolean) {
+                        .map(name -> LocalFileUtil.getStringFormAsset(mContext, name))
+                        .map(json -> parseJson(json))
+                        .flatMap(list -> mRepository.saveBizFragmentConfig(list))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<Boolean>() {
+                            @Override
+                            public void onNext(Boolean aBoolean) {
 
-                    }
+                            }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        if (mView != null) {
-                            mView.loadFragmentConfigFail(t.getMessage());
-                        }
-                    }
+                            @Override
+                            public void onError(Throwable t) {
+                                if (mView != null) {
+                                    mView.loadFragmentConfigFail(t.getMessage());
+                                }
+                            }
 
-                    @Override
-                    public void onComplete() {
-                        if (mView != null)
-                            mView.loadFragmentConfigSuccess();
-                    }
-                });
+                            @Override
+                            public void onComplete() {
+                                if (mView != null)
+                                    mView.loadFragmentConfigSuccess();
+                            }
+                        });
         addSubscriber(subscriber);
     }
 

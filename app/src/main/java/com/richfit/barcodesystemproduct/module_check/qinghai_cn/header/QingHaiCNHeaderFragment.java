@@ -23,7 +23,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.BottomMenuAdapter;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.barcodesystemproduct.module_check.qinghai_cn.header.imp.CNHeaderPresenterImp;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
@@ -51,8 +51,7 @@ import static com.richfit.common_lib.utils.Global.USER_ID;
  * <p>
  * Created by monday on 2017/3/3.
  */
-@SuppressLint("NewApi")
-public class QingHaiCNHeaderFragment extends BaseFragment<CNHeaderPresenterImp>
+public class QingHaiCNHeaderFragment extends BaseHeaderFragment<CNHeaderPresenterImp>
         implements ICNHeaderView {
 
 

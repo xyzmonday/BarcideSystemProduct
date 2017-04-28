@@ -408,4 +408,24 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
         db.close();
         return true;
     }
+
+    @Override
+    public List<ReferenceEntity> readTransferedData() {
+        return null;
+    }
+
+    @Override
+    public boolean setTransFlag(String transId) {
+        SQLiteDatabase db = getWritableDB();
+        ContentValues cv = new ContentValues();
+        cv.put("trans_flag", "3");
+        int iResult = db.update("MTL_CHECK_HEADER", cv, "id = ?", new String[]{transId});
+        db.close();
+        return iResult > 0;
+    }
+
+    @Override
+    public boolean uploadEditedHeadData(ResultEntity resultEntity) {
+        return false;
+    }
 }

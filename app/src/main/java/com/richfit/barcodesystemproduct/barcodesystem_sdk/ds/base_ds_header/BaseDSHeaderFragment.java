@@ -8,8 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
-import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_header.imp.DSHeaderPresenterImp;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -29,7 +28,7 @@ import butterknife.BindView;
  * Created by monday on 2016/11/19.
  */
 
-public abstract class BaseDSHeaderFragment extends BaseFragment<DSHeaderPresenterImp>
+public abstract class BaseDSHeaderFragment<P extends IDSHeaderPresenter> extends BaseHeaderFragment<P>
         implements IDSHeaderView {
 
     @BindView(R.id.et_ref_num)

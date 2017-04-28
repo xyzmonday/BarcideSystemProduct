@@ -56,4 +56,6 @@ public interface IBusinessService {
     void deleteOfflineDataAfterUploadSuccess(String transId,String bizType,String refType,String userId);
 
     boolean setTransFlag(String transId);
+
+    boolean uploadEditedHeadData(ResultEntity resultEntity);
 }

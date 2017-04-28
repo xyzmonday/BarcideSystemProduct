@@ -7,14 +7,10 @@ import android.widget.TextView;
 import com.richfit.common_lib.R;
 
 public class TimeLineViewHolder extends RecyclerView.ViewHolder {
-    private TextView tvShow;
+    public TextView tvShow;
 
     public TimeLineViewHolder(View itemView) {
         super(itemView);
         tvShow = (TextView) itemView.findViewById(R.id.item_time_line_txt);
-    }
-
-    public void setData(String data) {
-        tvShow.setText(data);
     }
 }

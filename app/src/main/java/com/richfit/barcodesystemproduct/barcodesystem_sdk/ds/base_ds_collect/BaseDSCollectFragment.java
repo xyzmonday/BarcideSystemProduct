@@ -443,7 +443,8 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         mCachedExtraLocationMap = null;
         isBatchValidate = false;
         mPresenter.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
-                batchFlag, location, lineData.refDoc, UiUtil.convertToInt(lineData.refDocItem),
+                getString(etMaterialNum), batchFlag, location, lineData.refDoc,
+                UiUtil.convertToInt(lineData.refDocItem),
                 Global.USER_ID);
     }
 

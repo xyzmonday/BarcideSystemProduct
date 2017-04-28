@@ -161,7 +161,7 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNColl
             result.materialId = etMaterialNum.getTag().toString();
             result.batchFlag = CommonUtil.toUpperCase(getString(etSendBatchFlag));
             result.recBatchFlag = CommonUtil.toUpperCase(getString(etRecBatchFlag));
-            result.recLocation = CommonUtil.toUpperCase(getString(etRecLoc));
+            result.recLocation = CommonUtil.toUpperCase(getString(autoRecLoc));
             result.quantity = getString(etQuantity);
             result.invType = getInvType();
             result.modifyFlag = "N";

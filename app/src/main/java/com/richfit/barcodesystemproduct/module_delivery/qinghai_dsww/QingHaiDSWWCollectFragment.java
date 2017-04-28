@@ -1,10 +1,17 @@
 package com.richfit.barcodesystemproduct.module_delivery.qinghai_dsww;
 
+import android.text.TextUtils;
+
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.BaseDSCollectFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_collect.imp.DSCollectPresenterImp;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.reactivex.Flowable;
 
 /**
  * Created by monday on 2017/3/5.
@@ -56,6 +63,77 @@ public class QingHaiDSWWCollectFragment extends BaseDSCollectFragment<DSCollectP
         return true;
     }
 
+
+    /**
+     * 通过物料编码和批次匹配单据明细的行。这里我们返回的所有行的insLot集合
+     *
+     * @param materialNum
+     * @param batchFlag
+     * @return
+     */
+    @Override
+    protected Flowable<ArrayList<String>> matchMaterialInfo(final String materialNum, final String batchFlag) {
+        if (mRefData == null || mRefData.billDetailList == null ||
+                mRefData.billDetailList.size() == 0 || TextUtils.isEmpty(materialNum)) {
+            return Flowable.error(new Throwable("请先获取单据明细"));
+        }
+        ArrayList<String> refLineIds = new ArrayList<>();
+        List<RefDetailEntity> list = mRefData.billDetailList;
+
+        for (RefDetailEntity entity : list) {
+            if (mIsOpenBatchManager) {
+                final String refLineId = entity.refLineId;
+                //如果打开了批次，那么在看明细中是否有批次
+                if (!TextUtils.isEmpty(entity.batchFlag) && !TextUtils.isEmpty(batchFlag)) {
+                    if (materialNum.equalsIgnoreCase(entity.materialNum) &&
+                            batchFlag.equalsIgnoreCase(entity.batchFlag) &&
+                            !TextUtils.isEmpty(refLineId))
+
+                        refLineIds.add(refLineId);
+                } else {
+                    if (materialNum.equalsIgnoreCase(entity.materialNum) &&
+                            !TextUtils.isEmpty(refLineId))
+                        refLineIds.add(refLineId);
+                }
+            } else {
+                final String refLineId = entity.refLineId;
+                //如果明细中没有打开了批次管理,那么只匹配物料编码
+                if (materialNum.equalsIgnoreCase(entity.materialNum) && !TextUtils.isEmpty(refLineId))
+                    refLineIds.add(refLineId);
+
+            }
+        }
+        if (refLineIds.size() == 0) {
+            return Flowable.error(new Throwable("未获取到匹配的物料"));
+        }
+        return Flowable.just(refLineIds);
+    }
+
+    /**
+     * 通过单据行的检验批得到该行在单据明细列表中的位置
+     *
+     * @param refLineId:物料+批次
+     * @return 返回该行号对应的行明细在明细列表的索引
+     */
+    @Override
+    protected int getIndexByLineNum(String refLineId) {
+        int index = -1;
+        if (TextUtils.isEmpty(refLineId))
+            return index;
+
+        if (mRefData == null || mRefData.billDetailList == null
+                || mRefData.billDetailList.size() == 0)
+            return index;
+
+        for (RefDetailEntity item : mRefData.billDetailList) {
+            index++;
+            if (!TextUtils.isEmpty(item.refLineId) && refLineId.equals(item.refLineId)) {
+                break;
+            }
+        }
+        return index;
+    }
+
     @Override
     protected String getInvType() {
         return "01";
@@ -65,7 +143,6 @@ public class QingHaiDSWWCollectFragment extends BaseDSCollectFragment<DSCollectP
     protected String getInventoryQueryType() {
         return getString(R.string.inventoryQueryTypeSAPLocation);
     }
-
 
     @Override
     protected int getOrgFlag() {

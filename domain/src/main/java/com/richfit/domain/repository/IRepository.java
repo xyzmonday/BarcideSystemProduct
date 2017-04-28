@@ -7,6 +7,7 @@ import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
+import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.UserEntity;
 
 import java.util.ArrayList;
@@ -28,6 +29,13 @@ public interface IRepository {
      * @param password：登录密码
      */
     Flowable<UserEntity> Login(String userName, String password);
+    /**
+     * 下载额外字段的配置信息
+     *
+     * @param companyId:公司Id
+     * @return
+     */
+    Flowable<ArrayList<RowConfig>> loadExtraConfig(String companyId);
 
     /**
      * 获取单据数据

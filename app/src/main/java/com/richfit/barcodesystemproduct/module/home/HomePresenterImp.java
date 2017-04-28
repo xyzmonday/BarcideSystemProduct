@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
+import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
@@ -16,7 +17,6 @@ import javax.inject.Inject;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.subscribers.ResourceSubscriber;
 
 
 /**
@@ -49,6 +49,10 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
     @Override
     public void setupModule(final String loginId) {
         mView = getView();
+        if (TextUtils.isEmpty(loginId) && mView != null) {
+            mView.initModelsFail("登陆用户为空,初始化菜单失败");
+            return;
+        }
         final int mode = isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE;
         Disposable subscriber =
                 Flowable.zip(mRepository.getMenuInfo(loginId, Global.ONLINE_MODE)
@@ -61,24 +65,38 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
                         .map(list -> mRepository.saveMenuInfo(list, loginId, mode))
                         .map(list -> getSecondNodesByParentId(list, mode))
                         .compose(TransformerHelper.io2main())
-                        .subscribeWith(new ResourceSubscriber<ArrayList<MenuNode>>() {
+                        .subscribeWith(new RxSubscriber<ArrayList<MenuNode>>(mContext,"正在初始化主菜单...") {
 
                             @Override
-                            public void onNext(ArrayList<MenuNode> menuNodes) {
+                            public void _onNext(ArrayList<MenuNode> menuNodes) {
                                 if (mView != null) {
                                     mView.initModulesSuccess(menuNodes);
                                 }
                             }
 
                             @Override
-                            public void onError(Throwable t) {
-                                if (mView != null) {
-                                    mView.initModelsFail(t.getMessage());
+                            public void _onNetWorkConnectError(String message) {
+                                if(mView!= null) {
+                                    mView.networkConnectError(Global.RETRY_SETUP_MENUS_ACTION);
                                 }
                             }
 
                             @Override
-                            public void onComplete() {
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.initModelsFail(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.initModelsFail(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onComplete() {
 
                             }
                         });
@@ -87,12 +105,11 @@ public class HomePresenterImp extends BasePresenter<HomeContract.View>
 
     @Override
     public void changeMode(String loginId, int mode) {
-        //1. 根据用户选择的模式，修改数据仓库的mode标识
+        //1. 根据用户选择的模式，修改数据仓库的LocalFlag标识
         mRepository.setLocal(Global.ONLINE_MODE == mode ? false : true);
         //2. 调用setupModule，重新初始化Home界面
         setupModule(loginId);
     }
-
 
 
     private ArrayList<MenuNode> wrapperMenuNodes(ArrayList<MenuNode> list, int mode) {

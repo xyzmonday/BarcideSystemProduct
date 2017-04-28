@@ -20,6 +20,11 @@ public class RxManager {
 
     private final RxBus mRxBus;
     private final SimpleRxBus mSimpleRxBus;
+
+    public static final int BACKPRESSURE_STRATEGY_BUFFER = 0;
+    public static final int BACKPRESSURE_STRATEGY_DROP = 1;
+    public static final int BACKPRESSURE_STRATEGY_LAST = 2;
+
     //管理rxbus订阅
     private Map<Object, Flowable<?>> mFlowables;
 
@@ -53,6 +58,30 @@ public class RxManager {
         flowable.observeOn(AndroidSchedulers.mainThread())
                 .subscribe(action1);
     }
+
+    public <T> void register(Object tag, Consumer<T> action1, int backPressureStrategy) {
+        Flowable<T> flowable = mRxBus.register(tag);
+        mFlowables.put(tag, flowable);
+        Flowable<T> tmp  = null;
+        switch (backPressureStrategy) {
+            case BACKPRESSURE_STRATEGY_BUFFER:
+                tmp = flowable.onBackpressureBuffer();
+                break;
+            case BACKPRESSURE_STRATEGY_DROP:
+                tmp =  flowable.onBackpressureDrop();
+                break;
+            case BACKPRESSURE_STRATEGY_LAST:
+                tmp = flowable.onBackpressureLatest();
+                break;
+            default:
+                tmp =  flowable.onBackpressureBuffer();
+                break;
+        }
+        tmp.observeOn(AndroidSchedulers.mainThread())
+                .subscribe(action1, throwable -> {
+                });
+    }
+
 
     /**
      * 取消注册在所有RxBus的订阅者，以及Observables 和 Subscribers的订阅者

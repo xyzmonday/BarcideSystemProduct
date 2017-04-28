@@ -10,8 +10,12 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.InventoryEntity;
+import com.richfit.domain.bean.LocationInfoEntity;
+import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 
@@ -73,6 +77,24 @@ public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
         RxSubscriber<ReferenceEntity> subscriber = mRepository.getTransferInfoSingle("", "", bizType, "",
                 workId, invId, recWorkId, recInvId, materialNum, batchFlag, "", refDoc, refDocItem, userId)
                 .filter(refData -> refData != null && refData.billDetailList.size() > 0)
+                .map(refData -> {
+                    float totalQuantity = 0;
+                    totalQuantity = 0;
+                    List<RefDetailEntity> billDetailList = refData.billDetailList;
+                    for (RefDetailEntity target : billDetailList) {
+                        List<LocationInfoEntity> locationList = target.locationList;
+                        if (locationList != null && locationList.size() > 0) {
+                            for (LocationInfoEntity loc : locationList) {
+                                totalQuantity += UiUtil.convertToFloat(loc.quantity, 0.0f);
+                                L.e("totalQuantity = " + totalQuantity);
+                            }
+                            for (LocationInfoEntity loc : locationList) {
+                                loc.quantity = String.valueOf(totalQuantity);
+                            }
+                        }
+                    }
+                    return refData;
+                })
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext, "正在获取缓存信息...") {
                     @Override
@@ -128,7 +150,7 @@ public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
         }
 
         ResourceSubscriber<String> subscriber =
-                mRepository.getLocationInfo(queryType, workId, invId,"", location)
+                mRepository.getLocationInfo(queryType, workId, invId, "", location)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new ResourceSubscriber<String>() {
                             @Override
@@ -194,10 +216,71 @@ public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
 
                             @Override
                             public void _onComplete() {
+                                if (mView != null) {
+                                    mView.loadInventoryComplete();
+                                }
+                            }
+                        });
+        addSubscriber(subscriber);
+    }
+
+    @Override
+    public void getInventoryInfoOnRecLocation(String queryType, String workId, String invId, String workCode,
+                                              String invCode, String storageNum, String materialNum,
+                                              String materialId, String location, String batchFlag,
+                                              String specialInvFlag, String specialInvNum, String invType,
+                                              String deviceId) {
+        mView = getView();
+
+        RxSubscriber<List<String>> subscriber =
+                mRepository.getInventoryInfo(queryType, workId, invId, workCode, invCode, storageNum, materialNum,
+                        materialId, "", "", batchFlag, location, specialInvFlag, specialInvNum, invType, deviceId)
+                        .filter(list -> list != null && list.size() > 0)
+                        .map(list -> convert2Strings(list))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<List<String>>(mContext) {
+                            @Override
+                            public void _onNext(List<String> list) {
+                                if (mView != null) {
+                                    mView.showRecLocations(list);
+                                }
+                            }
+
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_LOAD_REC_INVENTORY_ACTION);
+                                }
+                            }
+
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.loadRecLocationsFail(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.loadRecLocationsFail(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onComplete() {
 
                             }
                         });
         addSubscriber(subscriber);
+    }
+
+    private ArrayList<String> convert2Strings(List<InventoryEntity> list) {
+        ArrayList<String> tmp = new ArrayList<>();
+        for (InventoryEntity item : list) {
+            tmp.add(item.location);
+        }
+        return tmp;
     }
 
     @Override
@@ -287,14 +370,14 @@ public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
 
                     @Override
                     public void onError(Throwable t) {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.getDeviceInfoFail(t.getMessage());
                         }
                     }
 
                     @Override
                     public void onComplete() {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.getDeviceInfoComplete();
                         }
                     }

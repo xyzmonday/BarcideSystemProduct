@@ -3,14 +3,19 @@ package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_collect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.text.TextUtils;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
@@ -19,6 +24,7 @@ import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
@@ -79,8 +85,8 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     protected EditText etQuantity;
     @BindView(R.id.cb_single)
     protected CheckBox cbSingle;
-    @BindView(R.id.et_rec_location)
-    protected EditText etRecLoc;
+    @BindView(R.id.auto_rec_location)
+    protected AppCompatAutoCompleteTextView autoRecLoc;
     @BindView(R.id.et_rec_batch_flag)
     protected EditText etRecBatchFlag;
     @BindView(R.id.ll_rec_location)
@@ -93,25 +99,21 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     * 是必须先知道是否打开了WM。如果没有打开那么不需要查询*/
     protected boolean isOpenWM = true;
     protected boolean isWareHouseSame;
-
     /*发出库位*/
     protected InvAdapter mSendInvAdapter;
     protected List<InvEntity> mSendInvs;
     /*发出仓位*/
     protected List<InventoryEntity> mInventoryDatas;
     private LocationAdapter mSendLocAdapter;
-
     /*缓存的历史仓位数量*/
     protected List<RefDetailEntity> mHistoryDetailList;
     /*缓存的仓位级别的额外字段*/
     Map<String, Object> mCachedExtraLocationMap;
     /*缓存的行级别的额外字段*/
     Map<String, Object> mCachedExtraLineMap;
-
     /*新增设备Id*/
     protected String mDeviceId;
     protected boolean isLocationChecked = false;
-
 
     @Override
     protected int getContentId() {
@@ -143,8 +145,8 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             }
         } else if (list != null && list.length == 1 & !cbSingle.isChecked()) {
             final String location = list[0];
-            if (etRecLoc.isFocused()) {
-                etRecLoc.setText(location);
+            if (autoRecLoc.isFocused()) {
+                autoRecLoc.setText(location);
                 return;
             }
             //扫描发出仓位
@@ -165,7 +167,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         mSendInvs = new ArrayList<>();
         mInventoryDatas = new ArrayList<>();
         isOpenWM = getWMOpenFlag();
-
     }
 
     @Override
@@ -219,6 +220,20 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             etQuantity.setText(isChecked ? "1" : "");
             etQuantity.setEnabled(!isChecked);
         });
+
+        //点击自动提示控件，显示默认列表
+        RxView.clicks(autoRecLoc)
+                .filter(a -> autoRecLoc.getAdapter() != null)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
+                .subscribe(a -> {
+                    hideKeyboard(autoRecLoc);
+                    showAutoCompleteConfig(autoRecLoc);
+                });
+
+        //用户选择自动提示控件的某一条数据，隐藏输入法
+        RxAutoCompleteTextView.itemClickEvents(autoRecLoc)
+                .subscribe(a -> hideKeyboard(autoRecLoc));
+
     }
 
     @Override
@@ -424,7 +439,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
      */
     @Override
     public void showInventory(List<InventoryEntity> list) {
-
         mInventoryDatas.clear();
         InventoryEntity tmp = new InventoryEntity();
         tmp.locationCombine = "请选择";
@@ -438,9 +452,93 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         }
     }
 
+    /**
+     * 加载发出库存完毕
+     */
+    @Override
+    public void loadInventoryComplete() {
+        //开始加载接收的库存
+        if (mRefData == null) {
+            showMessage("请先在抬头界面选择合适的移库数据");
+            return;
+        }
+        if (TextUtils.isEmpty(mRefData.recWorkId)) {
+            showMessage("接收工厂为空");
+            return;
+        }
+        if (TextUtils.isEmpty(mRefData.recInvId)) {
+            showMessage("接收库位为空");
+            return;
+        }
+        mPresenter.getInventoryInfoOnRecLocation(getInventoryQueryType(), mRefData.recWorkId, mRefData.recInvId,
+                mRefData.recWorkCode, mRefData.recInvCode, "", getString(etMaterialNum),
+                CommonUtil.Obj2String(etMaterialNum.getTag()), "",
+                getString(etSendBatchFlag), "", "", getInvType(), mDeviceId);
+    }
+
+
     @Override
     public void loadInventoryFail(String message) {
         showMessage(message);
+    }
+
+
+    @Override
+    public void showRecLocations(List<String> recLocations) {
+        ArrayList<String> tmp = new ArrayList<>();
+        tmp.addAll(recLocations);
+        if (mHistoryDetailList != null) {
+            for (RefDetailEntity detail : mHistoryDetailList) {
+                List<LocationInfoEntity> locationList = detail.locationList;
+                if (locationList != null && locationList.size() > 0) {
+                    for (LocationInfoEntity locationInfo : locationList) {
+                        if(!TextUtils.isEmpty(locationInfo.recLocation) &&!recLocations.contains(locationInfo.recLocation)) {
+                            tmp.add(locationInfo.recLocation);
+                        }
+                    }
+                }
+            }
+        }
+        if (tmp.size() > 0)
+            setAutoCompleteConfig(autoRecLoc, tmp, autoRecLoc.getWidth());
+    }
+
+    @Override
+    public void loadRecLocationsFail(String message) {
+        //清除显示下拉列表
+        autoRecLoc.setAdapter(null);
+        ArrayList<String> tmp = new ArrayList<>();
+        if (mHistoryDetailList != null) {
+            for (RefDetailEntity detail : mHistoryDetailList) {
+                List<LocationInfoEntity> locationList = detail.locationList;
+                if (locationList != null && locationList.size() > 0) {
+                    for (LocationInfoEntity locationInfo : locationList) {
+                        if(!TextUtils.isEmpty(locationInfo.recLocation)) {
+                            tmp.add(locationInfo.recLocation);
+                        }
+                    }
+                }
+            }
+        }
+        L.e("tmp = " + tmp);
+        if (tmp.size() > 0)
+            setAutoCompleteConfig(autoRecLoc, tmp, autoRecLoc.getWidth());
+    }
+
+    /**
+     * 设置auto控件适配器以及下拉列表的宽度
+     *
+     * @param autoComplete
+     * @param datas
+     * @param width
+     */
+    private void setAutoCompleteConfig(AutoCompleteTextView autoComplete, List<String> datas, int width) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(mActivity,
+                android.R.layout.simple_dropdown_item_1line, datas);
+        autoRecLoc.setAdapter(adapter);
+        autoComplete.setThreshold(1);
+        autoComplete.setDropDownWidth(width);
+        autoComplete.isPopupShowing();
     }
 
     /**
@@ -483,19 +581,18 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             List<LocationInfoEntity> locationList = detail.locationList;
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
-
+                    recLocation = locationInfo.recLocation;
                     final boolean isMatched = mIsOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                             && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);
-
                     if (isMatched) {
                         locQuantity = locationInfo.quantity;
-                        recLocation = locationInfo.recLocation;
                         recBatchFlag = locationInfo.recBatchFlag;
                         mCachedExtraLocationMap = locationInfo.mapExt;
                         mCachedExtraLineMap = detail.mapExt;
                         break;
                     }
+
                 }
             }
         }
@@ -503,18 +600,13 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         bindExtraUI(mSubFunEntity.locationConfigs, mCachedExtraLocationMap);
         bindExtraUI(mSubFunEntity.collectionConfigs, mCachedExtraLineMap);
         tvLocQuantity.setText(locQuantity);
-        //默认给接收仓位为发出仓位
-        etRecLoc.setText(sendLocation);
-        //注意如果缓存中没有接收批次或者接收仓位，或者已经手动赋值,那么不用缓存更新它们
-        if (!TextUtils.isEmpty(recLocation))
-            etRecLoc.setText(recLocation);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(etRecBatchFlag)))
             etRecBatchFlag.setText(recBatchFlag);
     }
 
     private void resetSendLocation() {
         spSendLoc.setSelection(0, true);
-        etRecLoc.setText("");
+        autoRecLoc.setText("");
         tvInvQuantity.setText("");
         tvLocQuantity.setText("");
     }
@@ -560,19 +652,20 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     @Override
     public void checkWareHouseSuccess() {
         isWareHouseSame = true;
-        etRecLoc.setText(getString(etRecLoc));
-        etRecLoc.setEnabled(true);
+        autoRecLoc.setText(getString(autoRecLoc));
+        autoRecLoc.setEnabled(true);
     }
 
     @Override
     public void checkWareHouseFail(String message) {
         showMessage(message);
-        etRecLoc.setText("");
-        etRecLoc.setEnabled(false);
+        autoRecLoc.setText("");
+        autoRecLoc.setEnabled(false);
         isWareHouseSame = false;
     }
 
     private boolean refreshQuantity(final String quantity) {
+
         if (Float.valueOf(quantity) < 0.0f) {
             showMessage("输入数量不合理");
             return false;
@@ -625,6 +718,12 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             showMessage("仓位数量为空");
             return false;
         }
+
+        if (TextUtils.isEmpty(getString(etQuantity))) {
+            showMessage("请输入移库数量");
+            return false;
+        }
+
         //实发数量
         if (!refreshQuantity(getString(etQuantity))) {
             return false;
@@ -671,11 +770,11 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             result.materialId = etMaterialNum.getTag().toString();
             result.batchFlag = CommonUtil.toUpperCase(getString(etSendBatchFlag));
             result.recBatchFlag = CommonUtil.toUpperCase(getString(etRecBatchFlag));
-            result.recLocation = CommonUtil.toUpperCase(getString(etRecLoc));
+            result.recLocation = CommonUtil.toUpperCase(getString(autoRecLoc));
             result.quantity = getString(etQuantity);
             result.invType = getInvType();
             result.modifyFlag = "N";
-
+            //庆阳添加设备号
             result.deviceId = mDeviceId;
             int locationPos = spSendLoc.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;
@@ -710,7 +809,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
 
     protected void clearAllUI() {
         clearCommonUI(tvMaterialDesc, tvMaterialGroup, tvMaterialUnit,
-                tvInvQuantity, tvLocQuantity, etQuantity, etRecBatchFlag, etRecLoc);
+                tvInvQuantity, tvLocQuantity, etQuantity, etRecBatchFlag, autoRecLoc);
 
         //发出库位(注意由于发出库位是一进来就加载的,所以不能清理)
         if (spSendInv.getAdapter() != null) {
@@ -744,6 +843,11 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             mInventoryDatas.clear();
             mSendLocAdapter.notifyDataSetChanged();
         }
+
+        //接收仓位
+        if (autoRecLoc.getAdapter() != null) {
+            autoRecLoc.setAdapter(null);
+        }
         //库存数量
         tvInvQuantity.setText("");
         //历史仓位数量
@@ -751,7 +855,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         //实收数量
         etQuantity.setText("");
         //接收仓位
-        etRecLoc.setText("");
+        autoRecLoc.setText("");
     }
 
     @Override
@@ -765,6 +869,19 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         switch (retryAction) {
             case Global.RETRY_LOAD_SINGLE_CACHE_ACTION:
                 loadMaterialInfo(getString(etMaterialNum), getString(etSendBatchFlag));
+                break;
+            case Global.RETRY_LOAD_INVENTORY_ACTION:
+                final InvEntity invEntity = mSendInvs.get(spSendInv.getSelectedItemPosition());
+                mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId, invEntity.invId,
+                        mRefData.workCode, invEntity.invCode, "", getString(etMaterialNum),
+                        CommonUtil.Obj2String(etMaterialNum.getTag()), "",
+                        getString(etSendBatchFlag), "", "", getInvType(), mDeviceId);
+                break;
+            case Global.RETRY_LOAD_REC_INVENTORY_ACTION:
+                mPresenter.getInventoryInfoOnRecLocation(getInventoryQueryType(), mRefData.recWorkId, mRefData.recInvId,
+                        mRefData.recWorkCode, mRefData.recInvCode, "", getString(etMaterialNum),
+                        CommonUtil.Obj2String(etMaterialNum.getTag()), "",
+                        getString(etSendBatchFlag), "", "", getInvType(), mDeviceId);
                 break;
         }
         super.retry(retryAction);

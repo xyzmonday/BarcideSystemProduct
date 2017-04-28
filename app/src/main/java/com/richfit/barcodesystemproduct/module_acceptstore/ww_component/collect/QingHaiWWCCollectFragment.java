@@ -15,6 +15,7 @@ import com.richfit.barcodesystemproduct.adapter.WWCInventoryAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -82,10 +83,6 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
 
     @Override
     protected void initVariable(@Nullable Bundle savedInstanceState) {
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            mSelectedRefLineNum = bundle.getString(Global.EXTRA_REF_LINE_NUM_KEY);
-        }
         mInventoryDatas = new ArrayList<>();
     }
 
@@ -112,16 +109,15 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
     @Override
     public void initDataLazily() {
         if (mRefDetail == null) {
-            showMessage("未获取到数据明细");
-            return;
-        }
-        if (TextUtils.isEmpty(mSelectedRefLineNum)) {
-            showMessage("未获取到单据行号");
+            showMessage("请现在明细界面获取明细数据");
             return;
         }
         setupRefLineAdapter();
     }
 
+    /**
+     * 这里显示的组件明细的RefdocItem
+     */
     @Override
     public void setupRefLineAdapter() {
         if (mRefLines == null) {
@@ -145,7 +141,9 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
 
     @Override
     public void bindCommonCollectUI() {
+        mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
+        L.e("mSelectedRefLineNum = " + mSelectedRefLineNum);
         tvMaterialNum.setText(lineData.materialNum);
         etQuantity.setText("");
         //物资描述
@@ -161,7 +159,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
         //获取库存
         mPresenter.getInventoryInfo("01", lineData.workId,
                 "", lineData.workCode, "", "", getString(tvMaterialNum),
-                lineData.materialId, "", "", "O", mRefData.supplierNum, "1","");
+                lineData.materialId, "", "", "O", mRefData.supplierNum, "1", "");
     }
 
     @Override
@@ -252,14 +250,34 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
     /**
      * 获取行明细(这里获取的是界面得到的mRefDetail)
      *
-     * @param lineNum:单据行号
+     * @param refDocItem:单据行号
      * @return
      */
-    protected RefDetailEntity getLineData(String lineNum) {
-        final int index = getIndexByLineNum(lineNum);
+    @Override
+    protected RefDetailEntity getLineData(String refDocItem) {
+        final int index = getIndexByLineNum(Integer.valueOf(refDocItem));
+        if (index < 0) {
+            return mRefDetail.get(0);
+        }
         return mRefDetail.get(index);
     }
 
+    /**
+     * 通过refDocItem获取行号
+     *
+     * @param refDocItem:单据行号
+     * @return
+     */
+    private int getIndexByLineNum(int refDocItem) {
+        int index = -1;
+        for (RefDetailEntity detailEntity :mRefDetail) {
+            index++;
+            if (refDocItem == detailEntity.refDocItem)
+                break;
+
+        }
+        return index;
+    }
 
     protected boolean refreshQuantity(final String quantity) {
         //将已经录入的所有的子节点的仓位数量累加
@@ -311,7 +329,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
             return false;
         }
 
-        if(spBatchFlag.getSelectedItemPosition() <= 0) {
+        if (spBatchFlag.getSelectedItemPosition() <= 0) {
             showMessage("请选择批次");
             return false;
         }

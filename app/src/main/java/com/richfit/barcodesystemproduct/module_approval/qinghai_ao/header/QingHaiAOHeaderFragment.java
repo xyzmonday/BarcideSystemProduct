@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.header.imp.QingHaiAOHeaderPresenterImp;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
@@ -25,7 +25,7 @@ import butterknife.BindView;
  * Created by monday on 2017/2/28.
  */
 
-public class QingHaiAOHeaderFragment extends BaseFragment<QingHaiAOHeaderPresenterImp>
+public class QingHaiAOHeaderFragment extends BaseHeaderFragment<QingHaiAOHeaderPresenterImp>
         implements IQingHaiAOHeaderView {
 
     @BindView(R.id.et_ref_num)

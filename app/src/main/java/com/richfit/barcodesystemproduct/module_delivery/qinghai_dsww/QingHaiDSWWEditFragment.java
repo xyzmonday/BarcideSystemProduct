@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.BaseDSEditFragment;
+import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_edit.imp.DSEditPresenterImp;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
 
@@ -11,13 +12,21 @@ import com.richfit.domain.bean.RefDetailEntity;
  * Created by monday on 2017/1/20.
  */
 
-public class QingHaiDSWWEditFragment extends BaseDSEditFragment {
+public class QingHaiDSWWEditFragment extends BaseDSEditFragment<DSEditPresenterImp> {
 
     @Override
     public void initInjector() {
         mFragmentComponent.inject(this);
     }
 
+
+    @Override
+    public void initData() {
+        super.initData();
+        RefDetailEntity entity = mRefData.billDetailList.get(mPosition);
+        tvRefLineNum.setText(TextUtils.isEmpty(entity.batchFlag) ? entity.materialNum :
+                entity.materialNum + "_" + entity.batchFlag);
+    }
 
     @Override
     public boolean checkCollectedDataBeforeSave() {
@@ -27,7 +36,7 @@ public class QingHaiDSWWEditFragment extends BaseDSEditFragment {
             return false;
         }
 
-        if(TextUtils.isEmpty(getString(tvInvQuantity))) {
+        if (TextUtils.isEmpty(getString(tvInvQuantity))) {
             showMessage("请先获取库存");
             return false;
         }

@@ -8,6 +8,7 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.QingHaiWWCAdapter;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.RefDetailEntity;
 
 import java.util.List;
@@ -101,6 +102,7 @@ public class QingHaiWWCDetailFragment extends BaseDetailFragment<QingHaiWWCDetai
         //获取缓存累计数量不对
         mRefDetail = null;
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
+        L.e("mSelectedRefLineNum = " + mSelectedRefLineNum);
         if (lineData != null) {
             mPresenter.getTransferInfo(mRefData.recordNum, refCodeId, mBizType, mRefType,
                     "", lineData.refLineId, Global.USER_ID);

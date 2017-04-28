@@ -38,7 +38,6 @@ import com.richfit.common_lib.dialog.BasePopupWindow;
 import com.richfit.common_lib.dialog.SelectDialog;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 
 import java.util.ArrayList;
@@ -154,7 +153,6 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
      */
     @Override
     public void initModulesSuccess(ArrayList<MenuNode> menuNodes) {
-        L.e("-----");
         if (menuNodes == null || menuNodes.size() == 0) {
             showMessage("您不具有该模式下的权限");
             return;
@@ -346,6 +344,8 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
         bundle.putString(Global.EXTRA_BIZ_TYPE_KEY, bizType);
         bundle.putString(Global.EXTRA_REF_TYPE_KEY, refType);
         bundle.putString(Global.EXTRA_CAPTION_KEY, caption);
+        //给出在Home界面用户选择的系统模式
+        bundle.putInt(Global.EXTRA_MODE_KEY, mPresenter.isLocal() ? Global.OFFLINE_MODE : Global.ONLINE_MODE);
         intent.putExtras(bundle);
         startActivity(intent);
     }
@@ -422,4 +422,13 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
         super.onDestroy();
     }
 
+    @Override
+    public void retry(String action) {
+        switch (action) {
+            case Global.RETRY_SETUP_MENUS_ACTION:
+                mPresenter.setupModule(Global.LOGIN_ID);
+                break;
+        }
+        super.retry(action);
+    }
 }

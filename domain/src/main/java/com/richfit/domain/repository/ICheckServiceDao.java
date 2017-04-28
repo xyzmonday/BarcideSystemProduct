@@ -88,4 +88,10 @@ public interface ICheckServiceDao {
      * @return
      */
     boolean uploadCheckDataSingle(ResultEntity result);
+
+    List<ReferenceEntity> readTransferedData();
+
+    boolean setTransFlag(String transId);
+
+    boolean uploadEditedHeadData(ResultEntity resultEntity);
 }

@@ -1,8 +1,10 @@
 package com.richfit.common_lib.rxutils;
 
+import android.support.annotation.NonNull;
+
 import io.reactivex.Flowable;
+import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
-import io.reactivex.subjects.PublishSubject;
 
 /**
  * 用RxJava2.0实现一个简单的EventBus.
@@ -18,45 +20,34 @@ import io.reactivex.subjects.PublishSubject;
 
 public class SimpleRxBus {
 
-    private static SimpleRxBus instance;
+    private final FlowableProcessor<Object> mBus;
 
-    /*注释说是Thread-safe但不是serialized的*/
-    private final PublishProcessor<Object> mPublishProcessor;
-
-    // PublishSubject只会把在订阅发生的时间点之后的数据发射给观察者
-    public SimpleRxBus() {
-        PublishSubject.create();
-        mPublishProcessor = PublishProcessor.create();
+    private SimpleRxBus() {
+        mBus = PublishProcessor.create().toSerialized();
     }
 
-    // 单例RxBus
+    private static class Holder {
+        private static SimpleRxBus instance = new SimpleRxBus();
+    }
+
     public static SimpleRxBus getInstance() {
-        if (instance == null) {
-            instance = new SimpleRxBus();
-        }
-        return instance;
+        return Holder.instance;
     }
 
-    // 发送一个新的事件
-    public void post(Object o) {
-        mPublishProcessor.onNext(o);
+    public void post(@NonNull Object obj) {
+        mBus.onNext(obj);
     }
 
-    // 根据传递的 eventType 类型返回特定类型(eventType)的 被观察者
-    public <T> Flowable<T> toFlowable(Class<T> eventType) {
-        return mPublishProcessor.ofType(eventType);
+    public <T> Flowable<T> register(Class<T> clz) {
+        return mBus.ofType(clz);
     }
 
-    /**
-     * 注意由于Subject同时实现了Observable和Observer两个接口，所以可以转换
-     * @return
-     */
-    public Flowable<Object> toFlowable() {
-        return mPublishProcessor;
+    public void unregisterAll() {
+        //会将所有由mBus 生成的 Flowable 都置  completed 状态  后续的 所有消息  都收不到了
+        mBus.onComplete();
     }
 
     public boolean hasSubscribers() {
-        return mPublishProcessor.hasSubscribers();
+        return mBus.hasSubscribers();
     }
-
 }
