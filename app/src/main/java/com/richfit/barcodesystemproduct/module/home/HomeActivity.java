@@ -34,9 +34,6 @@ import com.richfit.barcodesystemproduct.module_local.loaddown.LoadLocalRefDataAc
 import com.richfit.barcodesystemproduct.module_local.upload.UploadActivity;
 import com.richfit.common_lib.baseadapterrv.MultiItemTypeAdapter;
 import com.richfit.common_lib.decoration.DividerGridItemDecoration;
-import com.richfit.common_lib.dialog.BasePopupWindow;
-import com.richfit.common_lib.dialog.SelectDialog;
-import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.MenuNode;
 
@@ -54,7 +51,8 @@ import butterknife.BindView;
  * Created by monday on 2016/11/7.
  */
 public class HomeActivity extends BaseActivity<HomePresenterImp> implements HomeContract.View,
-        OnItemClickListener, NavigationView.OnNavigationItemSelectedListener, MultiItemTypeAdapter.OnItemClickListener {
+        NavigationView.OnNavigationItemSelectedListener, MultiItemTypeAdapter.OnItemClickListener ,
+        OnItemClickListener{
 
     @BindView(R.id.modular_list)
     RecyclerView mRecycleView;
@@ -72,7 +70,7 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     ModularAdapter mAdapter;
     ActionBarDrawerToggle mDrawerListener;
     Dialog mBottomSheetDialog;
-    AlertView mAlertView;
+    AlertView  mBackDialog;
     //保存之前选择的MenuItem
     MenuItem preSelectedMenuItem;
 
@@ -134,8 +132,6 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
         GridLayoutManager lm = new GridLayoutManager(this, 3);
         mRecycleView.setLayoutManager(lm);
         mRecycleView.addItemDecoration(new DividerGridItemDecoration(this));
-        mAlertView = new AlertView("温馨提示", "您真的退出App吗?", "取消", new String[]{"确定"}, null,
-                this, AlertView.Style.Alert, this);
         //获取NavigationView头布局里面的空间
         View headerView = mNavigationView.getHeaderView(0);
         tvMode = (TextView) headerView.findViewById(R.id.tv_mode);
@@ -263,38 +259,14 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     private void setupRefTypeDialog(final MenuNode menuNode, final String moduleCode) {
         final List<MenuNode> children = menuNode.getChildren();
         if (children != null && children.size() > 0) {
-            final List<String> items = new ArrayList<>(children.size());
-            for (MenuNode child : children) {
-                items.add(child.getCaption());
+            final String[] items = new String[children.size()];
+            for (int i = 0; i < children.size(); i++) {
+                items[i] = children.get(i).getCaption();
             }
-            //构造实例化选择弹窗
-            SelectDialog chooseDialog = new SelectDialog.Builder(HomeActivity.this)
-                    .setDataList(items)
-                    .setButtonColor(AppCompat.getColor(R.color.black, HomeActivity.this))
-                    .setButtonSize(14)
-                    .setLastButtonSize(14)
-                    .setTitleText("单据类型选择")
-                    .build();
-            //对选择弹窗item点击事件监听
-            chooseDialog.setButtonListener(new BasePopupWindow.OnButtonListener() {
-                @Override
-                public void onSureListener(View v) {
-                    int position = ((Integer) v.getTag());
-                    toMain(Global.COMPANY_CODE, moduleCode, menuNode.getBusinessType(),
-                            children.get(position).getRefType(), children.get(position).getCaption());
-                }
 
-                @Override
-                public void onDiscardListener(View v) {
-
-                }
-
-                @Override
-                public void onDismissListener(View v, int nType) {
-
-                }
-            });
-            chooseDialog.show(mView);
+            new AlertView("请选择您需要操作的单据类型", null, "取消", null, items, this,
+                    AlertView.Style.ActionSheet, (o, position) -> toMain(Global.COMPANY_CODE, moduleCode, menuNode.getBusinessType(),
+                            children.get(position).getRefType(), children.get(position).getCaption())).show();
         }
     }
 
@@ -353,29 +325,17 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mAlertView == null) {
-                mAlertView = new AlertView("温馨提示", "您真的退出App吗?", "取消", new String[]{"确定"}, null,
+            if (mBackDialog == null) {
+                mBackDialog =  new AlertView("温馨提示", "您真的退出App吗?", "取消", new String[]{"确定"}, null,
                         this, AlertView.Style.Alert, this);
             }
-            mAlertView.show();
+            mBackDialog.show();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    public void onItemClick(Object o, int position) {
-        switch (position) {
-            case 0:
-                finish();
-                break;
-            case -1:
-                if (mAlertView != null && mAlertView.isShowing()) {
-                    mAlertView.dismiss();
-                }
-                break;
-        }
-    }
+
 
     /**
      * 左侧菜单点击监听
@@ -387,6 +347,11 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (preSelectedMenuItem != null) {
             preSelectedMenuItem.setChecked(false);
+        }
+        if (preSelectedMenuItem != null && preSelectedMenuItem == item) {
+            preSelectedMenuItem.setChecked(true);
+            mDrawerLayout.closeDrawers();
+            return super.onOptionsItemSelected(item);
         }
         item.setChecked(false);
         switch (item.getItemId()) {
@@ -409,15 +374,15 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
 
     @Override
     protected void onDestroy() {
-        if (mAlertView != null && mAlertView.isShowing()) {
-            mAlertView.dismiss();
-        }
         if (mDrawerLayout != null) {
             mDrawerLayout.removeDrawerListener(mDrawerListener);
         }
 
         if (mAdapter != null) {
             mAdapter.setOnItemClickListener(null);
+        }
+        if (mBackDialog != null && mBackDialog.isShowing()) {
+            mBackDialog.dismiss();
         }
         super.onDestroy();
     }
@@ -430,5 +395,19 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
                 break;
         }
         super.retry(action);
+    }
+
+    @Override
+    public void onItemClick(Object o, int position) {
+        switch (position) {
+            case 0:
+                finish();
+                break;
+            case -1:
+                if (mBackDialog != null && mBackDialog.isShowing()) {
+                    mBackDialog.dismiss();
+                }
+                break;
+        }
     }
 }

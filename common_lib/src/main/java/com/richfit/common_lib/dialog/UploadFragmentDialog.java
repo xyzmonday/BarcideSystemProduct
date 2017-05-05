@@ -15,7 +15,6 @@ import com.richfit.common_lib.R;
 import com.richfit.common_lib.adapter.TimeLineAdapter;
 import com.richfit.common_lib.adapter.animation.DividerVerticalTimeLine;
 import com.richfit.common_lib.utils.AppCompat;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.UploadMsgEntity;
 
@@ -96,7 +95,6 @@ public class UploadFragmentDialog extends DialogFragment implements TimeLineAdap
 
     @Override
     public void onDestroyView() {
-        L.e("UploadFragmentDialog onDestroyView");
         if (mAdapter != null) {
             mAdapter.setOnItemClickListener(null);
         }

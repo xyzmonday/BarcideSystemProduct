@@ -40,7 +40,7 @@ public class QingHaiAS103DetailFragment extends BaseASDetailFragment<QingHaiAS10
         saveTransId(allNodes);
         if (mAdapter == null) {
             mAdapter = new QingHaiAS103DetailAdapter(mActivity, R.layout.item_qinghai_as103_item,
-                    allNodes, mSubFunEntity.parentNodeConfigs, mSubFunEntity.childNodeConfigs);
+                    allNodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mAdapter.setAdapterStateListener(this);

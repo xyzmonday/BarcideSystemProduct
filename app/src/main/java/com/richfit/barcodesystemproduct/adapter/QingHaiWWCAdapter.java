@@ -19,10 +19,8 @@ import java.util.Map;
 public class QingHaiWWCAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
     public QingHaiWWCAdapter(Context context, int layoutId,
-                             List<RefDetailEntity> allNodes,
-                             List<RowConfig> parentNodeConfigs,
-                             List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+                             List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -52,8 +50,4 @@ public class QingHaiWWCAdapter extends CommonTreeAdapter<RefDetailEntity> {
         notifyItemChanged(position);
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
 }

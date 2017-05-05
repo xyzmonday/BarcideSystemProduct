@@ -1,6 +1,5 @@
 package com.richfit.barcodesystemproduct.module_check.qinghai_blind.header;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -31,12 +30,10 @@ import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.BottomMenuEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.WorkEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -98,17 +95,8 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
         mWorkDatas = new ArrayList<>();
         mStorageNums = new ArrayList<>();
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
-    @Override
-    protected void initView() {
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
-    }
 
     /**
      * 注册点击事件
@@ -153,6 +141,11 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
     public void initData() {
         etTransferDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
         tvChecker.setText(Global.LOGIN_ID);
+        //因为默认是选择仓库级的，所以在先初始化工厂
+        if (spWork.getAdapter() == null) {
+            //如果工厂还未初始化
+            mPresenter.getWorks(0);
+        }
     }
 
     /**
@@ -163,37 +156,6 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
         rbWarehouseLevel.setChecked(false);
         llWarehouseLevel.setVisibility(View.INVISIBLE);
         llStorageNumLevel.setVisibility(View.INVISIBLE);
-    }
-
-    /**
-     * 读取抬头配置文件成功
-     *
-     * @param configs
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    /**
-     * 读取抬头配置文件失败
-     *
-     * @param message
-     */
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
-    }
-
-    @Override
-    public void readConfigsComplete() {
-        //因为默认是选择仓库级的，所以在先初始化工厂
-        if (spWork.getAdapter() == null) {
-            //如果工厂还未初始化
-            mPresenter.getWorks(0);
-        }
     }
 
     /**
@@ -343,12 +305,12 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
             //库位级盘点
             mPresenter.getCheckInfo(USER_ID, mBizType, "01",
                     DEFAULT_SPECIAL_FLAG, mStorageNums.get(spStorageNum.getSelectedItemPosition()),
-                    "", "");
+                    "", "",getString(etTransferDate));
         } else if (rbWarehouseLevel.isChecked()) {
             mPresenter.getCheckInfo(USER_ID, mBizType, "02",
                     DEFAULT_SPECIAL_FLAG, "",
                     mWorkDatas.get(spWork.getSelectedItemPosition()).workId,
-                    mInvDatas.get(spInv.getSelectedItemPosition()).invId);
+                    mInvDatas.get(spInv.getSelectedItemPosition()).invId,getString(etTransferDate));
         }
     }
 
@@ -411,8 +373,6 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
     @Override
     public void bindCommonHeaderUI() {
         if (mRefData != null) {
-            //还未有任何字段需要绑定
-            bindExtraUI(mSubFunEntity.headerConfigs, mRefData.mapExt);
         }
     }
 
@@ -429,6 +389,7 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
 
     @Override
     public void _onPause() {
+        super._onPause();
         //再次检查用户是否输入的额外字段而且必须输入的字段（情景是用户请求单据之前没有输入该字段，回来填上后，但是没有请求单据而是直接）
         //切换了页面
         if (mRefData != null) {
@@ -451,8 +412,6 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
                 mRefData.checkLevel = "02";
             }
             mRefData.specialFlag = DEFAULT_SPECIAL_FLAG;
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
         }
     }
 
@@ -461,6 +420,10 @@ public class QingHaiBlindHeaderFragment extends BaseHeaderFragment<BlindHeaderPr
 
     }
 
+    @Override
+    public boolean isNeedShowFloatingButton() {
+        return true;
+    }
 
     @Override
     public void retry(String action) {

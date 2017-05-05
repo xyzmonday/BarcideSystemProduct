@@ -16,9 +16,8 @@ import java.util.Map;
 public class QingHaiAS103DetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
 
-    public QingHaiAS103DetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes,
-                                     List<RowConfig> parentNodeConfigs, List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public QingHaiAS103DetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -79,11 +78,6 @@ public class QingHaiAS103DetailAdapter extends CommonTreeAdapter<RefDetailEntity
             node.totalQuantity = "";
             notifyItemChanged(position);
         }
-    }
-
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
     }
 
     /**

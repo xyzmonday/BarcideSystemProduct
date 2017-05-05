@@ -30,11 +30,9 @@ import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -100,8 +98,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     protected String mSelectedRefLineNum;
     /*缓存的批次*/
     protected String mCachedBatchFlag;
-    /*缓存的仓位级别的额外字段*/
-    protected Map<String, Object> mCachedExtraLocationMap;
     /*批次一致性检查*/
     protected boolean isBatchValidate = true;
     protected boolean isLocationChecked = false;
@@ -159,13 +155,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         mInventoryDatas = new ArrayList<>();
     }
 
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
-    }
-
     /**
      * 注册所有UI事件
      */
@@ -211,25 +200,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         });
     }
 
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
-    }
 
     /**
      * 检查抬头界面的必要的字段是否已经赋值
@@ -256,10 +226,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         }
         if (isEmpty(mRefData.voucherDate)) {
             showMessage("请先在抬头界面选择过账日期");
-            return;
-        }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
             return;
         }
         String state = (String) SPrefUtil.getData(mBizType + mRefType, "0");
@@ -342,8 +308,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         etSendBatchFlag.setEnabled(mIsOpenBatchManager);
         //先将库存地点选择器打开，获取缓存后在判断是否需要锁定
         spSendInv.setEnabled(true);
-        //初始化额外字段的数据,注意这仅仅是服务器返回的数据，不含有任何缓存数据。
-        bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt);
         if (!cbSingle.isChecked())
             mPresenter.getInvsByWorkId(lineData.workId, getOrgFlag());
     }
@@ -474,7 +438,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         final String bizType = mRefData.bizType;
         final String refLineId = lineData.refLineId;
         mCachedBatchFlag = "";
-        mCachedExtraLocationMap = null;
         mPresenter.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
                 batchFlag, locationCombine, lineData.refDoc, UiUtil.convertToInt(lineData.refDocItem), Global.USER_ID);
     }
@@ -539,7 +502,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
                 //注意它没有匹配次成功可能是批次页可能是仓位。
                 if (isMatch) {
                     mCachedBatchFlag = cachedItem.batchFlag;
-                    mCachedExtraLocationMap= cachedItem.mapExt;
                     tvLocQuantity.setText(cachedItem.quantity);
                     break;
                 }
@@ -562,8 +524,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     @Override
     public void loadCacheSuccess() {
         showMessage("获取缓存成功");
-        /*绑定仓位级别的额外数据*/
-        bindExtraUI(mSubFunEntity.locationConfigs, mCachedExtraLocationMap);
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();
         }
@@ -577,7 +537,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         tvLocQuantity.setText("0");
         tvTotalQuantity.setText("0");
         mCachedBatchFlag = "";
-        mCachedExtraLocationMap = null;
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();
         }
@@ -605,10 +564,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             mInventoryDatas.clear();
             mLocationAdapter.notifyDataSetChanged();
         }
-
-        //清除额外资源
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
     }
 
     /**
@@ -720,16 +675,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             showMessage("实收数量有误");
             return false;
         }
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
         return true;
     }
 
@@ -764,9 +709,6 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
                     "Y" : "N";
             result.modifyFlag = "N";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())

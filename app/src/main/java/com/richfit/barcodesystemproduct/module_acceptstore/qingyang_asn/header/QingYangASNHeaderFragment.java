@@ -75,17 +75,11 @@ public class QingYangASNHeaderFragment extends BaseHeaderFragment<ASNHeaderPrese
         mMoveTypes = new ArrayList<>();
         mSuppliers = new ArrayList<>();
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
     @Override
     protected void initView() {
         etTransferDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
     }
 
     @Override
@@ -110,19 +104,7 @@ public class QingYangASNHeaderFragment extends BaseHeaderFragment<ASNHeaderPrese
     }
 
     @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
-    }
-
-    @Override
-    public void readConfigsComplete() {
+    public void initData() {
         //初始化工厂
         mPresenter.getWorks(0);
     }
@@ -231,11 +213,6 @@ public class QingYangASNHeaderFragment extends BaseHeaderFragment<ASNHeaderPrese
                     }
                 }
             }
-
-            //保存额外字段
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
-
         } else {
             mRefData = null;
         }

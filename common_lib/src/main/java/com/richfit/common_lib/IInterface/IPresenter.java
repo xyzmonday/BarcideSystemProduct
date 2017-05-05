@@ -17,16 +17,6 @@ public interface IPresenter<T extends IView> {
     void attachView(T view);
     void detachView();
 
-    /**
-     * 读取额外字段的配置信息。
-     * @param companyCode
-     * @param bizType
-     * @param configTypes:配置信息的类型
-     */
-    void readExtraConfigs(String companyCode, String bizType, String refType, String... configTypes);
-
-    void readExtraDataSourceDictionary(List<RowConfig> configs);
-
     void setLocal(boolean isLocal);
     boolean isLocal();
 }

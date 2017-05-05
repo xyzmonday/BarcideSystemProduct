@@ -35,7 +35,7 @@ public class ASEditPresenterImp extends BaseEditPresenterImp<IASEditView>
         mView = getView();
         Flowable<String> flowable;
         if (!TextUtils.isEmpty(result.location) && "barcode".equalsIgnoreCase(result.location)) {
-            //意味着上架
+            //意味着不上架
             flowable = mRepository.uploadCollectionDataSingle(result);
         } else {
             flowable = Flowable.concat(mRepository.getLocationInfo("04", result.workId, result.invId, "", result.location),

@@ -9,10 +9,8 @@ import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.basetreerv.CommonTreeAdapter;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.domain.bean.InventoryEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by monday on 2016/12/6.
@@ -21,16 +19,15 @@ import java.util.Map;
 public class CNDetailAdapter extends CommonTreeAdapter<InventoryEntity> {
 
 
-    public CNDetailAdapter(Context context, int layoutId, List<InventoryEntity> allNodes,
-                           List<RowConfig> parentNodeConfigs, List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public CNDetailAdapter(Context context, int layoutId, List<InventoryEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void convert(ViewHolder holder, InventoryEntity item, int position) {
         holder.setText(R.id.rowNum, String.valueOf(position + 1))
-                .setText(R.id.lineNum,item.lineNum)
+                .setText(R.id.lineNum, item.lineNum)
                 .setText(R.id.materialNum, item.materialNum)
                 .setText(R.id.materialDesc, item.materialDesc)
                 .setText(R.id.materialGroup, item.materialGroup)
@@ -43,7 +40,7 @@ public class CNDetailAdapter extends CommonTreeAdapter<InventoryEntity> {
         if (item.isChecked) {
             holder.setBackgroundRes(R.id.root_id, R.color.green_color_emerald);
         } else {
-            holder.setBackgroundDrawable(R.id.root_id, AppCompat.getDrawable(mContext,R.drawable.parent_node_bg));
+            holder.setBackgroundDrawable(R.id.root_id, AppCompat.getDrawable(mContext, R.drawable.parent_node_bg));
         }
     }
 
@@ -57,8 +54,4 @@ public class CNDetailAdapter extends CommonTreeAdapter<InventoryEntity> {
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
 }

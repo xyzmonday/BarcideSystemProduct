@@ -12,16 +12,16 @@ public interface WelcomeContract {
 
     interface View extends BaseView {
 
-        void loadExtraConfigSuccess();
-        void loadExtraConfigFail(String message);
+//        void loadExtraConfigSuccess();
+//        void loadExtraConfigFail(String message);
 
         void loadFragmentConfigSuccess();
         void loadFragmentConfigFail(String message);
     }
 
     interface Presenter extends IPresenter<View> {
-        //下载扩展字段的配置文件
-        void loadExtraConfig(String companyId);
+//        //下载扩展字段的配置文件
+//        void loadExtraConfig(String companyId);
 
         /**
          * 下载Fragment页面的配置文件

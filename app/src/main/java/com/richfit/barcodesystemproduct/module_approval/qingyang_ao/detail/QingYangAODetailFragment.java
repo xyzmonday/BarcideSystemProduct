@@ -46,18 +46,13 @@ public class QingYangAODetailFragment extends BaseDetailFragment<ApprovalOtherDe
             return;
         }
 
-        if (!checkExtraData(mSubFunEntity.headerConfigs)) {
-            showMessage("请先在抬头界面输入必要的字段信息");
-            return;
-        }
         startAutoRefresh();
     }
 
     @Override
     public void showNodes(List<RefDetailEntity> nodes) {
         if (mAdapter == null) {
-            mAdapter = new QingYangAOAdapter(mActivity, R.layout.item_qingyang_ao_item, nodes,
-                    mSubFunEntity.parentNodeConfigs, null);
+            mAdapter = new QingYangAOAdapter(mActivity, R.layout.item_qingyang_ao_item, nodes);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mRecyclerView.setAdapter(mAdapter);
         } else {

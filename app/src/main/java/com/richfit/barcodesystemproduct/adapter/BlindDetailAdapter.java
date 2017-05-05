@@ -18,8 +18,8 @@ import java.util.Map;
 public class BlindDetailAdapter extends CommonTreeAdapter<InventoryEntity> {
 
 
-    public BlindDetailAdapter(Context context, int layoutId, List<InventoryEntity> allNodes, List<RowConfig> parentNodeConfigs, List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public BlindDetailAdapter(Context context, int layoutId, List<InventoryEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -42,8 +42,4 @@ public class BlindDetailAdapter extends CommonTreeAdapter<InventoryEntity> {
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
 }

@@ -20,11 +20,9 @@ import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -64,16 +62,9 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
 
     //库存地点
     private InvAdapter mInvAdapter;
-
     private List<InvEntity> mInvs;
-
     /*缓存的历史仓位数量*/
     private List<RefDetailEntity> mHistoryDetailList;
-
-    /*缓存的仓位级别的额外字段*/
-    Map<String, Object> mExtraLocationMap;
-    /*缓存的行级别的额外字段*/
-    Map<String, Object> mExtraLineMap;
 
     /**
      * 处理扫描
@@ -114,13 +105,6 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mInvs = new ArrayList<>();
-    }
-
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
     }
 
     @Override
@@ -165,27 +149,6 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
         //加载发出工厂下的发出库位
         mPresenter.getInvsByWorks(mRefData.workId, 0);
     }
-
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
-    }
-
 
     private void loadMaterialInfo(String materialNum, String batchFlag) {
         if (!etMaterialNum.isEnabled())
@@ -269,16 +232,11 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
                             location.equalsIgnoreCase(locationInfo.location);
                     if (isMatched) {
                         locQuantity = locationInfo.quantity;
-                        mExtraLocationMap = locationInfo.mapExt;
-                        mExtraLineMap = detail.mapExt;
                         break;
                     }
                 }
             }
         }
-        //绑定额外字段数据
-        bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap);
-        bindExtraUI(mSubFunEntity.collectionConfigs, mExtraLineMap);
         tvLocQuantity.setText(locQuantity);
     }
 
@@ -290,10 +248,6 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
         if (spInv.getAdapter() != null) {
             spInv.setSelection(0);
         }
-
-        //额外字段
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
     }
 
     @Override
@@ -325,18 +279,6 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
             showMessage("请先输入实收数量");
             return false;
         }
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
         return true;
     }
 
@@ -377,9 +319,6 @@ public class QingHaiRSNCollectFragment extends BaseFragment<QingHaiRSNCollectPre
             result.projectNum = mRefData.projectNum;
             result.invType = getString(R.string.invTypeNorm);
             result.modifyFlag = "N";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER)

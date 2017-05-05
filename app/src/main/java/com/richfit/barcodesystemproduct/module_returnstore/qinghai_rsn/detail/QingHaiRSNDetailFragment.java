@@ -70,8 +70,7 @@ public class QingHaiRSNDetailFragment extends BaseDetailFragment<QingHaiRSNDetai
             }
         }
         if (mAdapter == null) {
-            mAdapter = new RSNDetailAdapter(mActivity,
-                    R.layout.item_rsn_detail_item, nodes, null, null);
+            mAdapter = new RSNDetailAdapter(mActivity, R.layout.item_rsn_detail_item, nodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
         } else {
@@ -185,7 +184,7 @@ public class QingHaiRSNDetailFragment extends BaseDetailFragment<QingHaiRSNDetai
             return;
         }
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
 

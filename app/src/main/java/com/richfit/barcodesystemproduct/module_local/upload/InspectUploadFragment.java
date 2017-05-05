@@ -1,11 +1,14 @@
 package com.richfit.barcodesystemproduct.module_local.upload;
 
+import com.richfit.barcodesystemproduct.module_local.upload.imp.UploadPresenterImp;
+
 /**
  * 离线验收数据上传
  * Created by monday on 2017/4/28.
  */
 
-public class InspectFragment extends BaseUploadFragment {
+public class InspectUploadFragment extends BaseUploadFragment<UploadPresenterImp> {
+
     @Override
     public void initInjector() {
         mFragmentComponent.inject(this);
@@ -24,6 +27,6 @@ public class InspectFragment extends BaseUploadFragment {
      */
     @Override
     public void saveCollectedData() {
-        mPresenter.uploadInspectionDataOffLine();
+        mPresenter.uploadCollectedDataOffLine();
     }
 }

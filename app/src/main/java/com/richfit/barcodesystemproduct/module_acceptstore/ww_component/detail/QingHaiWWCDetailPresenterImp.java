@@ -210,11 +210,8 @@ public class QingHaiWWCDetailPresenterImp extends BaseDetailPresenterImp<QingHai
                     cachedEntity.transLineId = loc.transLineId;
                     cachedEntity.batchFlag = loc.batchFlag;
                     cachedEntity.locationId = loc.id;
-                    cachedEntity.mapExt = UiUtil.copyMap(cachedEntity.mapExt, loc.mapExt);
                 }
             }
-            //处理父节点的缓存
-            cachedEntity.mapExt = UiUtil.copyMap(node.mapExt, cachedEntity.mapExt);
             nodes.add(cachedEntity);
         }
         return nodes;

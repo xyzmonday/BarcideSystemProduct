@@ -1,16 +1,20 @@
 package com.richfit.barcodesystemproduct.module_movestore.qinghai_311n;
 
+import android.text.TextUtils;
 import android.view.View;
 
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.BaseMSNHeaderFragment;
+import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InvEntity;
 
 import java.util.List;
+
+import io.reactivex.Flowable;
 
 /**
  * 青海311无参考移库抬头界面
@@ -34,10 +38,11 @@ public class QingHaiMSN311HeaderFragment extends BaseMSNHeaderFragment {
 
     @Override
     public void initEvent() {
-
+        //過賬日期
         etTransferDate.setOnRichEditTouchListener((view, text) ->
                 DateChooseHelper.chooseDateForEditText(mActivity, etTransferDate, Global.GLOBAL_DATE_PATTERN_TYPE1));
 
+        //發出工廠
         RxAdapterView.itemSelections(spSendWork)
                 .filter(position -> position.intValue() > 0)
                 .subscribe(position -> mPresenter.getSendInvsByWorkId(mSendWorks.get(position.intValue()).workId, getOrgFlag()));
@@ -70,19 +75,40 @@ public class QingHaiMSN311HeaderFragment extends BaseMSNHeaderFragment {
     }
 
     @Override
+    public void loadSendInvsFail(String message) {
+        showMessage(message);
+    }
+
+    @Override
+    public void loadSendInvsComplete() {
+        if (mUploadMsgEntity != null && !TextUtils.isEmpty(mUploadMsgEntity.invId)) {
+            Flowable.just(mSendInvs)
+                    .map(list -> {
+                        int pos = -1;
+                        for (InvEntity item : list) {
+                            ++pos;
+                            if (item.invId.equals(mUploadMsgEntity.invId))
+                                return pos;
+                        }
+                        return pos;
+                    })
+                    .filter(pos -> pos.intValue() >= 0 && pos.intValue() < mSendInvs.size())
+                    .compose(TransformerHelper.io2main())
+                    .subscribe(pos -> spSendInv.setSelection(pos.intValue()), e -> {
+                    }, () -> lockUIUnderEditState(spSendInv, spRecInv));
+        }
+    }
+
+
+    @Override
     public void _onPause() {
         super._onPause();
         //工厂内移库，默认接收工厂默认等于接收工厂
-        if(mRefData != null) {
+        if (mRefData != null) {
             mRefData.recWorkName = mRefData.workName;
             mRefData.recWorkCode = mRefData.workCode;
             mRefData.recWorkId = mRefData.workId;
         }
-    }
-
-    @Override
-    public void loadSendInvsFail(String message) {
-        showMessage(message);
     }
 
 
@@ -93,6 +119,11 @@ public class QingHaiMSN311HeaderFragment extends BaseMSNHeaderFragment {
 
     @Override
     public void loadRecInvsFail(String message) {
+    }
+
+    @Override
+    public void loadRecInvsComplete() {
+
     }
 
     @Override

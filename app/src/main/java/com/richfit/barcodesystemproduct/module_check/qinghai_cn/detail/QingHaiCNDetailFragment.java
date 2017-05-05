@@ -76,12 +76,12 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
             final String materialNum = list[Global.MATERIAL_POS];
             L.e("物料条件 = " + materialNum);
 //            if (mMaterialCondition.isFocused()) {
-                if (!TextUtils.isEmpty(materialNum) && materialNum.equals(getString(mMaterialCondition))) {
-                    //如果两次输入的条件一致那么直接返回
-                    return;
-                }
-                mMaterialCondition.setText(materialNum);
-                startLoadInventory(mCurrentPageNum + 1);
+            if (!TextUtils.isEmpty(materialNum) && materialNum.equals(getString(mMaterialCondition))) {
+                //如果两次输入的条件一致那么直接返回
+                return;
+            }
+            mMaterialCondition.setText(materialNum);
+            startLoadInventory(mCurrentPageNum + 1);
 //            }
         } else if (list != null && list.length == 1) {
             final String location = list[Global.LOCATION_POS];
@@ -225,7 +225,7 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
             }
         }
         mTextViews.get(mCurrentPageNum)
-                .setBackgroundColor(ContextCompat.getColor(mActivity, R.color.white));
+                .setBackgroundColor(ContextCompat.getColor(mActivity, R.color.colorPrimary));
     }
 
     /**
@@ -239,7 +239,7 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
         textView.setText(mTitles.get(page));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         textView.setTextColor(ContextCompat.getColor(mActivity, R.color.black));
-        textView.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.grey_500));
+        textView.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.indigo_a100));
         textView.setWidth((int) (UiUtil.getScreenWidth(mActivity) * 1.0 / TITLE_SIZE_IN_PAGE));
         textView.setHeight(BOTTOM_BAR_HEIGHT);
         textView.setGravity(Gravity.CENTER);
@@ -260,7 +260,7 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
         layoutParams.height = BOTTOM_BAR_HEIGHT;
         layoutParams.gravity = Gravity.CENTER;
         view.setLayoutParams(layoutParams);
-        view.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.grey_500));
+        view.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.indigo_a100));
         return view;
     }
 
@@ -282,8 +282,8 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
     private void jump(int position) {
         int size = mTextViews.size();
         for (int i = 0; i < size; i++)
-            mTextViews.get(i).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.grey_500));
-        mTextViews.get(position).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.teal_a200));
+            mTextViews.get(i).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.indigo_a100));
+        mTextViews.get(position).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.teal_a400));
         //自动滑动
         if (position % TITLE_SIZE_IN_PAGE == 0) {
             int firstTitleIndex = position / TITLE_SIZE_IN_PAGE;
@@ -334,8 +334,7 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
         setupBottomBar(tempTotalPage);
         setRefreshing(true);
         if (mAdapter == null) {
-            mAdapter = new CNDetailAdapter(mActivity, R.layout.item_cn_detail, refData.checkList,
-                    mSubFunEntity.parentNodeConfigs, mSubFunEntity.childNodeConfigs);
+            mAdapter = new CNDetailAdapter(mActivity, R.layout.item_cn_detail, refData.checkList);
             mRecycleView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
         } else {
@@ -461,5 +460,8 @@ public class QingHaiCNDetailFragment extends BaseFragment<CNDetailPresenterImp>
         super.retry(retryAction);
     }
 
-
+    @Override
+    public void _onPause() {
+        super._onPause();
+    }
 }

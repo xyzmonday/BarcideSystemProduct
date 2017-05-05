@@ -21,10 +21,8 @@ import static com.richfit.barcodesystemproduct.R.id.materialNum;
 
 public class RSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
-    public RSNDetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes,
-                                   List<RowConfig> parentNodeConfigs,
-                                   List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public RSNDetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -66,11 +64,4 @@ public class RSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
     public void notifyNodeChanged(int position) {
 
     }
-
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
-
-
 }

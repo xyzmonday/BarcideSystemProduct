@@ -168,9 +168,6 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
         //批次
         bundle.putString(Global.EXTRA_BATCH_FLAG_KEY, node.batchFlag);
 
-        //额外字段的数据
-        bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
-
         //下架仓位集合
         bundle.putStringArrayList(Global.EXTRA_LOCATION_LIST_KEY, sendLocations);
 
@@ -362,9 +359,6 @@ public class DSNDetailPresenterImp extends BaseDetailPresenterImp<IDSNDetailView
                     data.specialInvNum = loc.specialInvNum;
                     data.specialConvert = loc.specialConvert;
                     data.locationId = loc.id;
-
-                    //额外字段信息
-                    data.mapExt = UiUtil.copyMap(target.mapExt, loc.mapExt);
                     datas.add(data);
                 }
             }

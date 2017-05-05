@@ -632,8 +632,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         sb.append(" where biz_type = ? ");
         selectionList.add(bizType);
         //注意这里的缓存标识
-        sb.append(" and trans_flag = ?");
+        sb.append(" and (trans_flag = ? or trans_flag = ?)");
         selectionList.add("0");
+        selectionList.add("1");
         switch (bizType) {
             case "16":// 其他入库-无参考
             case "25":// 其他出库-无参考
@@ -838,8 +839,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         ArrayList<ReferenceEntity> datas = new ArrayList<>();
 
         clearStringBuffer();
-        StringBuffer sql = new StringBuffer();
-        sql.append("select id,voucher_date,ref_code_id,ref_code,biz_type,ref_type,move_type,inv_type,")
+        sb.append("select id,voucher_date,ref_code_id,ref_code,biz_type,ref_type,move_type,inv_type,")
                 .append("supplier_id,supplier_code,created_by ")
                 .append("from MTL_TRANSACTION_HEADERS ")
                 .append(" where trans_flag = '0' or trans_flag = '1'")
@@ -847,7 +847,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         ReferenceEntity header = null;
         int index;
         //1. 读取抬头的信息
-        Cursor cursor = db.rawQuery(sql.toString(), null);
+        Cursor cursor = db.rawQuery(sb.toString(), null);
         while (cursor.moveToNext()) {
             index = -1;
             header = new ReferenceEntity();
@@ -865,7 +865,7 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             datas.add(header);
         }
         cursor.close();
-        sql.setLength(0);
+        clearStringBuffer();
         //2. 读取明细
         if (datas.size() == 0) {
             return datas;
@@ -932,6 +932,12 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 detail.workName = cursor.getString(++index);
                 detail.invCode = cursor.getString(++index);
                 detail.invName = cursor.getString(++index);
+
+                //將工廠和庫存地點信息強制賦值到抬頭
+                refData.workId = detail.workId;
+                refData.invId = detail.invId;
+                refData.recWorkId = detail.recWorkId;
+                refData.recInvId = detail.recInvId;
                 refData.billDetailList.add(detail);
             }
             cursor.close();
@@ -948,18 +954,15 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      */
     @Override
     public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
-
         SQLiteDatabase db = getWritableDB();
-
         //删除缓存
         db.delete("MTL_TRANSACTION_HEADERS", null, null);
         db.delete("MTL_TRANSACTION_LINES", null, null);
         db.delete("MTL_TRANSACTION_LINES_LOCATION", null, null);
         db.delete("MTL_TRANSACTION_LINES_SPLIT", null, null);
-
         //删除单据
-        db.delete("MTL_PO_HEADERS", null, null);
-        db.delete("MTL_PO_LINES", null, null);
+//        db.delete("MTL_PO_HEADERS", null, null);
+//        db.delete("MTL_PO_LINES", null, null);
         db.close();
     }
 

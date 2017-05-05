@@ -6,10 +6,8 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.basetreerv.CommonTreeAdapter;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by monday on 2017/2/28.
@@ -20,10 +18,8 @@ public class QingHaiAODetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
 
     public QingHaiAODetailAdapter(Context context, int layoutId,
-                                  List<RefDetailEntity> allNodes,
-                                  List<RowConfig> parentNodeConfigs,
-                                  List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+                                  List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -80,10 +76,5 @@ public class QingHaiAODetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
         deleteNode.qmCertificate = "";
         deleteNode.inspectionResult = "";
         notifyItemChanged(position);
-    }
-
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
     }
 }

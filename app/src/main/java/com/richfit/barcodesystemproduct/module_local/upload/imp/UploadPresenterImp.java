@@ -1,10 +1,11 @@
-package com.richfit.barcodesystemproduct.module_local.upload;
+package com.richfit.barcodesystemproduct.module_local.upload.imp;
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
+import com.richfit.barcodesystemproduct.module_local.upload.UploadContract;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.L;
@@ -29,10 +30,10 @@ import io.reactivex.subscribers.ResourceSubscriber;
 public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.View>
         implements UploadContract.Presenter {
 
-    private static final String BIZTYPEDESC_KEY = "bizTypeDesc";
-    private static final String REFTYPEDESC_KEY = "refTypeDesc";
-    private static final String TRANSTOSAPFLAG_KEY = "transTosapFlag";
-    int mTaskNum = -1;
+    protected static final String BIZTYPE_DESC_KEY = "bizTypeDesc";
+    protected static final String REFTYPE_DESC_KEY = "refTypeDesc";
+    protected static final String TRANSTOSAPFLAG_KEY = "transTosapFlag";
+    protected int mTaskNum = -1;
 
     UploadContract.View mView;
     List<ReferenceEntity> mRefDatas;
@@ -59,7 +60,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     @Override
     public void readUploadData(int bizType) {
         mView = getView();
-
+        mRefDatas.clear();
         addSubscriber(mRepository.readTransferedData(bizType)
                 .filter(list -> list != null && list.size() > 0)
                 .flatMap(list -> Flowable.fromIterable(list))
@@ -67,6 +68,15 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                 .map(refData -> wrapper2Results(refData, true))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new ResourceSubscriber<ArrayList<ResultEntity>>() {
+
+                    @Override
+                    protected void onStart() {
+                        super.onStart();
+                        if(mView != null) {
+                            mView.startReadUploadData();
+                        }
+                    }
+
                     @Override
                     public void onNext(ArrayList<ResultEntity> results) {
                         if (mView != null) {
@@ -91,6 +101,9 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
 
     }
 
+    /**
+     * 上传出入库离线数据
+     */
     @Override
     public void uploadCollectedDataOffLine() {
         mView = getView();
@@ -110,7 +123,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                             return mRepository.uploadCollectionDataOffline(results);
                         })
                         .flatMap(message -> submitData2SAPInner(message))
-                        .doOnComplete(() -> mRepository.deleteOfflineDataAfterUploadSuccess("", "", "", ""))
+                        .doOnComplete(() -> mRepository.deleteOfflineDataAfterUploadSuccess("", "0", "", ""))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new ResourceSubscriber<String>() {
 
@@ -156,16 +169,6 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     }
 
     @Override
-    public void uploadInspectionDataOffLine() {
-
-    }
-
-    @Override
-    public void uploadCheckDataOffline() {
-
-    }
-
-    @Override
     public void resetStateAfterUpload() {
         mRefDatas.clear();
         mTaskNum = -1;
@@ -179,7 +182,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
      * @param materialDoc:物料凭证
      * @return
      */
-    private Flowable<String> submitData2SAPInner(String materialDoc) {
+    protected Flowable<String> submitData2SAPInner(String materialDoc) {
 
         if (mRefDatas == null && mTaskNum < 0 && mTaskNum >= mRefDatas.size()) {
             return Flowable.just("完成!");
@@ -197,14 +200,15 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
         mExtraTransMap.clear();
         mExtraTransMap.put("centerCost", centerCost);
         mExtraTransMap.put("projectNum", projectNum);
+        mExtraTransMap.put("inspectionType",inspectionType);
         HashMap<String, String> map = getDescByCode(bizType, refType);
         String transToSapFlag = map.get(TRANSTOSAPFLAG_KEY);
         mMessageArray.get(mTaskNum).materialDoc = materialDoc;
         if (TextUtils.isEmpty(transToSapFlag)) {
             //表示该业务不需要转储
-            return mRepository.setTransFlag(bizType,transId).flatMap(a -> Flowable.just("完成!"));
+            return mRepository.setTransFlag(bizType, transId).flatMap(a -> Flowable.just("完成!"));
         }
-        return mRepository.setTransFlag(bizType,transId).flatMap(a -> Flowable.just("完成!")).zipWith(mRepository.transferCollectionData(transId, bizType, refType,
+        return mRepository.setTransFlag(bizType, transId).flatMap(a -> Flowable.just("完成!")).zipWith(mRepository.transferCollectionData(transId, bizType, refType,
                 userId, voucherDate, transToSapFlag, mExtraTransMap), (s1, s2) -> s2);
     }
 
@@ -214,7 +218,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
      * @param refData
      * @return
      */
-    private ArrayList<ResultEntity> wrapper2Results(final ReferenceEntity refData, boolean isSave) {
+    protected ArrayList<ResultEntity> wrapper2Results(final ReferenceEntity refData, boolean isSave) {
         if (mRefDatas == null) {
             mRefDatas = new ArrayList<>();
         }
@@ -228,8 +232,13 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
             info.transId = refData.transId;
             info.refNum = refData.recordNum;
             info.refCodeId = refData.refCodeId;
-            info.bizTypeDesc = map.get(BIZTYPEDESC_KEY);
-            info.refTypeDesc = map.get(REFTYPEDESC_KEY);
+            info.workId = refData.workId;
+            info.invId = refData.invId;
+            info.recWorkId = refData.recWorkId;
+            info.recInvId = refData.recWorkId;
+
+            info.bizTypeDesc = map.get(BIZTYPE_DESC_KEY);
+            info.refTypeDesc = map.get(REFTYPE_DESC_KEY);
             mMessageArray.put(mTotalUploadDataNum++, info);
             info.totalTaskNum = mTotalUploadDataNum;
         }
@@ -285,21 +294,31 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
             result.invCode = item.invCode;
             result.modifyFlag = "N";
 
-            result.businessTypeDesc = map.get(BIZTYPEDESC_KEY);
-            result.refTypeDesc = map.get(REFTYPEDESC_KEY);
+            result.businessTypeDesc = map.get(BIZTYPE_DESC_KEY);
+            result.refTypeDesc = map.get(REFTYPE_DESC_KEY);
             results.add(result);
         }
         return results;
     }
 
-    private HashMap<String, String> getDescByCode(String businessType, String refType) {
+    protected HashMap<String, String> getDescByCode(String businessType, String refType) {
         HashMap<String, String> map = new HashMap<>();
         String businessTypeDesc = null;
         String refTypeDesc = null;
         String transToSapFlag = null;
         switch (businessType) {
+            case "C01":
+                businessTypeDesc = "明盘-无参考";
+                transToSapFlag = "";
+                break;
+            case "C02":
+                businessTypeDesc = "盲盘-无参考";
+                transToSapFlag = "";
+                break;
             case "00":
             case "01":
+                businessTypeDesc = "外观验收";
+                transToSapFlag = "";
                 break;
             case "11":// 采购入库-101
             case "12":// 采购入库-103
@@ -355,8 +374,8 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                     break;
             }
         }
-        map.put(BIZTYPEDESC_KEY, businessTypeDesc);
-        map.put(REFTYPEDESC_KEY, refTypeDesc);
+        map.put(BIZTYPE_DESC_KEY, businessTypeDesc);
+        map.put(REFTYPE_DESC_KEY, refTypeDesc);
         map.put(TRANSTOSAPFLAG_KEY, transToSapFlag);
         return map;
     }

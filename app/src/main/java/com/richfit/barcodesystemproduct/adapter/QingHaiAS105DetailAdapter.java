@@ -9,10 +9,8 @@ import com.richfit.common_lib.basetreerv.MultiItemTypeTreeAdapter;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by monday on 2017/3/7.
@@ -20,10 +18,8 @@ import java.util.Map;
 
 public class QingHaiAS105DetailAdapter extends MultiItemTypeTreeAdapter<RefDetailEntity> {
 
-    public QingHaiAS105DetailAdapter(Context context, List<RefDetailEntity> allNodes,
-                                     List<RowConfig> parentNodeConfigs,
-                                     List<RowConfig> childNodeConfigs) {
-        super(context, allNodes, parentNodeConfigs, childNodeConfigs);
+    public QingHaiAS105DetailAdapter(Context context, List<RefDetailEntity> allNodes) {
+        super(context, allNodes);
         addItemViewDelegate(Global.PARENT_NODE_HEADER_TYPE,new QingHaiAS105ParentHeaderItemDelegate());
         addItemViewDelegate(Global.CHILD_NODE_HEADER_TYPE,new ASYChildHeaderItemDelegate());
         addItemViewDelegate(Global.CHILD_NODE_ITEM_TYPE,new ASYChildItemDelegate());
@@ -45,8 +41,4 @@ public class QingHaiAS105DetailAdapter extends MultiItemTypeTreeAdapter<RefDetai
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return mVisibleNodes.get(position).mapExt;
-    }
 }

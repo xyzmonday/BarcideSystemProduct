@@ -8,7 +8,7 @@ def getProductName() {
 }
 //获取当前系统的时间
 def releaseTime() {
-    return new Date().format("yyyy-MM-dd-HH-mm-ss")
+    return new Date().format("yyyy-MM-dd_HH_mm_ss")
 }
 
 android {

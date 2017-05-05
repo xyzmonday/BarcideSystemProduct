@@ -123,50 +123,50 @@ public class CNHeaderPresenterImp extends BaseHeaderPresenterImp<ICNHeaderView>
     }
 
     @Override
-    public void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId) {
+    public void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkDate) {
         mView = getView();
 
         RxSubscriber<ReferenceEntity> subscriber =
                 mRepository.getCheckInfo(userId, bizType,
-                checkLevel, checkSpecial, storageNum, workId, invId, "")
-                .filter(data -> data != null)
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext, "正在初始化本次盘点....") {
-                    @Override
-                    public void _onNext(ReferenceEntity refData) {
-                        if (mView != null) {
-                            mView.getCheckInfoSuccess(refData);
-                        }
-                    }
+                        checkLevel, checkSpecial, storageNum, workId, invId, "", checkDate)
+                        .filter(data -> data != null)
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext, "正在初始化本次盘点....") {
+                            @Override
+                            public void _onNext(ReferenceEntity refData) {
+                                if (mView != null) {
+                                    mView.getCheckInfoSuccess(refData);
+                                }
+                            }
 
-                    @Override
-                    public void _onNetWorkConnectError(String message) {
-                        if (mView != null) {
-                            mView.networkConnectError(Global.RETRY_LOAD_REFERENCE_ACTION);
-                        }
-                    }
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_LOAD_REFERENCE_ACTION);
+                                }
+                            }
 
-                    @Override
-                    public void _onCommonError(String message) {
-                        if (mView != null) {
-                            mView.getCheckInfoFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.getCheckInfoFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onServerError(String code, String message) {
-                        if (mView != null) {
-                            mView.getCheckInfoFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.getCheckInfoFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onComplete() {
-                        if(mView != null) {
-                            mView.bindCommonHeaderUI();
-                        }
-                    }
-                });
+                            @Override
+                            public void _onComplete() {
+                                if (mView != null) {
+                                    mView.bindCommonHeaderUI();
+                                }
+                            }
+                        });
         addSubscriber(subscriber);
     }
 

@@ -59,7 +59,6 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
                 showMessage("未获取到设备Id,请检查您的条码内容是否正确");
                 return;
             }
-
             if (cbSingle.isChecked() && materialNum.equalsIgnoreCase(getString(etMaterialNum))) {
                 //如果已经选中单品，那么说明已经扫描过一次。必须保证每一次的物料都一样
                 saveCollectedData();
@@ -146,7 +145,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
         showMessage(message);
         //禁用掉发出库位，以便禁止业务继续
         mSendInvs.clear();
-        if(mSendInvAdapter != null) {
+        if (mSendInvAdapter != null) {
             mSendInvAdapter.notifyDataSetChanged();
         }
     }
@@ -182,6 +181,12 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
     }
 
     @Override
+    protected void clearAllUI() {
+        super.clearAllUI();
+        clearCommonUI(tvDeviceName, tvDeviceLocation);
+    }
+
+    @Override
     public boolean checkCollectedDataBeforeSave() {
         if (isEmpty(mDeviceId)) {
             showMessage("设备Id为空");
@@ -211,12 +216,12 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
 
         //检查发出仓位
         final int sendLocPos = spSendLoc.getSelectedItemPosition();
-        if(sendLocPos <= 0) {
+        if (sendLocPos <= 0) {
             showMessage("请先选择发出仓位");
             return false;
         }
         final String sendLocation = mInventoryDatas.get(sendLocPos).location;
-        if(!TextUtils.isEmpty(sendLocation) && sendLocation.length() != 11) {
+        if (!TextUtils.isEmpty(sendLocation) && sendLocation.length() != 11) {
             showMessage("您选择的发出仓位格式不合理");
             return false;
         }
@@ -227,7 +232,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
             return false;
         }
 
-        if(isWareHouseSame && getString(autoRecLoc).length() != 11) {
+        if (isWareHouseSame && getString(autoRecLoc).length() != 11) {
             showMessage("您输入的接收仓位格式不对");
             return false;
         }
@@ -247,7 +252,7 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
 
     @Override
     public void _onPause() {
-        clearCommonUI(tvDeviceLocation,tvDeviceName);
+        clearCommonUI(tvDeviceLocation, tvDeviceName);
         super._onPause();
     }
 

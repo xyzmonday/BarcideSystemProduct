@@ -21,12 +21,10 @@ import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.WorkEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -66,11 +64,6 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
         mWorks = new ArrayList<>();
         mAutoDatas = new ArrayList<>();
     }
@@ -107,6 +100,9 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
                 .subscribe(a -> mPresenter.getAutoCompleteList(mWorks.get(spWork.getSelectedItemPosition()).workCode,
                         getString(etAutoComp), 100, getOrgFlag(), mBizType));
 
+        //如果是离线直接获取缓存，不能让用户删除缓存
+        if (mUploadMsgEntity != null && mPresenter != null && mPresenter.isLocal())
+            return;
         //删除历史数据
         mPresenter.deleteCollectionData("", mBizType, Global.USER_ID, mCompanyCode);
     }
@@ -117,39 +113,12 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
         if ("27".equalsIgnoreCase(mBizType)) {
             tvAutoCompName.setText("项目编号");
         }
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
     }
 
     @Override
     public void initData() {
         SPrefUtil.saveData(mBizType, "0");
         etTransferDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-    }
-
-    /**
-     * 读取抬头配置文件成功
-     *
-     * @param configs
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    /**
-     * 读取抬头配置文件失败
-     *
-     * @param message
-     */
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
-    }
-
-    @Override
-    public void readConfigsComplete() {
         //获取发出工厂列表
         mPresenter.getWorks(getOrgFlag());
     }
@@ -230,10 +199,6 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
             }
             mRefData.bizType = mBizType;
             mRefData.voucherDate = getString(etTransferDate);
-
-            //保存额外字段
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
         }
     }
 

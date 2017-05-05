@@ -32,11 +32,9 @@ import com.richfit.domain.bean.BottomMenuEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -85,8 +83,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
     String mCacheQuantity;
     /*缓存的库存地点*/
     String mCacheInvCode;
-    /*额外字段的缓存信息*/
-    Map<String, Object> mCachedExtraLineMap;
     /*库存地点*/
     List<InvEntity> mInvDatas;
     InvAdapter mInvAdapter;
@@ -119,14 +115,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
     }
 
     @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE);
-    }
-
-
-    @Override
     public void initEvent() {
         /*扫描后者手动输入物资条码*/
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> {
@@ -140,23 +128,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
                 .itemSelections(spRefLine)
                 .filter(position -> position > 0)
                 .subscribe(position -> getTransferInfoSingle(position.intValue()));
-        //监听到货数量
-//        RxTextView.textChanges(etQuantity)
-//                .debounce(500, TimeUnit.MILLISECONDS, rx.android.schedulers.AndroidSchedulers.mainThread())
-//                .filter(str -> !TextUtils.isEmpty(str) && str.length() > 0)
-//                .subscribe(str -> tvBalanceQuantity.setText(str));
-    }
-
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
     }
 
     @Override
@@ -172,10 +143,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
         }
         if (TextUtils.isEmpty(mRefData.voucherDate)) {
             showMessage("请先在抬头界面选择过账日期");
-            return;
-        }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
             return;
         }
         etMaterialNum.setEnabled(true);
@@ -263,7 +230,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
         if (cache != null) {
             mCacheQuantity = cache.totalQuantity;
             mCacheInvCode = cache.invCode;
-            mCachedExtraLineMap = cache.mapExt;
         }
     }
 
@@ -295,7 +261,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
         if (TextUtils.isEmpty(getString(etBatchFlag))) {
             etBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
         }
-        bindExtraUI(mSubFunEntity.collectionConfigs, mCachedExtraLineMap);
         //获取库存地点
         mPresenter.getInvsByWorkId(lineData.workId, 0);
     }
@@ -353,8 +318,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
             mRefLineAdapter.notifyDataSetChanged();
             spRefLine.setBackgroundColor(0);
         }
-        //清除额外资源
-        clearExtraUI(mSubFunEntity.collectionConfigs);
     }
 
     /**
@@ -418,10 +381,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
             }
         }
 
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请先输入必输字段");
-            return false;
-        }
         return true;
     }
 
@@ -513,9 +472,6 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
             result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;
             result.quantity = getString(etQuantity);
             result.modifyFlag = "N";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt);
-
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -597,6 +553,7 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
 
     @Override
     public void _onPause() {
+        super._onPause();
         clearAllUI();
     }
 

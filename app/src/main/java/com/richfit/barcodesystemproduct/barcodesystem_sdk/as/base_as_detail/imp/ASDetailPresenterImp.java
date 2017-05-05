@@ -15,13 +15,11 @@ import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.TreeNode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -165,9 +163,6 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
                     //父节点的位置
                     bundle.putInt(Global.EXTRA_POSITION_KEY, indexOf);
 
-                    //父节点的扩展字段
-                    bundle.putSerializable(Global.COLLECT_EXTRA_MAP_KEY, (Serializable) parentNode.mapExt);
-
                     //父节点的退货交货数量
                     bundle.putString(Global.EXTRA_RETURN_QUANTITY_KEY, parentNode.returnQuantity);
 
@@ -205,8 +200,6 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
                     //实收数量
                     bundle.putString(Global.EXTRA_QUANTITY_KEY, node.quantity);
 
-                    //子节点的额外字段的数据
-                    bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
 
                     intent.putExtras(bundle);
                     Activity activity = (Activity) mContext;
@@ -351,8 +344,6 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
             cachedEntity.lineNum105 = node.lineNum105;
             cachedEntity.insLot = node.insLot;
 
-            //处理父节点的缓存
-            cachedEntity.mapExt = UiUtil.copyMap(node.mapExt, cachedEntity.mapExt);
             nodes.add(cachedEntity);
         }
 
@@ -384,8 +375,6 @@ public class ASDetailPresenterImp extends BaseDetailPresenterImp<IASDetailView>
                     childNode.transLineId = location.transLineId;
                     //LocationId
                     childNode.locationId = location.id;
-                    //处理子节点的缓存
-                    childNode.mapExt = location.mapExt;
                     addTreeInfo(parentNode, childNode, nodes);
                 }
             }

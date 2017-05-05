@@ -29,11 +29,9 @@ import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -97,8 +95,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
     private LocationAdapter mLocationAdapter;
     /*当前操作的明细行号*/
     protected String mSelectedRefLineNum;
-    /*缓存的仓位级别的额外字段*/
-    private Map<String, Object> mCachedExtraLocationMap;
     /*批次一致性检查*/
     protected boolean isBatchValidate = true;
 
@@ -134,44 +130,38 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         mInventoryDatas = new ArrayList<>();
     }
 
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
-    }
 
     /**
      * 注册所有UI事件
      */
     @Override
     public void initEvent() {
-       /*扫描后者手动输入物资条码*/
+        //扫描后者手动输入物资条码
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> {
             hideKeyboard(etMaterialNum);
             loadMaterialInfo(materialNum, getString(etBatchFlag));
         });
 
-        /*监测批次修改，如果修改了批次那么需要重新刷新库存信息和用户已经输入的信息.
-         这里需要注意的是，如果库存地点没有初始化完毕，修改批次不刷新UI。*/
+        //监测批次修改，如果修改了批次那么需要重新刷新库存信息和用户已经输入的信息.
+        //这里需要注意的是，如果库存地点没有初始化完毕，修改批次不刷新UI
         RxTextView.textChanges(etBatchFlag)
                 .filter(str -> !TextUtils.isEmpty(str))
                 .debounce(1, TimeUnit.SECONDS, AndroidSchedulers.mainThread())
                 .subscribe(batch -> resetCommonUIPartly());
 
-        /*监听单据行*/
+        //监听单据行
         RxAdapterView.itemSelections(spRefLine)
                 .filter(position -> position > 0)
                 .subscribe(position -> bindCommonCollectUI());
 
-        /*库存地点，选择库存地点加载库存数据*/
+        //库存地点，选择库存地点加载库存数据
         RxAdapterView.itemSelections(spInv)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 //注意工厂和库存地点必须使用行里面的
                 .subscribe(position -> loadInventory(position.intValue()));
 
-       /*下架仓位,选择下架仓位刷新库存数量，并且获取缓存*/
+        //下架仓位,选择下架仓位刷新库存数量，并且获取缓存
         RxAdapterView
                 .itemSelections(spLocation)
                 .filter(position -> (mInventoryDatas != null && mInventoryDatas.size() > 0 &&
@@ -181,31 +171,11 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
                     getTransferSingle(position);
                 });
 
-       /*单品(注意单品仅仅控制实收数量，累计数量是由行信息里面控制)*/
+        //单品(注意单品仅仅控制实收数量，累计数量是由行信息里面控制)
         cbSingle.setOnCheckedChangeListener((buttonView, isChecked) -> {
             etQuantity.setText(isChecked ? "1" : "");
             etQuantity.setEnabled(!isChecked);
         });
-    }
-
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
     /**
@@ -235,10 +205,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         }
         if (isEmpty(mRefData.voucherDate)) {
             showMessage("请先在抬头界面选择过账日期");
-            return;
-        }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
             return;
         }
         String transferKey = (String) SPrefUtil.getData(mBizType + mRefType, "0");
@@ -323,8 +289,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         //先将库存地点选择器打开，获取缓存后在判断是否需要锁定
         spInv.setEnabled(true);
 
-        //初始化额外字段的数据,注意这仅仅是服务器返回的数据，不含有任何缓存数据。
-        bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt);
         if (!cbSingle.isChecked())
             mPresenter.getInvsByWorkId(lineData.workId, getOrgFlag());
     }
@@ -440,7 +404,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         final String refType = mRefData.refType;
         final String bizType = mRefData.bizType;
         final String refLineId = lineData.refLineId;
-        mCachedExtraLocationMap = null;
         isBatchValidate = false;
         mPresenter.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
                 getString(etMaterialNum), batchFlag, location, lineData.refDoc,
@@ -502,7 +465,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
 
                 //注意它没有匹配成功，可能是批次没有匹配也可能是仓位没有匹配。
                 if (isMatch) {
-                    mCachedExtraLocationMap = cachedItem.mapExt;
                     tvLocQuantity.setText(cachedItem.quantity);
                     break;
                 }
@@ -528,9 +490,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
 
     @Override
     public void loadCacheSuccess() {
-//        showMessage("获取缓存成功");
-        /*绑定仓位级别的额外数据*/
-        bindExtraUI(mSubFunEntity.locationConfigs, mCachedExtraLocationMap);
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();
         }
@@ -571,10 +530,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             mInventoryDatas.clear();
             mLocationAdapter.notifyDataSetChanged();
         }
-
-        //清除额外资源
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
     }
 
     /**
@@ -682,19 +637,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         if (!refreshQuantity(cbSingle.isChecked() ? "1" : getString(etQuantity))) {
             return false;
         }
-
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
         return true;
     }
 
@@ -745,9 +687,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
                     "Y" : "N";
             result.modifyFlag = "N";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, lineData.mapExt, mCachedExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -774,6 +713,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
 
     @Override
     public void _onPause() {
+        super._onPause();
         clearAllUI();
         clearCommonUI(etMaterialNum, etBatchFlag);
     }

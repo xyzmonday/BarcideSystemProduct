@@ -19,6 +19,7 @@ import com.richfit.domain.bean.UpdateEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 

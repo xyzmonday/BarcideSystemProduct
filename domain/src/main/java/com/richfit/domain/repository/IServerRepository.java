@@ -170,4 +170,5 @@ public interface IServerRepository extends IRepository {
 
     Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results);
 
+    Flowable<String> uploadCheckDataOffline(List<ResultEntity> results);
 }

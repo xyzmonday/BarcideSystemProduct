@@ -117,7 +117,6 @@ public class QingHaiUbSto351LCollectFragment extends BaseMSCollectFragment {
         final String bizType = mRefData.bizType;
         final String refLineId = lineData.refLineId;
         mCachedBatchFlag = "";
-        mCachedExtraLocationMap = null;
         mPresenter.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
                 batchFlag, locationCombine, lineData.refDoc, UiUtil.convertToInt(lineData.refDocItem), Global.USER_ID);
     }

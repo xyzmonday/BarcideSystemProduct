@@ -85,6 +85,11 @@ public class LQDetailFragment extends BaseFragment<LQDetailPresenterImp>
     }
 
     @Override
+    public void _onPause() {
+        super._onPause();
+    }
+
+    @Override
     public void loadInventoryFail(String message) {
         showMessage(message);
     }

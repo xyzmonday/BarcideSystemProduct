@@ -65,7 +65,7 @@ public class AdapterTestActivity extends AppCompatActivity implements IAdapterSt
 
     private void initAdapter() {
         if (mAdapter == null) {
-            mAdapter = new AdapterTest(this, R.layout.item_asy_detail_parent_header, mDatas, null, null);
+            mAdapter = new AdapterTest(this, R.layout.item_asy_detail_parent_header, mDatas);
             mRecyclerview.setAdapter(mAdapter);
             mAdapter.setAdapterStateListener(this);
         } else {

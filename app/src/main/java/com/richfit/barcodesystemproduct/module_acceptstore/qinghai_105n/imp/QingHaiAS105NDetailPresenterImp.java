@@ -14,7 +14,6 @@ import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.TreeNode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,9 +69,6 @@ public class QingHaiAS105NDetailPresenterImp extends ASDetailPresenterImp {
                     //父节点的位置
                     bundle.putInt(Global.EXTRA_POSITION_KEY, indexOf);
 
-                    //父节点的扩展字段
-                    bundle.putSerializable(Global.COLLECT_EXTRA_MAP_KEY, (Serializable) parentNode.mapExt);
-
                     //父节点的退货交货数量
                     bundle.putString(Global.EXTRA_RETURN_QUANTITY_KEY, parentNode.returnQuantity);
 
@@ -109,9 +105,6 @@ public class QingHaiAS105NDetailPresenterImp extends ASDetailPresenterImp {
 
                     //实收数量
                     bundle.putString(Global.EXTRA_QUANTITY_KEY, node.quantity);
-
-                    //子节点的额外字段的数据
-                    bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
 
                     intent.putExtras(bundle);
                     Activity activity = (Activity) mContext;

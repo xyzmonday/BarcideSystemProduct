@@ -68,8 +68,7 @@ public class QingHaiAS105DetailFragment extends BaseASDetailFragment<QingHaiAS10
     public void showNodes(List<RefDetailEntity> allNodes) {
         saveTransId(allNodes);
         if (mAdapter == null) {
-            mAdapter = new QingHaiAS105DetailAdapter(mActivity, allNodes, mSubFunEntity.parentNodeConfigs,
-                    mSubFunEntity.childNodeConfigs);
+            mAdapter = new QingHaiAS105DetailAdapter(mActivity, allNodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mAdapter.setAdapterStateListener(this);

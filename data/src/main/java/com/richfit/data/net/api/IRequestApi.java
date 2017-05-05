@@ -127,6 +127,9 @@ public interface IRequestApi {
     @GET("uploadCollectionDataOffline")
     Flowable<Response<List<ErrorMessageEntity>>> uploadCollectionDataOffline(@Query("requestParam") String requestParam);
 
+    @GET("uploadCheckDataOffline")
+    Flowable<Response<List<ErrorMessageEntity>>> uploadCheckDataOffline(@Query("requestParam") String requestParam);
+
     @GET("getMaterialInfo")
     Flowable<Response<MaterialEntity>> getMaterialInfo(@Query("requestParam") String requestParam);
 

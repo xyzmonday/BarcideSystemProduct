@@ -50,6 +50,8 @@ public class InventoryEntity extends TreeNode{
      */
     public String specialInvNum;
     public String newFlag;//新增库存标识
+    public String invType;
+    public String userId;
 
 
     @Override

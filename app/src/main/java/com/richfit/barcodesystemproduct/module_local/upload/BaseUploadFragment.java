@@ -30,7 +30,7 @@ import java.util.List;
  * Created by monday on 2017/4/21.
  */
 
-public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresenterImp, ResultEntity>
+public abstract class BaseUploadFragment<P extends UploadContract.Presenter> extends BaseDetailFragment<P, ResultEntity>
         implements UploadContract.View, UploadFragmentDialog.OnEditLocalDataListener {
 
     private static final String UPLOAD_INFO_FRAGMENT_DIALOG = "upload_info_fragment_dialog";
@@ -80,6 +80,13 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
         startAutoRefresh();
     }
 
+    /**
+     * 读取数据之前，必须情况所有的历史明细数据
+     */
+    @Override
+    public void startReadUploadData() {
+        mDatas.clear();
+    }
 
     /**
      * 显示需要上传的明细数据
@@ -90,6 +97,7 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
     public void showUploadData(ArrayList<ResultEntity> results) {
         if (results == null || results.size() == 0)
             return;
+        //注意這裡是每一單回調一次
         mDatas.addAll(results);
         mShowUploadDataAdapter.notifyDataSetChanged();
     }
@@ -172,17 +180,13 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
             mDatas.clear();
             mShowUploadDataAdapter.notifyDataSetChanged();
         }
-        if (mUploadDialog != null) {
-            mUploadDialog.dismiss();
-            mUploadDialog = null;
-        }
         mPresenter.resetStateAfterUpload();
     }
 
     @Override
     public void onItemClick(UploadMsgEntity info) {
         L.e("点击的数据 = " + info);
-        if (TextUtils.isEmpty(info.bizType) || TextUtils.isEmpty(info.transId)) {
+        if (info == null || TextUtils.isEmpty(info.bizType)) {
             return;
         }
         Intent intent = new Intent(getContext(), MainActivity.class);
@@ -192,9 +196,8 @@ public abstract class BaseUploadFragment extends BaseDetailFragment<UploadPresen
         bundle.putString(Global.EXTRA_BIZ_TYPE_KEY, info.bizType);
         bundle.putString(Global.EXTRA_REF_TYPE_KEY, info.refType);
         bundle.putString(Global.EXTRA_CAPTION_KEY, info.bizTypeDesc);
-        bundle.putString(Global.EXTRA_TRANS_ID_KEY, info.transId);
-        bundle.putString(Global.EXTRA_REF_NUM_KEY, info.refNum);
         bundle.putInt(Global.EXTRA_MODE_KEY, Global.OFFLINE_MODE);
+        bundle.putParcelable(Global.EXTRA_UPLOAD_MSG_KEY, info);
         intent.putExtras(bundle);
         if (mDatas != null) {
             mDatas.clear();

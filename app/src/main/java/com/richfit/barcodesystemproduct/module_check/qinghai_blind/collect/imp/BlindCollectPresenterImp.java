@@ -38,7 +38,12 @@ public class BlindCollectPresenterImp extends BasePresenter<IBlindCollectView>
 
         RxSubscriber<MaterialEntity> subscriber =
                 mRepository.getMaterialInfo(queryType, materialNum)
-                        .filter(materialEntity -> materialEntity != null && !TextUtils.isEmpty(materialEntity.id))
+                        .flatMap(materialInfo -> {
+                            if (materialInfo != null && !TextUtils.isEmpty(materialInfo.id)) {
+                                return Flowable.just(materialInfo);
+                            }
+                            return Flowable.error(new Throwable("未获取到该物料信息"));
+                        })
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<MaterialEntity>(mContext, "正在获取盘点库存信息...") {
                             @Override

@@ -13,6 +13,7 @@ import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_header.imp.MSNHeaderPresenterImp;
 import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
+import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
@@ -20,14 +21,13 @@ import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.WorkEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
+import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
@@ -90,17 +90,8 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
         mRecWorks = new ArrayList<>();
         mRecInvs = new ArrayList<>();
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
-    @Override
-    protected void initView() {
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
-    }
 
     /**
      * 注册点击事件
@@ -120,7 +111,7 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
                         showMessage("发出工厂不能与接收工厂一致,请重新选择");
                         spSendWork.setSelection(0);
                     } else {
-                        mPresenter.getSendInvsByWorkId(mSendWorks.get(position.intValue()).workId,getOrgFlag());
+                        mPresenter.getSendInvsByWorkId(mSendWorks.get(position.intValue()).workId, getOrgFlag());
                     }
                 });
         //接收工厂
@@ -142,30 +133,17 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
                 .map(aInteger -> mRecWorks.get(aInteger.intValue()).workId)
                 .filter(workId -> !TextUtils.isEmpty(workId))
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(workId -> mPresenter.getRecInvsByWorkId(workId,getOrgFlag()));
+                .subscribe(workId -> mPresenter.getRecInvsByWorkId(workId, getOrgFlag()));
     }
 
     @Override
     public void initData() {
         SPrefUtil.saveData(mBizType, "0");
         etTransferDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-    }
-
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
-    }
-
-    @Override
-    public void readConfigsComplete() {
-        mPresenter.deleteCollectionData("",mBizType,Global.USER_ID,mCompanyCode);
+        //如果是离线直接获取缓存，不能让用户删除缓存
+        if (mUploadMsgEntity != null && mPresenter != null && mPresenter.isLocal())
+            return;
+        mPresenter.deleteCollectionData("", mBizType, Global.USER_ID, mCompanyCode);
     }
 
     @Override
@@ -194,7 +172,7 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
             mSendWorkAdapter.notifyDataSetChanged();
         }
 
-        if(llRecWork.getVisibility() != View.GONE) {
+        if (llRecWork.getVisibility() != View.GONE) {
             mRecWorks.clear();
             mRecWorks.addAll(works);
             //绑定适配器
@@ -212,6 +190,35 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
         showMessage(message);
     }
 
+    /**
+     * 發出工廠和接收工廠初始化完畢
+     */
+    @Override
+    public void loadWorksComplete() {
+        if (mUploadMsgEntity != null && !TextUtils.isEmpty(mUploadMsgEntity.workId)) {
+            selectedWork(mSendWorks,mUploadMsgEntity.workId,spSendWork);
+            selectedWork(mRecWorks,mUploadMsgEntity.workId,spRecWork);
+
+        }
+    }
+
+    private void selectedWork(List<WorkEntity> works, final String workId, Spinner sp) {
+        if (works == null || works.size() == 0 || TextUtils.isEmpty(workId))
+            return;
+        Flowable.just(works)
+                .map(list -> {
+                    int pos = -1;
+                    for (WorkEntity item : list) {
+                        ++pos;
+                        if (item.workId.equals(workId))
+                            return pos;
+                    }
+                    return pos;
+                })
+                .filter(pos -> pos.intValue() >= 0 && pos.intValue() < works.size())
+                .compose(TransformerHelper.io2main())
+                .subscribe(pos -> sp.setSelection(pos.intValue()),e->{},()-> lockUIUnderEditState(spSendWork,spRecWork));
+    }
 
     @Override
     public void _onPause() {
@@ -255,11 +262,6 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
 
             mRefData.bizType = mBizType;
             mRefData.moveType = getMoveType();
-
-            //保存额外字段
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
-
         } else {
             mRefData = null;
         }
@@ -269,7 +271,7 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
         //检查是否填写了必要的字段
         if (spSendWork.getSelectedItemPosition() == 0)
             return false;
-        if(spSendInv.getSelectedItemPosition() == 0) {
+        if (spSendInv.getSelectedItemPosition() == 0) {
             return false;
         }
         if (spRecWork.getSelectedItemPosition() == 0)
@@ -285,18 +287,13 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
         spSendInv.setSelection(0);
         spRecWork.setSelection(0);
         spRecInv.setSelection(0);
-        clearExtraUI(mSubFunEntity.headerConfigs);
-    }
-
-    @Override
-    public boolean isNeedShowFloatingButton() {
-        return false;
     }
 
     protected abstract String getMoveType();
 
     /**
      * 返回组织机构flag，0表示ERP的组织机构；1表示二级单位的组织机构
+     *
      * @return
      */
     protected abstract int getOrgFlag();

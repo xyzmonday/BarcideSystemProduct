@@ -193,10 +193,6 @@ public class Global {
     /*检验结果*/
     public static final String EXTRA_INSPECTION_RESULT_KEY = "extra_inspection_result";
 
-    /*子节点的额外字段的数据*/
-    public static final String LOCATION_EXTRA_MAP_KEY = "location_extra_map";
-    /*父节点额外字段的数据*/
-    public static final String COLLECT_EXTRA_MAP_KEY = "collect_extra_map";
     public static final String IMAGE_DEFAULT_FORMAT = ".jpeg";
     public static final String EXTRA_TAKE_PHOTO_TYPE = "extra_take_photo_type";
     public static final String EXTRA_TITLE_KEY = "extra_title";
@@ -214,8 +210,8 @@ public class Global {
     public static final String EXTRA_MOVE_CAUSE_KEY = "extra_move_cause";
     public static final String EXTRA_DECISION_CAUSE_KEY = "extra_decision_cause";
     public static final String EXTRA_CAPTION_KEY = "extra_caption";
-    public static final String EXTRA_TRANS_ID_KEY = "extra_trans_id";
-    public static final String EXTRA_MODE_KEY = "extra_mode_key";
+    public static final String EXTRA_UPLOAD_MSG_KEY = "extra_upload_msg";
+    public static final String EXTRA_MODE_KEY = "extra_mode";
 
     /*扫描物料和批次位置*/
     public static final int MATERIAL_POS = 2;

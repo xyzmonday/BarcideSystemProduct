@@ -78,9 +78,6 @@ public class QingHaiAS103DetailPresenterImp extends ASDetailPresenterImp {
         //发出仓位集合
         bundle.putStringArrayList(Global.EXTRA_LOCATION_LIST_KEY, sendLocations);
 
-        //子节点的额外字段的数据
-        bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
-
         intent.putExtras(bundle);
         Activity activity = (Activity) mContext;
         activity.startActivity(intent);
@@ -207,11 +204,8 @@ public class QingHaiAS103DetailPresenterImp extends ASDetailPresenterImp {
                     cachedEntity.quantity = loc.quantity;
                     cachedEntity.transLineId = loc.transLineId;
                     cachedEntity.locationId = loc.id;
-                    cachedEntity.mapExt = UiUtil.copyMap(cachedEntity.mapExt, loc.mapExt);
                 }
             }
-            //处理父节点的缓存
-            cachedEntity.mapExt = UiUtil.copyMap(node.mapExt, cachedEntity.mapExt);
             nodes.add(cachedEntity);
         }
         return nodes;

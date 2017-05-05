@@ -24,10 +24,8 @@ import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.AutoSwipeRefreshLayout;
 import com.richfit.domain.bean.BottomMenuEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.TreeNode;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -80,33 +78,6 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
         LinearLayoutManager lm = new LinearLayoutManager(mActivity, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(lm);
         mRecyclerView.setItemAnimator(new FadeInDownAnimator());
-        //获取配置信息(注意明细界面的额外字段不能每一次页面可见去获取)
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.DETAIL_PARENT_NODE_CONFIG_TYPE,
-                Global.DETAIL_CHILD_NODE_CONFIG_TYPE);
-    }
-
-    /**
-     * 当前明细界面的配置信息成功，那么绑定在rootId的容器上
-     *
-     * @param configs：配置信息列表，位置索引按照传入的configType的顺序分别保存配置信息。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.parentNodeConfigs = configs.get(0);
-        mSubFunEntity.childNodeConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.parentNodeConfigs, EXTRA_HORIZONTAL_ORIENTATION_TYPE);
-    }
-
-    /**
-     * 读取配置信息失败，清除配置信息
-     *
-     * @param message
-     */
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
     }
 
     /**
@@ -285,6 +256,11 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
             mAdapter.setOnItemClickListener(null);
             mAdapter.setOnItemEditAndDeleteListener(null);
         }
+    }
+
+    @Override
+    public void _onPause() {
+        super._onPause();
     }
 
     /**

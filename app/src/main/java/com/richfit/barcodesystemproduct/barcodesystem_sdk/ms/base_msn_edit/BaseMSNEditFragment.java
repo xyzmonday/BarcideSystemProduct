@@ -14,7 +14,6 @@ import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
@@ -28,7 +27,6 @@ import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -78,10 +76,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
     private LocationAdapter mSendLocAdapter;
     /*缓存的历史仓位数量*/
     protected List<RefDetailEntity> mHistoryDetailList;
-    /*缓存的仓位级别的额外字段*/
-    Map<String, Object> mExtraLocationMap;
-    /*缓存的行级别的额外字段*/
-    Map<String, Object> mExtraLineMap;
     protected String mSpecialInvFlag;
     protected String mSpecialInvNum;
     protected boolean isWareHouseSame;
@@ -98,12 +92,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         mInventoryDatas = new ArrayList<>();
     }
 
-    @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
 
     @Override
     public void initEvent() {
@@ -240,10 +228,14 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
-                break;
-            } else if (mSendLocation.equalsIgnoreCase(loc.location)) {
-                break;
+            if (mSendLocation.equals(locationCombine)) {
+                if (mSendLocation.equalsIgnoreCase(loc.location)) {
+                    break;
+                }
+            } else {
+                //如果在修改前选择的是寄售库存的仓位
+                if (locationCombine.equalsIgnoreCase(loc.locationCombine))
+                    break;
             }
         }
         if (pos >= 0 && pos < list.size()) {
@@ -376,8 +368,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
                             locQuantity = locationInfo.quantity;
                             recLocation = locationInfo.recLocation;
                             recBatchFlag = locationInfo.recBatchFlag;
-                            mExtraLocationMap = locationInfo.mapExt;
-                            mExtraLineMap = detail.mapExt;
                             break;
                         }
                     } else {
@@ -385,17 +375,12 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
                             locQuantity = locationInfo.quantity;
                             recLocation = locationInfo.recLocation;
                             recBatchFlag = locationInfo.recBatchFlag;
-                            mExtraLocationMap = locationInfo.mapExt;
-                            mExtraLineMap = detail.mapExt;
                             break;
                         }
                     }
                 }
             }
         }
-        //绑定额外字段数据
-        bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap);
-        bindExtraUI(mSubFunEntity.collectionConfigs, mExtraLineMap);
         tvLocQuantity.setText(locQuantity);
         //注意如果缓存中没有接收批次或者接收仓位，或者已经手动赋值,那么不用缓存更新它们
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(tvRecBatchFlag)))
@@ -461,17 +446,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             return false;
         }
 
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
         //修改后的出库数量
         float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);
         //是否满足本次录入数量<=库存数量
@@ -514,9 +488,6 @@ public abstract class BaseMSNEditFragment<P extends IMSNEditPresenter> extends B
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";
             result.invType = getInvType();
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER)

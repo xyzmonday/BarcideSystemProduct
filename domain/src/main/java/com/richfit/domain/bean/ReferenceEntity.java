@@ -94,9 +94,6 @@ public class ReferenceEntity {
     public List<RefDetailEntity> billDetailList;
     /*库存明细*/
     public List<InventoryEntity> checkList;
-    /*额外字段的数据*/
-    public Map<String, Object> mapExt;
-
 
     public String checkLevel;
     public String specialFlag;
@@ -108,6 +105,7 @@ public class ReferenceEntity {
     public String batchFlag;
     public String remark;
     public boolean qmFlag;
+    public String userId;
 
     @Override
     public String toString() {
@@ -154,7 +152,6 @@ public class ReferenceEntity {
                 ", inspectionType=" + inspectionType +
                 ", billDetailList=" + billDetailList +
                 ", checkList=" + checkList +
-                ", mapExt=" + mapExt +
                 ", checkLevel='" + checkLevel + '\'' +
                 ", specialFlag='" + specialFlag + '\'' +
                 '}';

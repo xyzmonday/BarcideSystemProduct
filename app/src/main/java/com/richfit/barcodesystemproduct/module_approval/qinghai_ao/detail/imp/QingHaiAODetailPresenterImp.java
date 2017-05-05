@@ -175,8 +175,6 @@ public class QingHaiAODetailPresenterImp extends BaseDetailPresenterImp<IQingHai
         bundle.putString(Global.EXTRA_QM_CERTIFICATE_KEY, node.qmCertificate);
         //检验结果
         bundle.putString(Global.EXTRA_INSPECTION_RESULT_KEY, node.inspectionResult);
-        //额外字段的数据
-        bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
         intent.putExtras(bundle);
         Activity activity = (Activity) mContext;
         activity.startActivity(intent);

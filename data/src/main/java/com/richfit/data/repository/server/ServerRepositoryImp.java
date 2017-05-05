@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.JsonUtil;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.data.net.api.IRequestApi;
 import com.richfit.domain.bean.BizFragmentConfig;
@@ -339,7 +338,7 @@ public class ServerRepositoryImp implements IServerRepository {
     @Override
     public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel,
                                                   String checkSpecial, String storageNum, String workId,
-                                                  String invId, String checkNum) {
+                                                  String invId, String checkNum,String checkDate) {
         mRequestParam.clear();
         mRequestParam.put("userId", userId);
         mRequestParam.put("businessType", bizType);
@@ -595,6 +594,12 @@ public class ServerRepositoryImp implements IServerRepository {
     @Override
     public Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results) {
         return mRequestApi.uploadCollectionDataOffline(JsonUtil.object2Json(results))
+                .compose(TransformerHelper.ListTransformer);
+    }
+
+    @Override
+    public Flowable<String> uploadCheckDataOffline(List<ResultEntity> results) {
+        return mRequestApi.uploadCheckDataOffline(JsonUtil.object2Json(results))
                 .compose(TransformerHelper.ListTransformer);
     }
 

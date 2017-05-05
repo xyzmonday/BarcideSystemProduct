@@ -17,7 +17,6 @@ import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.transformer.CubeTransformer;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.widget.NoScrollViewPager;
 
 import java.util.concurrent.TimeUnit;
@@ -149,6 +148,7 @@ public class MainActivity extends BaseActivity<MainPresenterImp> implements
     @Override
     protected void onRestart() {
         super.onRestart();
+
         //当该Activity从后台再次进入前台的时候(也就是后台的Activity已经onStop了)，那么根据需求需要
         //Fragment再次执行懒加载
         BaseFragment fragment = getFragmentByPosition(mCurrentPage);

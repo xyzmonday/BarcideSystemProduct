@@ -98,12 +98,6 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
     }
 
     @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
     public void initData() {
         //初始化包装结果以及验收结果
         ArrayAdapter<String> pakageConditionAdapter = new ArrayAdapter<>(mActivity,
@@ -191,9 +185,6 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
             cbQmCertificate.setChecked(DEFUALT_CHOOSED_FLAG.equalsIgnoreCase(qmCertificate) ? true : false);
             //检验结果
             spInspectionResult.setSelection("01".equalsIgnoreCase(inspectionResult) ? 0 : 1);
-
-           /*绑定额外字段的数据*/
-            bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt, false);
             /*获取库存地点列表*/
             mPresenter.getInvsByWorkId(lineData.workId, 0);
         }
@@ -290,11 +281,6 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
         if (!refreshQuantity(getString(etQuantity), getString(etSampleQuantity))) {
             return false;
         }
-
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请先输入必输字段");
-            return false;
-        }
         return true;
     }
 
@@ -351,9 +337,6 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
             //检验结果
             result.inspectionResult = spInspectionResult.getSelectedItemPosition() == 0 ? "01" : "02";
             result.modifyFlag = "Y";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt);
-
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())

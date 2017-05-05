@@ -69,10 +69,6 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
             showMessage("未获取到单据类型");
             return;
         }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
-            return;
-        }
         //这里先将寄售转自有的相关标记清空
         isNeedTurn = false;
         isTurnSuccess = false;
@@ -89,8 +85,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
         saveTransId(allNodes);
         saveTurnFlag(allNodes);
         if (mAdapter == null) {
-            mAdapter = new MSYDetailAdapter(mActivity, allNodes, mSubFunEntity.parentNodeConfigs,
-                    mSubFunEntity.childNodeConfigs);
+            mAdapter = new MSYDetailAdapter(mActivity, allNodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mAdapter.setAdapterStateListener(this);
@@ -224,7 +219,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
         }
         mTransNum = "";
         mPresenter.submitData2BarcodeSystem(mTransId, mBizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
     /**
@@ -259,7 +254,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
         }
         mInspectionNum = "";
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
     @Override
@@ -325,7 +320,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
         }
         mInspectionNum = "";
         mPresenter.turnOwnSupplies(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap(), -1);
+                mRefData.voucherDate, transToSapFlag, null, -1);
     }
 
     /**

@@ -15,11 +15,6 @@ import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 
@@ -65,11 +60,6 @@ public abstract class BaseDSHeaderFragment<P extends IDSHeaderPresenter> extends
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
     /**
@@ -91,35 +81,12 @@ public abstract class BaseDSHeaderFragment<P extends IDSHeaderPresenter> extends
     @Override
     protected void initView() {
         etTransferDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
     }
 
     protected void getRefData(String refNum) {
         mRefData = null;
         clearAllUI();
         mPresenter.getReference(refNum, mRefType, getBizType(), getMoveType(), "", Global.USER_ID);
-    }
-
-    /**
-     * 读取抬头配置文件成功
-     *
-     * @param configs
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    /**
-     * 读取抬头配置文件失败
-     *
-     * @param message
-     */
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
     }
 
     /**
@@ -165,8 +132,6 @@ public abstract class BaseDSHeaderFragment<P extends IDSHeaderPresenter> extends
             //过账日期
             if (!TextUtils.isEmpty(mRefData.voucherDate))
                 etTransferDate.setText(mRefData.voucherDate);
-            //绑定额外字段
-            bindExtraUI(mSubFunEntity.headerConfigs, mRefData.mapExt);
         }
     }
 
@@ -218,6 +183,11 @@ public abstract class BaseDSHeaderFragment<P extends IDSHeaderPresenter> extends
     public void cacheProcessor(String cacheFlag, String transId, String refNum,
                                String refCodeId, String refType, String bizType) {
         if (!TextUtils.isEmpty(cacheFlag)) {
+            //如果是离线直接获取缓存，不能让用户删除缓存
+            if (mUploadMsgEntity != null && mPresenter != null && mPresenter.isLocal()) {
+                mPresenter.getTransferInfo(mRefData, refCodeId, bizType, refType);
+                return;
+            }
             android.support.v7.app.AlertDialog.Builder dialog = new android.support.v7.app.AlertDialog.Builder(mActivity);
             dialog.setTitle("提示");
             dialog.setIcon(R.mipmap.icon_tips);
@@ -240,25 +210,22 @@ public abstract class BaseDSHeaderFragment<P extends IDSHeaderPresenter> extends
     @Override
     public void clearAllUI() {
         clearCommonUI(tvRefNum, tvSupplier, tvCreator);
-        clearExtraUI(mSubFunEntity.headerConfigs);
     }
 
     @Override
     public void clearAllUIAfterSubmitSuccess() {
         clearCommonUI(etRefNum, tvRefNum, tvSupplier, tvCreator);
-        clearExtraUI(mSubFunEntity.headerConfigs);
         mRefData = null;
     }
 
 
     @Override
     public void _onPause() {
+        super._onPause();
         //再次检查用户是否输入的额外字段而且必须输入的字段（情景是用户请求单据之前没有输入该字段，回来填上后，但是没有请求单据而是直接）
         //切换了页面
         if (mRefData != null) {
             mRefData.voucherDate = getString(etTransferDate);
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
         }
     }
 

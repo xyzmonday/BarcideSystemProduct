@@ -40,10 +40,6 @@ public class QingYangMSN301DetailFragment extends BaseMSNDetailFragment<QingYang
             return;
         }
 
-        if (!checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请先在抬头界面输入必要的信息");
-            return;
-        }
         startAutoRefresh();
     }
 

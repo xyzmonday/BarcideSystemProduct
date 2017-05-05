@@ -122,11 +122,11 @@ public class BlindHeaderPresenterImp extends BaseHeaderPresenterImp<IBlindHeader
     }
 
     @Override
-    public void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId) {
+    public void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial, String storageNum, String workId, String invId, String checkDate) {
         mView = getView();
 
         RxSubscriber<ReferenceEntity> subscriber = mRepository.getCheckInfo(userId, bizType,
-                checkLevel, checkSpecial, storageNum, workId, invId, "")
+                checkLevel, checkSpecial, storageNum, workId, invId, "", checkDate)
                 .filter(data -> data != null)
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext, "正在初始化本次盘点....") {
@@ -167,9 +167,9 @@ public class BlindHeaderPresenterImp extends BaseHeaderPresenterImp<IBlindHeader
     }
 
     @Override
-    public void deleteCheckData(String storageNum, String workId, String invId, String checkId,String userId,String bizType) {
+    public void deleteCheckData(String storageNum, String workId, String invId, String checkId, String userId, String bizType) {
         mView = getView();
-        mRepository.deleteCheckData(storageNum, workId, invId, checkId,userId,bizType)
+        mRepository.deleteCheckData(storageNum, workId, invId, checkId, userId, bizType)
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在删除历史盘点记录") {
                     @Override

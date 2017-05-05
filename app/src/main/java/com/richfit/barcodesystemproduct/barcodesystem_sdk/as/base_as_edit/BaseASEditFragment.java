@@ -74,20 +74,11 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
     protected int mPosition;
     //是否上架（直接通过父节点的标志位判断即可）
     protected boolean isNLocation;
-    protected Map<String, Object> mExtraLocationMap;
-    protected Map<String, Object> mExtraCollectMap;
     protected float mTotalQuantity;
 
     @Override
     protected int getContentId() {
         return R.layout.fragment_base_asy_edit;
-    }
-
-    @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
     }
 
     @Override
@@ -98,8 +89,6 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
     @Override
     public void initData() {
         Bundle bundle = getArguments();
-        mExtraLocationMap = (Map<String, Object>) bundle.getSerializable(Global.LOCATION_EXTRA_MAP_KEY);
-        mExtraCollectMap = (Map<String, Object>) bundle.getSerializable(Global.COLLECT_EXTRA_MAP_KEY);
         final String location = bundle.getString(Global.EXTRA_LOCATION_KEY);
         final String totalQuantity = bundle.getString(Global.EXTRA_TOTAL_QUANTITY_KEY);
         final String batchFlag = bundle.getString(Global.EXTRA_BATCH_FLAG_KEY);
@@ -172,16 +161,7 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
             showMessage("请输入入库数量");
             return false;
         }
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
 
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
         float actQuantityV = UiUtil.convertToFloat(getString(tvActRecQuantity), 0.0f);
         float totalQuantityV = UiUtil.convertToFloat(getString(tvTotalQuantity), 0.0f);
         float collectedQuantity = UiUtil.convertToFloat(mQuantity, 0.0f);
@@ -228,9 +208,6 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
             result.refDoc = lineData.refDoc;
             result.refDocItem = lineData.refDocItem;
             result.modifyFlag = "Y";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())

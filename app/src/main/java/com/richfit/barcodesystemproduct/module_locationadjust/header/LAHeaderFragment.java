@@ -10,16 +10,12 @@ import com.richfit.barcodesystemproduct.adapter.InvAdapter;
 import com.richfit.barcodesystemproduct.adapter.WorkAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.header.imp.LAHeaderPresenterImp;
-import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.WorkEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 
@@ -56,11 +52,6 @@ public class LAHeaderFragment extends BaseFragment<LAHeaderPresenterImp>
     protected void initVariable(@Nullable Bundle savedInstanceState) {
         super.initVariable(savedInstanceState);
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
 
         mWorks = new ArrayList<>();
         mInvs = new ArrayList<>();
@@ -68,8 +59,6 @@ public class LAHeaderFragment extends BaseFragment<LAHeaderPresenterImp>
 
     @Override
     public void initEvent() {
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
-
         RxAdapterView.itemSelections(spWork)
                 .filter(position -> position.intValue() > 0)
                 .subscribe(position -> mPresenter.getInvsByWorkId(mWorks.get(position.intValue()).workId,0));
@@ -83,19 +72,7 @@ public class LAHeaderFragment extends BaseFragment<LAHeaderPresenterImp>
     }
 
     @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
-    }
-
-    @Override
-    public void readConfigsComplete() {
+    public void initData() {
         //获取发出工厂列表
         mPresenter.getWorks(0);
     }
@@ -148,6 +125,7 @@ public class LAHeaderFragment extends BaseFragment<LAHeaderPresenterImp>
 
     @Override
     public void _onPause() {
+        super._onPause();
         if (checkData()) {
             if (mRefData == null)
                 mRefData = new ReferenceEntity();
@@ -165,13 +143,7 @@ public class LAHeaderFragment extends BaseFragment<LAHeaderPresenterImp>
                 mRefData.invName = mInvs.get(position).invName;
                 mRefData.invId = mInvs.get(position).invId;
             }
-
             mRefData.bizType = mBizType;
-
-            //保存额外字段
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
-
         } else {
             mRefData = null;
         }
@@ -190,7 +162,6 @@ public class LAHeaderFragment extends BaseFragment<LAHeaderPresenterImp>
     public void clearAllUI() {
         spWork.setSelection(0);
         spInv.setSelection(0);
-        clearExtraUI(mSubFunEntity.headerConfigs);
     }
 
     @Override

@@ -7,11 +7,9 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.basetreerv.CommonTreeAdapter;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by monday on 2017/2/27.
@@ -20,9 +18,8 @@ import java.util.Map;
 public class DSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
 
-    public DSNDetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes,
-                            List<RowConfig> parentNodeConfigs, List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public DSNDetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -35,8 +32,8 @@ public class DSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
                 .setText(R.id.inv, item.invCode)
                 .setText(R.id.location, item.location)
                 .setText(R.id.quantity, item.totalQuantity)
-                .setText(R.id.specialInvFlag,item.specialInvFlag)
-                .setText(R.id.specialInvNum,item.specialInvNum);
+                .setText(R.id.specialInvFlag, item.specialInvFlag)
+                .setText(R.id.specialInvNum, item.specialInvNum);
     }
 
     public ArrayList<String> getLocations(int position, int flag) {
@@ -61,8 +58,4 @@ public class DSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
 }

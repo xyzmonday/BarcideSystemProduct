@@ -58,7 +58,7 @@ public class QingYangASNDetailFragment extends BaseDetailFragment<ASNDetailPrese
             }
         }
         if (mAdapter == null) {
-            mAdapter = new ASNDetailAdapter(mActivity, R.layout.item_asn_parent_item, nodes, null, null);
+            mAdapter = new ASNDetailAdapter(mActivity, R.layout.item_asn_parent_item, nodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mAdapter.setAdapterStateListener(this);
@@ -157,7 +157,7 @@ public class QingYangASNDetailFragment extends BaseDetailFragment<ASNDetailPrese
             return;
         }
         mPresenter.submitData2BarcodeSystem(mTransId, mBizType, mRefType, mRefData.voucherDate,
-                mRefData.voucherDate,transToSapFlag,createExtraHeaderMap());
+                mRefData.voucherDate,transToSapFlag,null);
     }
 
     /**
@@ -184,7 +184,7 @@ public class QingYangASNDetailFragment extends BaseDetailFragment<ASNDetailPrese
             return;
         }
         mPresenter.submitData2SAP(mTransId, mBizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, null, createExtraHeaderMap());
+                mRefData.voucherDate, "", null);
     }
 
     /**

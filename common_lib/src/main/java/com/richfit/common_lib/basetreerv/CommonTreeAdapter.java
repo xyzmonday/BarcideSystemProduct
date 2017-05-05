@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import com.richfit.common_lib.baseadapterrv.base.ItemViewDelegate;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.TreeNode;
 
 import java.util.List;
@@ -21,10 +20,8 @@ public abstract class CommonTreeAdapter<T extends TreeNode> extends MultiItemTyp
     protected LayoutInflater mInflater;
 
     public CommonTreeAdapter(final Context context, final int layoutId,
-                             final List<T> allNodes,
-                             final List<RowConfig> parentNodeConfigs,
-                             final List<RowConfig> childNodeConfigs) {
-        super(context, allNodes, parentNodeConfigs, childNodeConfigs);
+                             final List<T> allNodes) {
+        super(context, allNodes);
         mInflater = LayoutInflater.from(context);
         mLayoutId = layoutId;
 

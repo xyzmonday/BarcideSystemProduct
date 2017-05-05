@@ -8,21 +8,14 @@ import android.text.TextUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.home.HomeActivity;
-import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.LocalFileUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -48,45 +41,44 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
     /**
      * 下载配置文件(包括了扩展字段的配置信息和所有业务的页面配置信息)，并保存到本地数据库
      *
-     * @param companyId:公司Id
      */
-    @Override
-    public void loadExtraConfig(String companyId) {
-        mView = getView();
-        if (TextUtils.isEmpty(companyId)) {
-            mView.loadExtraConfigFail("未获取到公司id");
-            return;
-        }
-        ResourceSubscriber<List<RowConfig>> subscriber =
-                mRepository.loadExtraConfig(companyId)
-                        .filter(configs -> configs != null && configs.size() > 0)
-                        .doOnNext(configs -> mRepository.saveExtraConfigInfo(configs))
-                        .doOnNext(configs -> updateExtraConfigTable(configs))
-                        .retryWhen(new RetryWhenNetworkException(3, 2000))
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new ResourceSubscriber<List<RowConfig>>() {
-                            @Override
-                            public void onNext(List<RowConfig> rowConfigs) {
-
-                            }
-
-                            @Override
-                            public void onError(Throwable t) {
-                                if (mView != null) {
-                                    mView.loadExtraConfigFail(t.getMessage());
-                                }
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                if (mView != null) {
-                                    mView.loadExtraConfigSuccess();
-                                }
-                            }
-                        });
-        addSubscriber(subscriber);
-
-    }
+//    @Override
+//    public void loadExtraConfig(String companyId) {
+//        mView = getView();
+//        if (TextUtils.isEmpty(companyId)) {
+//            mView.loadExtraConfigFail("未获取到公司id");
+//            return;
+//        }
+//        ResourceSubscriber<List<RowConfig>> subscriber =
+//                mRepository.loadExtraConfig(companyId)
+//                        .filter(configs -> configs != null && configs.size() > 0)
+//                        .doOnNext(configs -> mRepository.saveExtraConfigInfo(configs))
+//                        .doOnNext(configs -> updateExtraConfigTable(configs))
+//                        .retryWhen(new RetryWhenNetworkException(3, 2000))
+//                        .compose(TransformerHelper.io2main())
+//                        .subscribeWith(new ResourceSubscriber<List<RowConfig>>() {
+//                            @Override
+//                            public void onNext(List<RowConfig> rowConfigs) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable t) {
+//                                if (mView != null) {
+//                                    mView.loadExtraConfigFail(t.getMessage());
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onComplete() {
+//                                if (mView != null) {
+//                                    mView.loadExtraConfigSuccess();
+//                                }
+//                            }
+//                        });
+//        addSubscriber(subscriber);
+//
+//    }
 
     @Override
     public void loadFragmentConfig(String companyI, String configFileName) {
@@ -97,7 +89,7 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
         }
 
         if (TextUtils.isEmpty(COMPANY_ID) && mView != null) {
-            mView.loadExtraConfigFail("未获取到公司id");
+            mView.loadFragmentConfigFail("未获取到公司id");
             return;
         }
 
@@ -155,27 +147,27 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
         activity.finish();
     }
 
-    private void updateExtraConfigTable(ArrayList<RowConfig> configs) {
-        Map<String, Set<String>> map = new HashMap<>();
-        Set<String> headerSet = new HashSet<>();
-        Set<String> collectSet = new HashSet<>();
-        Set<String> locationSet = new HashSet<>();
-        for (RowConfig config : configs) {
-            switch (config.configType) {
-                case Global.HEADER_CONFIG_TYPE:
-                    headerSet.add(config.propertyCode);
-                    break;
-                case Global.COLLECT_CONFIG_TYPE:
-                    collectSet.add(config.propertyCode);
-                    break;
-                case Global.LOCATION_CONFIG_TYPE:
-                    locationSet.add(config.propertyCode);
-                    break;
-            }
-        }
-        map.put(Global.HEADER_CONFIG_TYPE, headerSet);
-        map.put(Global.COLLECT_CONFIG_TYPE, collectSet);
-        map.put(Global.LOCATION_CONFIG_TYPE, locationSet);
-        mRepository.updateExtraConfigTable(map);
-    }
+//    private void updateExtraConfigTable(ArrayList<RowConfig> configs) {
+//        Map<String, Set<String>> map = new HashMap<>();
+//        Set<String> headerSet = new HashSet<>();
+//        Set<String> collectSet = new HashSet<>();
+//        Set<String> locationSet = new HashSet<>();
+//        for (RowConfig config : configs) {
+//            switch (config.configType) {
+//                case Global.HEADER_CONFIG_TYPE:
+//                    headerSet.add(config.propertyCode);
+//                    break;
+//                case Global.COLLECT_CONFIG_TYPE:
+//                    collectSet.add(config.propertyCode);
+//                    break;
+//                case Global.LOCATION_CONFIG_TYPE:
+//                    locationSet.add(config.propertyCode);
+//                    break;
+//            }
+//        }
+//        map.put(Global.HEADER_CONFIG_TYPE, headerSet);
+//        map.put(Global.COLLECT_CONFIG_TYPE, collectSet);
+//        map.put(Global.LOCATION_CONFIG_TYPE, locationSet);
+//        mRepository.updateExtraConfigTable(map);
+//    }
 }

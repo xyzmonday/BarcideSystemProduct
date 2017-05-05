@@ -11,7 +11,6 @@ import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_dsn_edit.imp.DSNEditPresenterImp;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
@@ -25,7 +24,6 @@ import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -72,10 +70,6 @@ public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresen
     /*缓存的历史仓位数量*/
     private List<RefDetailEntity> mHistoryDetailList;
 
-    /*缓存的仓位级别的额外字段*/
-    Map<String, Object> mExtraLocationMap;
-    /*缓存的行级别的额外字段*/
-    Map<String, Object> mExtraLineMap;
     private String mSpecialInvFlag;
     private String mSpecialInvNum;
 
@@ -88,13 +82,6 @@ public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresen
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mInventoryDatas = new ArrayList<>();
-    }
-
-    @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
     }
 
     @Override
@@ -203,10 +190,14 @@ public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresen
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
-                break;
-            } else if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
-                break;
+            if (mSelectedLocation.equals(locationCombine)) {
+                if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
+                    break;
+                }
+            } else {
+                //如果在修改前选择的是寄售库存的仓位
+                if (locationCombine.equalsIgnoreCase(loc.locationCombine))
+                    break;
             }
         }
         if (pos >= 0 && pos < list.size()) {
@@ -250,24 +241,17 @@ public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresen
                         if (locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                                 && batchFlag.equalsIgnoreCase(locationInfo.batchFlag)) {
                             locQuantity = locationInfo.quantity;
-                            mExtraLocationMap = locationInfo.mapExt;
-                            mExtraLineMap = detail.mapExt;
                             break;
                         }
                     } else {
                         if (locationCombine.equalsIgnoreCase(locationInfo.locationCombine)) {
                             locQuantity = locationInfo.quantity;
-                            mExtraLocationMap = locationInfo.mapExt;
-                            mExtraLineMap = detail.mapExt;
                             break;
                         }
                     }
                 }
             }
         }
-        //绑定额外字段数据
-        bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap);
-        bindExtraUI(mSubFunEntity.collectionConfigs, mExtraLineMap);
         tvLocQuantity.setText(locQuantity);
     }
 
@@ -304,17 +288,6 @@ public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresen
 
         if (Float.parseFloat(getString(etQuantity)) <= 0.0f) {
             showMessage("输入移库数量有误，请重新输入");
-            return false;
-        }
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
             return false;
         }
 
@@ -372,9 +345,6 @@ public abstract class BaseDSNEditFragment extends BaseEditFragment<DSNEditPresen
             result.quantity = getString(etQuantity);
             result.invType = "1";
             result.modifyFlag = "Y";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER)

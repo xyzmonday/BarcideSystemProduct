@@ -1,24 +1,19 @@
 package com.richfit.barcodesystemproduct.module_local.loaddown;
 
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.adapter.LocalRefDataAdapter;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
-import com.richfit.common_lib.adapter.animation.StickyDividerDecoration;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration;
 
 import java.util.ArrayList;
 
@@ -39,16 +34,19 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
     Spinner spBizType;
     @BindView(R.id.et_ref_num)
     RichEditText etRefNum;
-    @BindView(R.id.recycler_view)
-    RecyclerView recyclerView;
-
 
     /*业务类型列表*/
     ArrayList<MenuNode> mBizTypes;
     /*所有明细行数据*/
     ArrayList<RefDetailEntity> mDatas;
-    /*明细适配器*/
-    LocalRefDataAdapter mAdapter;
+
+    @Override
+    public void handleBarCodeScanResult(String type, String[] list) {
+        if (list != null && list.length == 1) {
+            etRefNum.setText(list[0]);
+            getRefData(list[0]);
+        }
+    }
 
     @Override
     protected int getContentId() {
@@ -71,14 +69,6 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
     protected void initViews() {
         //设置toolBar
         setupToolBar(R.id.toolbar, R.id.toolbar_title, "单据数据下载");
-        //设置recyclerView
-        RecyclerView.LayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(lm);
-        mAdapter = new LocalRefDataAdapter(this, R.layout.item_local_data, mDatas);
-        recyclerView.setAdapter(mAdapter);
-        final StickyRecyclerHeadersDecoration stickHeader = new StickyRecyclerHeadersDecoration(mAdapter);
-        recyclerView.addItemDecoration(stickHeader);
-        recyclerView.addItemDecoration(new StickyDividerDecoration(this));
     }
 
     @Override
@@ -122,7 +112,7 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
      */
     @Override
     public void getReferenceInfoSuccess(ReferenceEntity data) {
-        showMessage("下载成功");
+
     }
 
 
@@ -131,7 +121,7 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
      */
     @Override
     public void getReferenceInfoComplete() {
-
+        showMessage("下载成功");
     }
 
     /**

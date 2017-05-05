@@ -34,6 +34,13 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import zlc.season.rxdownload2.entity.DownloadStatus;
 
 /**
+ * 基础数据:
+ * base_material_code wl  增量 分页
+ * base_location      cw  增量 分页
+ * base_unit_code     dw  全部 不分页
+ * base_cost_center   cc  增量 分页
+ * base_project_num   xm  增量 分页
+ * base_supplier      gys 全部 分页
  * Created by monday on 2016/11/29.
  */
 
@@ -52,6 +59,8 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     Toolbar mToolbar;
     @BindView(R.id.toolbar_title)
     TextView mToolbarTitle;
+    @BindView(R.id.sb_material)
+    SwitchView sbMaterial;
     @BindView(R.id.sb_supplier)
     SwitchView sbSupplier;
     @BindView(R.id.sb_cost_center)
@@ -126,8 +135,14 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
         ArrayList<LoadBasicDataWrapper> requestParams = new ArrayList<>();
         LoadBasicDataWrapper task = new LoadBasicDataWrapper();
         mMessage = "";
-        if (sbSupplier.isOpened()) {
+        if(sbMaterial.isOpened()) {
+            task.isByPage = true;
+            task.queryType = "WL";
+            requestParams.add(task);
+            mMessage += "物料;";
+        }
 
+        if (sbSupplier.isOpened()) {
             task.isByPage = true;
             task.queryType = "GYS";
             requestParams.add(task);
@@ -209,6 +224,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             dialog.setNegativeButton("以后再说", (dialogInterface, i) -> dialogInterface.dismiss());
             dialog.show();
         } else {
+            showMessage("当前为最新版本!!!");
             mProgressBar.setVisibility(View.INVISIBLE);
             mProgressBar.setStatus(ButtonCircleProgressBar.Status.End);
         }

@@ -58,10 +58,6 @@ public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPrese
     String mQuantity;
     /*缓存的历史仓位数量*/
     private List<RefDetailEntity> mHistoryDetailList;
-    /*缓存的仓位级别的额外字段*/
-    Map<String, Object> mExtraLocationMap;
-    /*缓存的行级别的额外字段*/
-    Map<String, Object> mExtraLineMap;
     //修改前的上架仓位
     String mSelectedLocation;
     String mLocationId;
@@ -75,13 +71,6 @@ public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPrese
     @Override
     public void initInjector() {
         mFragmentComponent.inject(this);
-    }
-
-    @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
     }
 
     @Override
@@ -180,24 +169,17 @@ public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPrese
                         if (location.equalsIgnoreCase(locationInfo.location)
                                 && batchFlag.equalsIgnoreCase(locationInfo.batchFlag)) {
                             locQuantity = locationInfo.quantity;
-                            mExtraLocationMap = locationInfo.mapExt;
-                            mExtraLineMap = detail.mapExt;
                             break;
                         }
                     } else {
                         if (location.equalsIgnoreCase(locationInfo.location)) {
                             locQuantity = locationInfo.quantity;
-                            mExtraLocationMap = locationInfo.mapExt;
-                            mExtraLineMap = detail.mapExt;
                             break;
                         }
                     }
                 }
             }
         }
-        //绑定额外字段数据
-        bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap);
-        bindExtraUI(mSubFunEntity.collectionConfigs, mExtraLineMap);
         tvLocQuantity.setText(locQuantity);
     }
 
@@ -217,18 +199,6 @@ public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPrese
 
         if (Float.parseFloat(getString(etQuantity)) <= 0.0f) {
             showMessage("输入移库数量有误，请重新输入");
-            return false;
-        }
-
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
             return false;
         }
         return true;
@@ -271,9 +241,6 @@ public class QingHaiRSNEditFragment extends BaseEditFragment<QingHaiRSNEditPrese
             result.projectNum = mRefData.projectNum;
             result.invType = getString(R.string.invTypeNorm);
             result.modifyFlag = "Y";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, mExtraLineMap, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER)

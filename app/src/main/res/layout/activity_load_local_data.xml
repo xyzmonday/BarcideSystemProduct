@@ -61,25 +61,25 @@
     </LinearLayout>
 
 
-    <HorizontalScrollView
-        android:layout_marginTop="@dimen/len_10"
-        android:id="@+id/horizontal_scroll"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    <!--<HorizontalScrollView-->
+        <!--android:layout_marginTop="@dimen/len_10"-->
+        <!--android:id="@+id/horizontal_scroll"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:orientation="vertical">-->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical">-->
 
-            <include layout="@layout/item_local_data" />
+            <!--<include layout="@layout/item_local_data" />-->
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
-    </HorizontalScrollView>
+            <!--<android.support.v7.widget.RecyclerView-->
+                <!--android:id="@+id/recycler_view"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent" />-->
+        <!--</LinearLayout>-->
+    <!--</HorizontalScrollView>-->
 
 </LinearLayout>

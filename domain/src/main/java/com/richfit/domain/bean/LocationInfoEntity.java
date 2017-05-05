@@ -34,8 +34,6 @@ public class LocationInfoEntity {
     public String specialInvNum;
     public String locationCombine;
 
-    /*仓位的额外字段数据*/
-    public Map<String, Object> mapExt;
     public String specialConvert;
     public String deviceId;
 
@@ -54,7 +52,6 @@ public class LocationInfoEntity {
                 ", specialInvFlag='" + specialInvFlag + '\'' +
                 ", specialInvNum='" + specialInvNum + '\'' +
                 ", locationCombine='" + locationCombine + '\'' +
-                ", mapExt=" + mapExt +
                 ", specialConvert='" + specialConvert + '\'' +
                 ", deviceId='" + deviceId + '\'' +
                 '}';

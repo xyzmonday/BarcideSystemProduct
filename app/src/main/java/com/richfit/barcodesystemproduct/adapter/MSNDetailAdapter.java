@@ -18,8 +18,8 @@ import java.util.Map;
 
 public class MSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
-    public MSNDetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes, List<RowConfig> parentNodeConfigs, List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public MSNDetailAdapter(Context context, int layoutId, List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -56,10 +56,6 @@ public class MSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
 
     /**
      * 获取发出仓位和接收仓位列表

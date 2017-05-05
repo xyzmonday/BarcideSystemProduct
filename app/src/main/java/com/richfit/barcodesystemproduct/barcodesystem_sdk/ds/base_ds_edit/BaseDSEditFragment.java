@@ -9,12 +9,10 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LocationAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.LocationInfoEntity;
@@ -23,7 +21,6 @@ import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -71,7 +68,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
     protected String mSelectedLocation;
     private String mSpecialInvFlag;
     private String mSpecialInvNum;
-    Map<String, Object> mExtraLocationMap;
     protected float mTotalQuantity;
 
     @Override
@@ -82,13 +78,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mInventoryDatas = new ArrayList<>();
-    }
-
-    @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
     }
 
     @Override
@@ -127,7 +116,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
     @Override
     public void initData() {
         Bundle bundle = getArguments();
-        mExtraLocationMap = (Map<String, Object>) bundle.getSerializable(Global.LOCATION_EXTRA_MAP_KEY);
         mSelectedLocation = bundle.getString(Global.EXTRA_LOCATION_KEY);
         mSpecialInvFlag = bundle.getString(Global.EXTRA_SPECIAL_INV_FLAG_KEY);
         mSpecialInvNum = bundle.getString(Global.EXTRA_SPECIAL_INV_NUM_KEY);
@@ -136,7 +124,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
         final String invId = bundle.getString(Global.EXTRA_INV_ID_KEY);
         final String invCode = bundle.getString(Global.EXTRA_INV_CODE_KEY);
         mPosition = bundle.getInt(Global.EXTRA_POSITION_KEY);
-        L.e("位置pos = " + mPosition);
         mQuantity = bundle.getString(Global.EXTRA_QUANTITY_KEY);
         mLocations = bundle.getStringArrayList(Global.EXTRA_LOCATION_LIST_KEY);
         mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);
@@ -156,9 +143,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
 
             etQuantity.setText(mQuantity);
             tvTotalQuantity.setText(totalQuantity);
-           /*绑定额外字段的数据*/
-            bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt, false);
-            bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap, false);
             //下载库存
             loadInventoryInfo(lineData.workId, lineData.workCode, invId, invCode,
                     lineData.materialId, "", batchFlag);
@@ -215,10 +199,14 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
         int pos = -1;
         for (InventoryEntity loc : mInventoryDatas) {
             pos++;
-            if (!TextUtils.isEmpty(locationCombine) && locationCombine.equalsIgnoreCase(loc.locationCombine)) {
-                break;
-            } else if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
-                break;
+            if (mSelectedLocation.equals(locationCombine)) {
+                if (mSelectedLocation.equalsIgnoreCase(loc.location)) {
+                    break;
+                }
+            } else {
+                //如果在修改前选择的是寄售库存的仓位
+                if (locationCombine.equalsIgnoreCase(loc.locationCombine))
+                    break;
             }
         }
         if (pos >= 0 && pos < list.size()) {
@@ -282,17 +270,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
             return false;
         }
 
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
         //是否满足本次录入数量+累计数量-上次已经录入的出库数量<=应出数量
         float actQuantityV = UiUtil.convertToFloat(getString(tvActQuantity), 0.0f);
         float totalQuantityV = UiUtil.convertToFloat(getString(tvTotalQuantity), 0.0f);
@@ -349,9 +326,6 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
             result.batchFlag = getString(tvBatchFlag);
             result.quantity = getString(etQuantity);
             result.modifyFlag = "Y";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -382,6 +356,7 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
      *
      * @return
      */
+
     protected abstract String getInvType();
 
     protected abstract String getInventoryQueryType();

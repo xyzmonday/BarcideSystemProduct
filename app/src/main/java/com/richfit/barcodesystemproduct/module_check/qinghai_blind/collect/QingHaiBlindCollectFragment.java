@@ -19,10 +19,6 @@ import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -82,15 +78,6 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
         mFragmentComponent.inject(this);
     }
 
-
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
-
-    }
-
     /**
      * 注册所有UI事件
      */
@@ -108,27 +95,6 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
             etQuantity.setEnabled(!isChecked);
         });
     }
-
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
-    }
-
     /**
      * 检查抬头界面的必要的字段是否已经赋值
      */
@@ -167,10 +133,6 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
 
         if (isEmpty(mRefData.voucherDate)) {
             showMessage("请先在抬头界面选择过账日期");
-            return;
-        }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
             return;
         }
         //如果是库存级，那么盘点仓位不显示。注意01必须将盘点仓位显示
@@ -275,18 +237,6 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
                 return false;
             }
         }
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
         return true;
     }
 
@@ -333,13 +283,11 @@ public class QingHaiBlindCollectFragment extends BaseFragment<BlindCollectPresen
 
     private void clearAllUI() {
         clearCommonUI(tvMaterialDesc, tvMaterialGroup, etQuantity);
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
-
     }
 
     @Override
     public void _onPause() {
+        super._onPause();
         clearAllUI();
         clearCommonUI(etMaterialNum,etCheckLocation);
     }

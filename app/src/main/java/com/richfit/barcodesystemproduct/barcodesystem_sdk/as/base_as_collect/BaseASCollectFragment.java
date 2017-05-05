@@ -28,11 +28,9 @@ import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -113,8 +111,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     private InvAdapter mInvAdapter;
     /*累计数量*/
     protected String mSelectedRefLineNum;
-    /*缓存的仓位级别的额外字段*/
-    protected Map<String, Object> mExtraLocationMap;
     /*校验仓位是否存在，如果false表示校验该仓位不存在或者没有校验该仓位，不允许保存数据*/
     protected boolean isLocationChecked = false;
     /*是否是质检物资*/
@@ -173,12 +169,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         mInvDatas = new ArrayList<>();
     }
 
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
-    }
 
     /**
      * 绑定公共事件，子类自己根据是否上架，是否需要检查上架是否存在
@@ -186,20 +176,20 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
      */
     @Override
     public void initEvent() {
-        /*扫描后者手动输入物资条码*/
+        //扫描后者手动输入物资条码
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> {
             hideKeyboard(etMaterialNum);
             //手动输入没有批次
             loadMaterialInfo(materialNum, getString(etBatchFlag));
         });
 
-       /*单据行*/
+        //选择单据行
         RxAdapterView
                 .itemSelections(spRefLine)
                 .filter(position -> position > 0)
                 .subscribe(position -> bindCommonCollectUI());
 
-        /*单品(注意单品仅仅控制实收数量，累计数量是由行信息里面控制)*/
+        //单品(注意单品仅仅控制实收数量，累计数量是由行信息里面控制)
         cbSingle.setOnCheckedChangeListener((buttonView, isChecked) -> {
             etQuantity.setText(isChecked ? "1" : "");
             etQuantity.setEnabled(!isChecked);
@@ -212,7 +202,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
                     tvLocQuantity.setText("");
                     tvTotalQuantity.setText("");
                 });
-        /*对于质检物资(不上架)通过库存地点来获取缓存*/
+        //对于质检物资(不上架)通过库存地点来获取缓存
         RxAdapterView.itemSelections(spInv)
                 .filter(pos -> pos > 0 && isNLocation)
                 .subscribe(pos -> getTransferSingle(getString(etBatchFlag), getString(etLocation)));
@@ -246,10 +236,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             showMessage("请先在抬头界面选择过账日期");
             return;
         }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
-            return;
-        }
+
         String transferKey = (String) SPrefUtil.getData(mBizType + mRefType, "0");
         if ("1".equals(transferKey)) {
             showMessage("本次采集已经过账,请先到数据明细界面进行数据上传操作");
@@ -260,25 +247,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         etLocation.setEnabled(!isNLocation);
     }
 
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
-    }
 
     /**
      * 输入或者扫描物料条码后系统自动去匹配单据行明细，并且初始化默认选择的明细数据.
@@ -363,8 +331,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         spInv.setEnabled(true);
         tvLocQuantity.setText("");
         tvTotalQuantity.setText("");
-        //初始化额外字段的数据,注意这仅仅是服务器返回的数据，不含有任何缓存数据。
-        bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt);
         if (!cbSingle.isChecked())
             mPresenter.getInvsByWorkId(lineData.workId, getOrgFlag());
     }
@@ -416,7 +382,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             return;
         }
         isBatchValidate = false;
-        mExtraLocationMap = null;
 
         if (!isNLocation) {
             //如果上架，那么检查仓位是否存在
@@ -467,9 +432,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             mInvAdapter.notifyDataSetChanged();
         }
         spInv.setEnabled(true);
-        //清除额外资源
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
     }
 
     /**
@@ -521,7 +483,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
 
                     //注意它没有匹配次成功可能是批次页可能是仓位。
                     if (isMatch) {
-                        mExtraLocationMap = cachedItem.mapExt;
                         tvLocQuantity.setText(cachedItem.quantity);
                         break;
                     }
@@ -561,9 +522,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
 
     @Override
     public void loadCacheSuccess() {
-//        showMessage("获取缓存成功");
-         /*绑定仓位级别的额外数据*/
-        bindExtraUI(mSubFunEntity.locationConfigs, mExtraLocationMap);
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();
         }
@@ -577,7 +535,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         if (!isNLocation)
             tvLocQuantity.setText("0");
         tvTotalQuantity.setText("0");
-        mExtraLocationMap = null;
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();
         }
@@ -670,16 +627,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             return false;
         }
 
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
         return true;
     }
 
@@ -723,10 +670,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             result.refDoc = lineData.refDoc;
             result.refDocItem = lineData.refDocItem;
             result.supplierNum = mRefData.supplierNum;
-
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, lineData.mapExt, mExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -755,6 +698,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
 
     @Override
     public void _onPause() {
+        super._onPause();
         clearAllUI();
         clearCommonUI(etMaterialNum, etBatchFlag);
     }

@@ -3,7 +3,7 @@ package com.richfit.barcodesystemproduct.module.splash.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.BuildConfig;
+import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.barcodesystemproduct.module.splash.ISplashPresenter;
 import com.richfit.barcodesystemproduct.module.splash.ISplashView;
@@ -11,7 +11,6 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.data.db.BCSSQLiteHelper;
@@ -207,7 +206,6 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
             SPrefUtil.initSharePreference(mContext.getApplicationContext());
         }
         boolean isAppFist = (boolean) SPrefUtil.getData(Global.IS_APP_FIRST_KEY, true);
-        L.e("isAppFist = " + isAppFist);
         if (!isAppFist) {
             //如果不是第一次启动,那么直接同步基础数据
             mView.downDBComplete();
@@ -223,7 +221,7 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
         if (!file.exists())
             file.mkdir();
         final String savePath = file.getAbsolutePath();
-        final String url = BuildConfig.SERVER_URL + "/downloadInitialDB?macAddress=" + Global.MAC_ADDRESS;
+        final String url = BarcodeSystemApplication.baseUrl + "/downloadInitialDB?macAddress=" + Global.MAC_ADDRESS;
         ResourceObserver<DownloadStatus> observer = mRxDownload.download(url, dbName, savePath)
                 .doOnComplete(() -> SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, false))
                 .doOnComplete(() -> saveLoadBasicDataTaskDate())

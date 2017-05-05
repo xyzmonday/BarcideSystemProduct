@@ -15,12 +15,15 @@ import java.util.List;
 public interface IMSNHeaderView extends IBaseHeaderView {
     void showWorks(List<WorkEntity> works);
     void loadWorksFail(String message);
+    void loadWorksComplete();
 
     void showSendInvs(List<InvEntity> sendInvs);
     void loadSendInvsFail(String message);
+    void loadSendInvsComplete();
 
     void showRecInvs(List<InvEntity> recInvs);
     void loadRecInvsFail(String message);
+    void loadRecInvsComplete();
 
     void deleteCacheSuccess(String message);
     void deleteCacheFail(String message);

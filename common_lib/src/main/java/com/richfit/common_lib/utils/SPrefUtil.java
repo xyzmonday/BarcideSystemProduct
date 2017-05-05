@@ -16,7 +16,9 @@ public class SPrefUtil {
     public static SharedPreferences mSPref;
 
     public static void initSharePreference(Context context) {
-        mSPref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        if (mSPref == null) {
+            mSPref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        }
     }
 
     private SPrefUtil() {
@@ -29,7 +31,7 @@ public class SPrefUtil {
      * @param data
      */
     public static void saveData(String key, Object data) {
-        if(mSPref == null)
+        if (mSPref == null)
             return;
         String type = data.getClass().getSimpleName();
         SharedPreferences.Editor editor = mSPref.edit();
@@ -57,7 +59,7 @@ public class SPrefUtil {
      * @return
      */
     public static Object getData(String key, Object defValue) {
-        if(mSPref == null)
+        if (mSPref == null)
             return null;
         String type = defValue.getClass().getSimpleName();
         if ("Integer".equals(type)) {

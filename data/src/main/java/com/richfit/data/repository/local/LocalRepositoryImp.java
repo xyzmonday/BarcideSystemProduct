@@ -67,11 +67,11 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel,
                                                   String checkSpecial, String storageNum, String workId,
-                                                  String invId, String checkNum) {
+                                                  String invId, String checkNum,String checkDate) {
         return Flowable.just(userId)
                 .flatMap(id -> {
                     ReferenceEntity refData = mCheckServiceDao.getCheckInfo(id, bizType, checkLevel, checkSpecial,
-                            storageNum, workId, invId, checkNum);
+                            storageNum, workId, invId, checkNum,checkDate);
                     if (refData == null || TextUtils.isEmpty(refData.checkId)) {
                         return Flowable.error(new Throwable("盘点初始化失败"));
                     }
@@ -500,7 +500,22 @@ public class LocalRepositoryImp implements ILocalRepository {
 
     @Override
     public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
-        mBusinessServiceDao.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
+        if(TextUtils.isEmpty(bizType)) {
+            return;
+        }
+        switch (bizType) {
+            //出入库
+            case "0":
+                mBusinessServiceDao.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
+                break;
+            //验收
+            case "1":
+
+                break;
+            //盘点
+            case "2":
+                break;
+        }
     }
 
     @Override
@@ -508,22 +523,27 @@ public class LocalRepositoryImp implements ILocalRepository {
         if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transId)) {
             return Flowable.error(new Throwable("修改失败"));
         }
+        Flowable<Boolean> flowable;
         switch (bizType) {
             case "00":
             case "01":
                 //验收
+                flowable = Flowable.just(transId)
+                        .flatMap(id -> Flowable.just(mInspectionServiceDao.setTransFlag(id)));
                 break;
             case "C01":
             case "C02":
                 //盘点
+                flowable = Flowable.just(transId)
+                        .flatMap(id -> Flowable.just(mCheckServiceDao.setTransFlag(id)));
                 break;
             default:
                 //出入库业务
+                flowable = Flowable.just(transId)
+                        .flatMap(id -> Flowable.just(mBusinessServiceDao.setTransFlag(id)));
                 break;
         }
-        return Flowable.just(transId)
-                .flatMap(id -> {
-                    boolean flag = mBusinessServiceDao.setTransFlag(id);
+        return flowable.flatMap(flag -> {
                     if (flag) {
                         return Flowable.just("修改成功");
                     }

@@ -31,13 +31,10 @@ import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.StatusBarCompat;
 import com.richfit.common_lib.utils.ViewServer;
-import com.richfit.domain.bean.RowConfig;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -46,7 +43,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by monday on 2016/10/27.
@@ -55,13 +56,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivity implements BaseView,
         NetConnectErrorDialogFragment.INetworkConnectListener {
 
-    protected ActivityComponent mActivityComponent;
-
     @Inject
     protected T mPresenter;
 
     @BindView(android.R.id.content)
     protected View mView;
+
+    protected ActivityComponent mActivityComponent;
+
+    private Disposable mDisposable;
 
     private Unbinder mUnbinder;
 
@@ -74,28 +77,6 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-        mActivityComponent = DaggerActivityComponent.builder()
-                .activityModule(new ActivityModule(this))
-                .appComponent(BarcodeSystemApplication.getAppComponent())
-                .build();
-        super.onCreate(savedInstanceState);
-
-
-        int layoutId = getContentId();
-        if (layoutId > 0) {
-            setContentView(getContentId());
-            mUnbinder = ButterKnife.bind(this);
-        }
-
-
-        //注册接收扫描结构的结果的广播
-        IntentFilter scanDataIntentFilter = new IntentFilter();
-        scanDataIntentFilter.addAction(WZ_RECT_DATA_ACTION);
-        scanDataIntentFilter.addAction(DQ_RECE_DATA_ACTION);
-        registerReceiver(receiver, scanDataIntentFilter);
-        initInjector();
-        if (mPresenter != null)
-            mPresenter.attachView(BaseActivity.this);
         //恢复全局的数据
         if (savedInstanceState != null) {
             Global.USER_ID = savedInstanceState.getString("user_id_key");
@@ -106,13 +87,57 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
             Global.MAC_ADDRESS = savedInstanceState.getString("mac_address_key");
             Global.AUTH_ORG = savedInstanceState.getString("auth_org_key");
             Global.BATCH_FLAG = savedInstanceState.getBoolean("batch_flag_key");
-            if (mPresenter != null)
-                mPresenter.setLocal(savedInstanceState.getBoolean("is_local_flag"));
         }
+        Observable.just(Global.QINGHAI)
+                .map(areaName -> {
+                    ActivityComponent component = DaggerActivityComponent.builder()
+                            .activityModule(new ActivityModule(this))
+                            .appComponent(BarcodeSystemApplication.getAppComponent())
+                            .build();
+                    return component;
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<ActivityComponent>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        mDisposable = d;
+                    }
+
+                    @Override
+                    public void onNext(ActivityComponent value) {
+                        mActivityComponent = value;
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        initInjector();
+                        if (mPresenter != null)
+                            mPresenter.attachView(BaseActivity.this);
+                        initViews();
+                        initData(savedInstanceState);
+                        initEvent();
+                        if (savedInstanceState != null && mPresenter != null)
+                            mPresenter.setLocal(savedInstanceState.getBoolean("is_local_flag"));
+                    }
+                });
+        super.onCreate(savedInstanceState);
+        int layoutId = getContentId();
+        if (layoutId > 0) {
+            setContentView(getContentId());
+            mUnbinder = ButterKnife.bind(this);
+        }
+        //注册接收扫描结构的结果的广播
+        IntentFilter scanDataIntentFilter = new IntentFilter();
+        scanDataIntentFilter.addAction(WZ_RECT_DATA_ACTION);
+        scanDataIntentFilter.addAction(DQ_RECE_DATA_ACTION);
+        registerReceiver(receiver, scanDataIntentFilter);
         initVariables();
-        initViews();
-        initData(savedInstanceState);
-        initEvent();
         if (mOpenStatusBar)
             StatusBarCompat.compat(this);
     }
@@ -153,6 +178,8 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         unregisterReceiver(receiver);
         if (mUnbinder != null && mUnbinder != Unbinder.EMPTY) mUnbinder.unbind();
 
+        if(mDisposable != null && !mDisposable.isDisposed())
+            mDisposable.dispose();
         if (mPresenter != null)
             //防止内存泄露
             mPresenter.detachView();
@@ -272,37 +299,6 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
     public void networkConnectError(String retryAction) {
 
     }
-
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-
-    }
-
-    @Override
-    public void readConfigsComplete() {
-
-    }
-
-    @Override
-    public void readExtraDictionarySuccess(Map<String, Object> datas) {
-
-    }
-
-    @Override
-    public void readExtraDictionaryFail(String message) {
-
-    }
-
-    @Override
-    public void readExtraDictionaryComplete() {
-
-    }
-
 
     /**
      * 扫描条码模块

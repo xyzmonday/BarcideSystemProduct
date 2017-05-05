@@ -1,7 +1,5 @@
 package com.richfit.domain.bean;
 
-import java.util.Map;
-
 /**
  * Created by monday on 2016/9/22.
  */
@@ -91,10 +89,6 @@ public class ResultEntity extends TreeNode{
     public String deviceLocation;// 设备位号
     public String deviceName;// 设备名称
     public String deviceId;// 设备ID
-
-    public Map<String, Object> mapExHead;// 头扩展字段
-    public Map<String, Object> mapExLine;// 行扩展字段
-    public Map<String, Object> mapExLocation;// 仓位扩展字段
     public String inspectionQuantity;// 送检数
     public String manufacturer;//制造商
     public String randomQuantity;// 抽检
@@ -148,4 +142,5 @@ public class ResultEntity extends TreeNode{
     public String refTypeDesc;
     public String materialDoc;
     public String transNum;
+    public String checkNum;
 }

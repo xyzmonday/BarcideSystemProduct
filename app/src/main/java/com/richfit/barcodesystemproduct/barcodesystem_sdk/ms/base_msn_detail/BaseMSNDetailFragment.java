@@ -74,7 +74,7 @@ public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> exten
         saveTransId(allNodes);
         saveTurnFlag(allNodes);
         if (mAdapter == null) {
-            mAdapter = new MSNDetailAdapter(mActivity, R.layout.item_msn_detail_item, allNodes, null, null);
+            mAdapter = new MSNDetailAdapter(mActivity, R.layout.item_msn_detail_item, allNodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mAdapter.setAdapterStateListener(this);
@@ -217,7 +217,7 @@ public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> exten
             return;
         }
         mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
 
@@ -249,7 +249,7 @@ public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> exten
             return;
         }
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
 
@@ -303,7 +303,7 @@ public abstract class BaseMSNDetailFragment<P extends IMSNDetailPresenter> exten
 
         mInspectionNum = "";
         mPresenter.turnOwnSupplies(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap(), -1);
+                mRefData.voucherDate, transToSapFlag, null, -1);
     }
 
     /**

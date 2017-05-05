@@ -51,17 +51,17 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
             //提示信息
             mMessage.append("您一共有" + item.totalTaskNum + "单数据需要上传");
         } else {
+            mMessage.append(String.valueOf(item.taskId + 1) + "/" + String.valueOf(item.totalTaskNum))
+                    .append(":");
+            if (TextUtils.isEmpty(item.refType)) {
+                mMessage.append(item.bizTypeDesc);
+            } else {
+                mMessage.append(item.bizTypeDesc).append("_").append(item.refTypeDesc);
+            }
+            mMessage.append("\n");
             if (item.isEror) {
                 mMessage.append(item.errorMsg);
             } else {
-                mMessage.append(String.valueOf(item.taskId) + "/" + String.valueOf(item.totalTaskNum))
-                        .append(":");
-                if (TextUtils.isEmpty(item.refType)) {
-                    mMessage.append(item.bizTypeDesc);
-                } else {
-                    mMessage.append(item.bizTypeDesc).append("_").append(item.refTypeDesc);
-                }
-                mMessage.append("\n");
                 mMessage.append(item.materialDoc);
                 if (!TextUtils.isEmpty(item.transNum)) {
                     mMessage.append("\n").append(item.transNum);

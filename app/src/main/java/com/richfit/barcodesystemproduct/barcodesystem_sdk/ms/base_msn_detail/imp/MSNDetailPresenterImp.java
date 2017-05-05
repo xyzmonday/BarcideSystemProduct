@@ -16,12 +16,10 @@ import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -162,9 +160,6 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
 
         //接收批次
         bundle.putString(Global.EXTRA_REC_BATCH_FLAG_KEY, node.recBatchFlag);
-
-        //额外字段的数据
-        bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
 
         //发出仓位集合
         bundle.putStringArrayList(Global.EXTRA_LOCATION_LIST_KEY, sendLocations);
@@ -359,8 +354,6 @@ public class MSNDetailPresenterImp extends BaseDetailPresenterImp<IMSNDetailView
                     data.specialInvNum = loc.specialInvNum;
                     data.specialConvert = loc.specialConvert;
                     data.deviceId = loc.deviceId;
-                    //额外字段信息
-                    data.mapExt = UiUtil.copyMap(target.mapExt, loc.mapExt);
                     datas.add(data);
                 }
             }

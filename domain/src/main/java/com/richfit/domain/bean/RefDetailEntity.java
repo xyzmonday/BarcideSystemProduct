@@ -143,12 +143,12 @@ public class RefDetailEntity extends TreeNode {
 
     public String refCodeId;
     public String lastFlag;
-    /*单据行的额外字段数据*/
-    public Map<String, Object> mapExt;
     public String recQuantity;
     public String transLineSplitId;
     public String specialConvert;
     public String deviceId;
+    public String inspectionPerson;
+    public String userId;
 
     @Override
     public String toString() {
@@ -230,7 +230,6 @@ public class RefDetailEntity extends TreeNode {
                 ", locationList=" + locationList +
                 ", refCodeId='" + refCodeId + '\'' +
                 ", lastFlag='" + lastFlag + '\'' +
-                ", mapExt=" + mapExt +
                 ", recQuantity='" + recQuantity + '\'' +
                 ", transLineSplitId='" + transLineSplitId + '\'' +
                 ", specialConvert='" + specialConvert + '\'' +

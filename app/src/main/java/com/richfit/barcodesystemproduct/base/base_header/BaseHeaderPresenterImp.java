@@ -12,8 +12,6 @@ import com.richfit.domain.bean.ResultEntity;
 
 import javax.inject.Inject;
 
-import io.reactivex.functions.Consumer;
-
 /**
  * Created by monday on 2017/3/18.
  */
@@ -33,12 +31,10 @@ public class BaseHeaderPresenterImp<V extends IBaseHeaderView> extends BasePrese
     protected void onStart() {
         mView = getView();
         mSimpleRxBus.register(Boolean.class)
-                .subscribe(new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) throws Exception {
-                        if (mView != null) {
-                            mView.clearAllUIAfterSubmitSuccess();
-                        }
+                .subscribe(aBoolean -> {
+                    L.e("接收到信号");
+                    if (mView != null) {
+                        mView.clearAllUIAfterSubmitSuccess();
                     }
                 });
     }

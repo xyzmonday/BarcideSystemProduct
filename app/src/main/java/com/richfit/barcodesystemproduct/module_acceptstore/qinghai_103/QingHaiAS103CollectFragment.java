@@ -88,16 +88,6 @@ public class QingHaiAS103CollectFragment extends BaseASCollectFragment<ASCollect
             return false;
         }
 
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
         return true;
     }
 

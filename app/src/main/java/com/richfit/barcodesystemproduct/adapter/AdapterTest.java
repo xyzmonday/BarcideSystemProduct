@@ -6,10 +6,8 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.basetreerv.CommonTreeAdapter;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by monday on 2017/3/18.
@@ -17,8 +15,8 @@ import java.util.Map;
 
 public class AdapterTest extends CommonTreeAdapter<RefDetailEntity> {
 
-    public AdapterTest(Context context, int layoutId, List<RefDetailEntity> allNodes, List<RowConfig> parentNodeConfigs, List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+    public AdapterTest(Context context, int layoutId, List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @Override
@@ -54,8 +52,4 @@ public class AdapterTest extends CommonTreeAdapter<RefDetailEntity> {
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
 }

@@ -1,6 +1,7 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.imp;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.IMSNEditPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ms.base_msn_edit.IMSNEditView;
@@ -9,11 +10,16 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InventoryEntity;
+import com.richfit.domain.bean.LocationInfoEntity;
+import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -41,6 +47,7 @@ public class MSNEditPresenterImp extends BaseEditPresenterImp<IMSNEditView>
         RxSubscriber<ReferenceEntity> subscriber =
                 mRepository.getTransferInfoSingle("", "", bizType, "",
                         workId, invId, recWorkId, recInvId, materialNum, batchFlag, "", refDoc, refDocIem, userId)
+                        .map(refData -> calcTotalQuantity(refData))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext) {
                             @Override
@@ -79,6 +86,42 @@ public class MSNEditPresenterImp extends BaseEditPresenterImp<IMSNEditView>
                             }
                         });
         addSubscriber(subscriber);
+    }
+
+    private ReferenceEntity calcTotalQuantity(ReferenceEntity refData) {
+        List<RefDetailEntity> billDetailList = refData.billDetailList;
+        for (RefDetailEntity target : billDetailList) {
+            HashSet<String> sendLocationSet = new HashSet<>();
+            List<LocationInfoEntity> locationList = target.locationList;
+            if (locationList == null || locationList.size() == 0)
+                return refData;
+            //保存所有不重复的发出仓位
+            if (locationList != null && locationList.size() > 0) {
+                for (LocationInfoEntity loc : locationList) {
+                    if (!TextUtils.isEmpty(loc.location)) {
+                        sendLocationSet.add(loc.location);
+                    }
+                }
+            }
+            //计算发出仓位的所有接收仓位的数量作为该发出仓位的仓位数量
+            HashMap<String, String> locQuantityMap = new HashMap<>();
+            for (String sendLocation : sendLocationSet) {
+                //将缓存中相同的发出仓位的所有接收仓位的仓位数量累加
+                float totalQuantity = 0;
+                for (LocationInfoEntity loc : locationList) {
+                    if (sendLocation.equalsIgnoreCase(loc.location)) {
+                        totalQuantity += UiUtil.convertToFloat(loc.quantity, 0.0F);
+                    }
+                }
+                locQuantityMap.put(sendLocation, String.valueOf(totalQuantity));
+            }
+            //改变所有发出仓位的quantity
+            for (LocationInfoEntity loc : locationList) {
+                loc.quantity = locQuantityMap.get(loc.location);
+            }
+
+        }
+        return refData;
     }
 
     @Override
@@ -122,13 +165,14 @@ public class MSNEditPresenterImp extends BaseEditPresenterImp<IMSNEditView>
 
                             @Override
                             public void _onComplete() {
-                                if(mView != null) {
+                                if (mView != null) {
                                     mView.loadInventoryComplete();
                                 }
                             }
                         });
         addSubscriber(subscriber);
     }
+
     @Override
     public void getInventoryInfoOnRecLocation(String queryType, String workId, String invId, String workCode,
                                               String invCode, String storageNum, String materialNum,
@@ -233,7 +277,7 @@ public class MSNEditPresenterImp extends BaseEditPresenterImp<IMSNEditView>
                                 if (mView != null) {
                                     mView.saveEditedDataSuccess("修改成功!");
                                 }
-                           }
+                            }
                         });
         addSubscriber(subscriber);
     }

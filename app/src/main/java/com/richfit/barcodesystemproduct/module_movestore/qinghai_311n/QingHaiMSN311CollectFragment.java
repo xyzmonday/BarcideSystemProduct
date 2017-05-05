@@ -93,6 +93,15 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNColl
     }
 
     @Override
+    protected void loadLocationQuantity(int position) {
+        //调用父类方法，将缓存中的发出仓位数量匹配出来
+        super.loadLocationQuantity(position);
+        //接收仓位默认为发出仓位
+        autoRecLoc.setText(mInventoryDatas.get(position).location);
+    }
+
+
+    @Override
     public void showOperationMenuOnCollection(final String companyCode) {
         //每一次保存之前需要重置该字段
         specialConvert = "N";

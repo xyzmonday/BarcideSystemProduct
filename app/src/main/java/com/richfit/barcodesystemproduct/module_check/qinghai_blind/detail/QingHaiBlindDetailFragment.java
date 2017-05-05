@@ -214,7 +214,7 @@ public class QingHaiBlindDetailFragment extends BaseFragment<BlindDetailPresente
             }
         }
         mTextViews.get(mCurrentPageNum)
-                .setBackgroundColor(ContextCompat.getColor(mActivity, R.color.white));
+                .setBackgroundColor(ContextCompat.getColor(mActivity, R.color.grey_300));
     }
 
     /**
@@ -272,7 +272,7 @@ public class QingHaiBlindDetailFragment extends BaseFragment<BlindDetailPresente
         int size = mTextViews.size();
         for (int i = 0; i < size; i++)
             mTextViews.get(i).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.grey_500));
-        mTextViews.get(position).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.teal_a200));
+        mTextViews.get(position).setBackgroundColor(ContextCompat.getColor(mActivity, R.color.white));
         //自动滑动
         if (position % TITLE_SIZE_IN_PAGE == 0) {
             int firstTitleIndex = position / TITLE_SIZE_IN_PAGE;
@@ -323,8 +323,7 @@ public class QingHaiBlindDetailFragment extends BaseFragment<BlindDetailPresente
         setupBottomBar(tempTotalPage);
         setRefreshing(true);
         if (mAdapter == null) {
-            mAdapter = new BlindDetailAdapter(mActivity, R.layout.item_blind_detail, refData.checkList,
-                    mSubFunEntity.parentNodeConfigs, mSubFunEntity.childNodeConfigs);
+            mAdapter = new BlindDetailAdapter(mActivity, R.layout.item_blind_detail, refData.checkList);
             mRecycleView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
         } else {
@@ -430,5 +429,10 @@ public class QingHaiBlindDetailFragment extends BaseFragment<BlindDetailPresente
                 break;
         }
         super.retry(retryAction);
+    }
+
+    @Override
+    public void _onPause() {
+        super._onPause();
     }
 }

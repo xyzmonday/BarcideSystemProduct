@@ -16,10 +16,6 @@ import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -110,14 +106,6 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
         etMaterialNum.setEnabled(true);
     }
 
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
-        //获取目标仓位的库存
-
-    }
 
     @Override
     public void initEvent() {
@@ -126,26 +114,6 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> loadMaterialInfo(materialNum, getString(etBatchFlag)));
         //获取仓位的库存
         etSendLocation.setOnRichEditTouchListener((view, location) -> loadInventoryInfo(location));
-    }
-
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
     /**
@@ -233,9 +201,6 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
     private void clearAllUI() {
         clearCommonUI(tvMaterialDesc, tvMaterialGroup, tvMaterialUnit, etSendLocation,
                 tvSendInvQuantity, etRecLocation, etRecQuantity);
-        //额外字段
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
     }
 
     @Override

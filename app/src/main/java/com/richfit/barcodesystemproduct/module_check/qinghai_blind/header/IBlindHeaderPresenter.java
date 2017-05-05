@@ -38,7 +38,7 @@ public interface IBlindHeaderPresenter extends IBaseHeaderPresenter<IBlindHeader
      * @param invId:库存地点id
      */
     void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial,
-                      String storageNum, String workId, String invId);
+                      String storageNum, String workId, String invId,String checkDate);
 
 
     void deleteCheckData(String storageNum, String workId, String invId, String checkId, String userId, String bizType);

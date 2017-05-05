@@ -16,11 +16,6 @@ import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 
@@ -55,6 +50,13 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
     RichEditText etTransferDate;
 
     @Override
+    public void handleBarCodeScanResult(String type, String[] list) {
+        if (list != null && list.length == 1) {
+            getRefData(list[0]);
+        }
+    }
+
+    @Override
     protected int getContentId() {
         return R.layout.fragment_base_msy_header;
     }
@@ -62,11 +64,6 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
 
@@ -89,7 +86,17 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
     @Override
     protected void initView() {
         etTransferDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
+    }
+
+    @Override
+    public void initData() {
+        if (mUploadMsgEntity != null && mPresenter != null && mPresenter.isLocal() &&
+                !TextUtils.isEmpty(mUploadMsgEntity.transId) && !TextUtils.isEmpty(mUploadMsgEntity.refNum)) {
+            etRefNum.setText(mUploadMsgEntity.refNum);
+            getRefData(mUploadMsgEntity.refNum);
+            //如果是離線那麼鎖定控件
+            lockUIUnderEditState(etRefNum);
+        }
     }
 
     protected void getRefData(String refNum) {
@@ -98,27 +105,6 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
         mPresenter.getReference(refNum, mRefType, mBizType, getMoveType(),"", Global.USER_ID);
     }
 
-    /**
-     * 读取抬头配置文件成功
-     *
-     * @param configs
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.headerConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    /**
-     * 读取抬头配置文件失败
-     *
-     * @param message
-     */
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
-    }
 
     /**
      * 删除整单缓存数据成功
@@ -157,8 +143,6 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
             tvWork.setText(mRefData.workCode);
             //库存地点
             tvInv.setText(mRefData.invCode);
-            //绑定额外字段
-            bindExtraUI(mSubFunEntity.headerConfigs, mRefData.mapExt);
         }
     }
 
@@ -232,13 +216,11 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
     @Override
     public void clearAllUI() {
         clearCommonUI(tvRefNum, tvWork, tvInv);
-        clearExtraUI(mSubFunEntity.headerConfigs);
     }
 
     @Override
     public void clearAllUIAfterSubmitSuccess() {
         clearCommonUI(etRefNum, tvRefNum, tvWork, tvInv);
-        clearExtraUI(mSubFunEntity.headerConfigs);
         mRefData = null;
     }
 
@@ -249,8 +231,6 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
         //切换了页面
         if (mRefData != null) {
             mRefData.voucherDate = getString(etTransferDate);
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
         }
     }
 
@@ -264,15 +244,8 @@ public abstract class BaseMSHeaderFragment extends BaseHeaderFragment<MSHeaderPr
         super.retry(retryAction);
     }
 
-    @Override
-    public boolean isNeedShowFloatingButton() {
-        return false;
-    }
-
     /*返回移动类型*/
     @CheckResult
     @NonNull
     protected abstract String getMoveType();
-
-
 }

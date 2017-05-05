@@ -68,27 +68,27 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
 
     @Override
     public void loadFragmentConfigSuccess() {
-        //如果fragment的配置信加载成功，那么直接下载扩展字段的配置信息
-        mPresenter.loadExtraConfig(Global.COMPANY_ID);
+        toHome();
     }
 
     @Override
-    public void loadFragmentConfigFail(String message) {
+    public void loadFragmentConfigFail(String message){
         showMessage(message);
+        toHome();
     }
 
     /**
      * 下载配置文件成功。注意不管是否下载扩展字段的配置信息都必须去下载
      */
-    @Override
-    public void loadExtraConfigSuccess() {
-        toHome();
-    }
-
-    @Override
-    public void loadExtraConfigFail(String message) {
-        toHome();
-    }
+//    @Override
+//    public void loadExtraConfigSuccess() {
+//        toHome();
+//    }
+//
+//    @Override
+//    public void loadExtraConfigFail(String message) {
+//        toHome();
+//    }
 
     /**
      * 显示动画，在动画结束后直接跳转到home页面

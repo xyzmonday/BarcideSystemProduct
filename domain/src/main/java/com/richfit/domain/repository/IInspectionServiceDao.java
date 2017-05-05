@@ -79,5 +79,5 @@ public interface IInspectionServiceDao {
     boolean setTransFlag(String transId);
 
     boolean uploadEditedHeadData(ResultEntity resultEntity);
-
+    void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId);
 }

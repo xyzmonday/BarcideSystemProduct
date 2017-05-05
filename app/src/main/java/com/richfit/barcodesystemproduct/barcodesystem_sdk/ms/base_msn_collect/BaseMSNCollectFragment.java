@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
@@ -24,7 +25,6 @@ import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
@@ -34,11 +34,9 @@ import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -107,10 +105,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     private LocationAdapter mSendLocAdapter;
     /*缓存的历史仓位数量*/
     protected List<RefDetailEntity> mHistoryDetailList;
-    /*缓存的仓位级别的额外字段*/
-    Map<String, Object> mCachedExtraLocationMap;
-    /*缓存的行级别的额外字段*/
-    Map<String, Object> mCachedExtraLineMap;
     /*新增设备Id*/
     protected String mDeviceId;
     protected boolean isLocationChecked = false;
@@ -179,12 +173,11 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         });
 
         //监测批次修改，如果修改了批次那么需要重新刷新库存信息和用户已经输入的信息
-        //debounce(400, TimeUnit.MILLISECONDS) 当没有数据传入达到400ms之后,才去发送数据
+        // dedounce(400, TimeUnit.MILLISECONDS) 当没有数据传入达到400ms之后,才去发送数据
         // throttleFirst(400, TimeUnit.MILLISECONDS) 在每一个400ms内,如果有数据传入就发送.且每个400ms内只发送一次或零次数据.
         //但是这是使用debonce，resetCommonUIPartly将延迟执行到发出库位显示默认位置之后，导致抬头界面的默认发出库位选择失效
         RxTextView.textChanges(etSendBatchFlag)
                 .filter(str -> !TextUtils.isEmpty(str))
-//                .throttleFirst(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 .subscribe(batch -> resetCommonUIPartly());
 
 
@@ -221,9 +214,9 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             etQuantity.setEnabled(!isChecked);
         });
 
-        //点击自动提示控件，显示默认列表
+        //点击自动提示控件，显示默认列表。注意这里如果发出仓位没有显示，那么不能显示下拉列表
         RxView.clicks(autoRecLoc)
-                .filter(a -> autoRecLoc.getAdapter() != null)
+                .filter(a -> autoRecLoc.getAdapter() != null && llRecLocation.getVisibility() != View.GONE)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     hideKeyboard(autoRecLoc);
@@ -236,13 +229,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
 
     }
 
-    @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE, Global.LOCATION_CONFIG_TYPE);
-
-    }
 
     @Override
     public void initDataLazily() {
@@ -264,37 +250,12 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             return;
         }
 
-        if (!checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请先在抬头界面输入必要的信息");
-            return;
-        }
-
         String transferKey = (String) SPrefUtil.getData(mBizType, "0");
         if ("1".equals(transferKey)) {
             showMessage("本次采集已经过账,请先到数据明细界面进行数据上传操作");
             return;
         }
         etMaterialNum.setEnabled(true);
-    }
-
-    /**
-     * 读取数据采集界面的配置信息成功，动态生成额外控件
-     *
-     * @param configs:返回configType=3,4的两种配置文件。
-     */
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        mSubFunEntity.locationConfigs = configs.get(1);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-        createExtraUI(mSubFunEntity.locationConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
     protected void loadMaterialInfo(String materialNum, String batchFlag) {
@@ -426,8 +387,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         }
 
         final InvEntity invEntity = mSendInvs.get(position);
-        mCachedExtraLocationMap = null;
-        mCachedExtraLocationMap = null;
         mPresenter.getInventoryInfo(getInventoryQueryType(), mRefData.workId, invEntity.invId,
                 mRefData.workCode, invEntity.invCode, "", getString(etMaterialNum),
                 CommonUtil.Obj2String(etMaterialNum.getTag()), "",
@@ -482,7 +441,10 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         showMessage(message);
     }
 
-
+    /**
+     * 如果接收仓位存在库存，那么将接收仓位的缓存和库存组合起来作为接收仓位列表
+     * @param recLocations
+     */
     @Override
     public void showRecLocations(List<String> recLocations) {
         ArrayList<String> tmp = new ArrayList<>();
@@ -503,6 +465,10 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             setAutoCompleteConfig(autoRecLoc, tmp, autoRecLoc.getWidth());
     }
 
+    /**
+     * 如果接收仓位没有库存，那么仅仅显示接收仓位的缓存仓位列表
+     * @param message
+     */
     @Override
     public void loadRecLocationsFail(String message) {
         //清除显示下拉列表
@@ -520,7 +486,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
                 }
             }
         }
-        L.e("tmp = " + tmp);
         if (tmp.size() > 0)
             setAutoCompleteConfig(autoRecLoc, tmp, autoRecLoc.getWidth());
     }
@@ -544,11 +509,12 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     /**
      * 用户选择发出仓位，匹配该仓位上的仓位数量
      */
-    private void loadLocationQuantity(int position) {
+    protected void loadLocationQuantity(int position) {
         if (position <= 0) {
             resetSendLocation();
             return;
         }
+
         //这里修改成功locationCombine去批次仓位级缓存
         final String locationCombine = mInventoryDatas.get(position).locationCombine;
         final String sendLocation = mInventoryDatas.get(position).location;
@@ -575,33 +541,26 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         tvInvQuantity.setText(invQuantity);
 
         String locQuantity = "0";
-        String recLocation = "";
         String recBatchFlag = getString(etRecBatchFlag);
         for (RefDetailEntity detail : mHistoryDetailList) {
             List<LocationInfoEntity> locationList = detail.locationList;
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
-                    recLocation = locationInfo.recLocation;
                     final boolean isMatched = mIsOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                             && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);
                     if (isMatched) {
                         locQuantity = locationInfo.quantity;
                         recBatchFlag = locationInfo.recBatchFlag;
-                        mCachedExtraLocationMap = locationInfo.mapExt;
-                        mCachedExtraLineMap = detail.mapExt;
                         break;
                     }
-
                 }
             }
         }
-        //绑定额外字段数据
-        bindExtraUI(mSubFunEntity.locationConfigs, mCachedExtraLocationMap);
-        bindExtraUI(mSubFunEntity.collectionConfigs, mCachedExtraLineMap);
         tvLocQuantity.setText(locQuantity);
         if (!TextUtils.isEmpty(recBatchFlag) && !TextUtils.isEmpty(getString(etRecBatchFlag)))
             etRecBatchFlag.setText(recBatchFlag);
+
     }
 
     private void resetSendLocation() {
@@ -728,15 +687,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         if (!refreshQuantity(getString(etQuantity))) {
             return false;
         }
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
         return true;
     }
 
@@ -782,9 +732,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             result.specialInvNum = mInventoryDatas.get(locationPos).specialInvNum;
             result.specialConvert = !TextUtils.isEmpty(result.specialInvFlag) && !TextUtils.isEmpty(result.specialInvNum) ?
                     "Y" : "N";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, mCachedExtraLineMap, mCachedExtraLocationMap);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, mCachedExtraLineMap, mCachedExtraLocationMap);
-            result.mapExLocation = createExtraMap(Global.EXTRA_LOCATION_MAP_TYPE, mCachedExtraLineMap, mCachedExtraLocationMap);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER)
@@ -821,9 +768,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             mInventoryDatas.clear();
             mSendLocAdapter.notifyDataSetChanged();
         }
-        //额外字段
-        clearExtraUI(mSubFunEntity.collectionConfigs);
-        clearExtraUI(mSubFunEntity.locationConfigs);
     }
 
     /**

@@ -33,7 +33,6 @@ import com.richfit.domain.bean.BottomMenuEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,13 +157,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
     }
 
     @Override
-    protected void initView() {
-        //读取额外字段配置信息
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType,
-                Global.COLLECT_CONFIG_TYPE);
-    }
-
-    @Override
     public void initEvent() {
         /*扫描后者手动输入物资条码*/
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> {
@@ -192,18 +184,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
     }
 
     @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> configs) {
-        mSubFunEntity.collectionConfigs = configs.get(0);
-        createExtraUI(mSubFunEntity.collectionConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.collectionConfigs = null;
-    }
-
-    @Override
     public void initDataLazily() {
         etMaterialNum.setEnabled(false);
         if (mRefData == null) {
@@ -216,10 +196,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
         }
         if (TextUtils.isEmpty(mRefData.voucherDate)) {
             showMessage("请先在抬头界面选择过账日期");
-            return;
-        }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
             return;
         }
         etMaterialNum.setEnabled(true);
@@ -381,8 +357,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             cbCertificate.setSelected(DEFUALT_CHOOSED_FLAG.equalsIgnoreCase(mCachedRefDetailData.certificate));
             //质检证书
             cbQmCertificate.setSelected(DEFUALT_CHOOSED_FLAG.equals(mCachedRefDetailData.qmCertificate));
-
-            bindExtraUI(mSubFunEntity.collectionConfigs, mCachedRefDetailData.mapExt);
         }
         //获取库存地点
         mPresenter.getInvsByWorkId(lineData.workId, 0);
@@ -508,17 +482,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             return false;
         }
 
-//        if (spInv.getSelectedItemPosition() == 0) {
-//            showMessage("请选择库存点");
-//            return false;
-//        }
-
         if (!refreshQuantity(getString(etQuantity), getString(etSampleQuantity))) {
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请先输入必输字段");
             return false;
         }
         return true;
@@ -586,14 +550,15 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             result.materialId = lineData.materialId;
             result.unit = lineData.unit;
             result.workId = lineData.workId;
+            result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;
             result.refType = mRefData.refType;
             result.moveType = mRefData.moveType;
+            result.voucherDate = mRefData.voucherDate;
             result.refLineNum = lineData.lineNum;
             result.inspectionType = mRefData.inspectionType;
             result.companyCode = Global.COMPANY_CODE;
             result.inspectionPerson = Global.USER_ID;
             result.userId = Global.USER_ID;
-            result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;
             //制造商
             result.manufacturer = getString(etManufacturer);
             //实收数量
@@ -627,9 +592,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             //检验结果
             result.inspectionResult = spInspectionResult.getSelectedItemPosition() == 0 ? "01" : "02";
             result.modifyFlag = "N";
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt);
-
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -714,6 +676,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
 
     @Override
     public void _onPause() {
+        super._onPause();
         clearAllUI();
     }
 
@@ -750,8 +713,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             mRefLineAdapter.notifyDataSetChanged();
             spRefLine.setBackgroundColor(0);
         }
-        //清除额外资源
-        clearExtraUI(mSubFunEntity.collectionConfigs);
     }
 
 

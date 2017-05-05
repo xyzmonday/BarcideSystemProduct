@@ -6,8 +6,6 @@ import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.richfit.common_lib.IInterface.IAdapterState;
 import com.richfit.common_lib.IInterface.OnItemMove;
@@ -15,13 +13,10 @@ import com.richfit.common_lib.R;
 import com.richfit.common_lib.baseadapterrv.base.ItemViewDelegate;
 import com.richfit.common_lib.baseadapterrv.base.ItemViewDelegateManager;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
-import com.richfit.common_lib.utils.CreateExtraUIHelper;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.TreeNode;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends RecyclerView.Adapter<ViewHolder> {
     protected Context mContext;
@@ -29,8 +24,6 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
     protected List<T> mVisibleNodes;
     protected List<T> mAllNodes;
 
-    protected List<RowConfig> mParentNodeConfigs;
-    protected List<RowConfig> mChildNodeConfigs;
 
     protected ItemViewDelegateManager mItemViewDelegateManager;
     protected OnItemClickListener mOnItemClickListener;
@@ -38,14 +31,10 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
     protected IAdapterState mAdapterState;
 
 
-    public MultiItemTypeTreeAdapter(Context context, List<T> allNodes,
-                                    List<RowConfig> parentNodeConfigs,
-                                    List<RowConfig> childNodeConfigs) {
+    public MultiItemTypeTreeAdapter(Context context, List<T> allNodes) {
         mContext = context;
         mAllNodes = allNodes;
         mVisibleNodes = RecycleTreeViewHelper.filterVisibleNodes(allNodes);
-        mParentNodeConfigs = parentNodeConfigs;
-        mChildNodeConfigs = childNodeConfigs;
         mItemViewDelegateManager = new ItemViewDelegateManager();
     }
 
@@ -67,14 +56,10 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
         ItemViewDelegate itemViewDelegate = mItemViewDelegateManager.getItemViewDelegate(viewType);
         int layoutId = itemViewDelegate.getItemViewLayoutId();
         ViewHolder holder = ViewHolder.createViewHolder(mContext, parent, layoutId);
-        addExtraUI(holder, holder.getConvertView(), viewType);
-        setItemListener(parent, holder, viewType);
+        setListener(parent, holder, viewType);
         return holder;
     }
 
-    public void onViewHolderCreated(ViewHolder holder, View itemView) {
-
-    }
 
     public void convert(ViewHolder holder, T item) {
         mItemViewDelegateManager.convert(holder, item, holder.getAdapterPosition());
@@ -91,17 +76,12 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
      * @param viewHolder
      * @param viewType
      */
-    protected void setItemListener(final ViewGroup parent, final ViewHolder viewHolder, int viewType) {
+    protected void setListener(final ViewGroup parent, final ViewHolder viewHolder, int viewType) {
         if (!isEnabled(viewType)) return;
         viewHolder.getConvertView().setOnClickListener(v -> {
             if (mOnItemClickListener != null) {
                 int position = viewHolder.getAdapterPosition();
                 mOnItemClickListener.onItemClick(v, viewHolder, position);
-            }
-
-            if (viewType == Global.PARENT_NODE_HEADER_TYPE) {
-                int position = viewHolder.getAdapterPosition();
-                expandOrCollapse(position);
             }
         });
 
@@ -112,7 +92,7 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
             }
             return false;
         });
-
+        setItemNodeEditAndDeleteListener(viewHolder);
     }
 
     /**
@@ -123,8 +103,6 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
      */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        //绑定额外字段信息
-        bindExtraUI(holder, position, mVisibleNodes.get(position).getViewType());
         onViewHolderBindInternal(holder, getItemViewType(position));
         convert(holder, mVisibleNodes.get(position));
     }
@@ -220,33 +198,6 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
         }
     }
 
-    /**
-     * 添加动态控件
-     */
-    protected void addExtraUI(ViewHolder holder, View itemView, int viewType) {
-        switch (viewType) {
-            //父节点头
-            case Global.PARENT_NODE_HEADER_TYPE:
-                addExtraUIForParentNode(holder, itemView);
-                break;
-            //正常父节点(子节点)Item
-            case Global.PARENT_NODE_ITEM_TYPE:
-                addExtraUIForParentNode(holder, itemView.findViewById(R.id.root_id));
-                setItemNodeEditAndDeleteListener(holder);
-                break;
-            //子节点头
-            case Global.CHILD_NODE_HEADER_TYPE:
-                setChildNodeMargin(itemView);
-                addExtraUIForChildNode(holder, itemView);
-                break;
-            //子节点Item
-            case Global.CHILD_NODE_ITEM_TYPE:
-                setChildNodeMargin(itemView);
-                addExtraUIForChildNode(holder, itemView.findViewById(R.id.root_id));
-                setItemNodeEditAndDeleteListener(holder);
-                break;
-        }
-    }
 
     /**
      * 设置子节点的margin
@@ -327,8 +278,7 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
             //修改父节点的相关数据(注意这里需要先刷新父节点的某些数据，因为如果先删除子节点，那么子节点的数据再也不能拿到)
             notifyParentNodeChanged(position, parentPos);
             //移除子节点的抬头节点
-            if (parentNode.getChildren().size() == 2 &&
-                    parentNode.getChildren().get(0).getViewType() == Global.CHILD_NODE_HEADER_TYPE) {
+            if (parentNode.getChildren().size() == 2 && parentNode.getChildren().get(0).getViewType() == Global.CHILD_NODE_HEADER_TYPE) {
 
                 TreeNode childNode = parentNode.getChildren().get(0);
                 int indexOf = mVisibleNodes.indexOf(childNode);
@@ -363,88 +313,4 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
      */
     public abstract void notifyNodeChanged(int position);
 
-
-    /**
-     * 为父节点增加额外字段
-     */
-    private void addExtraUIForParentNode(ViewHolder holder, View extraContainer) {
-        if (mParentNodeConfigs == null || mParentNodeConfigs.size() == 0 || extraContainer == null)
-            return;
-        if (LinearLayout.class.isInstance(extraContainer)) {
-            LinearLayout extraRootContainer = (LinearLayout) extraContainer;
-            for (RowConfig config : mParentNodeConfigs) {
-                View viewForParent = addNode(extraRootContainer, config);
-                holder.addExtraView(config.propertyCode, viewForParent);
-            }
-        }
-    }
-
-    private void addExtraUIForChildNode(ViewHolder holder, View extraContainer) {
-        if (mChildNodeConfigs == null || mChildNodeConfigs.size() == 0 || extraContainer == null)
-            return;
-        if (LinearLayout.class.isInstance(extraContainer)) {
-            LinearLayout extraRootContainer = (LinearLayout) extraContainer;
-            for (RowConfig config : mChildNodeConfigs) {
-                View viewForParent = addNode(extraRootContainer, config);
-                holder.addExtraView(config.propertyCode, viewForParent);
-            }
-        }
-    }
-
-    /**
-     * 在rootContainer水平方向添加item
-     *
-     * @param rootContainer
-     * @param rowConfig
-     * @return
-     */
-    private View addNode(LinearLayout rootContainer, RowConfig rowConfig) {
-        rootContainer.setOrientation(LinearLayout.HORIZONTAL);
-        View view = CreateExtraUIHelper.createTableHeaderColumn(mContext,
-                (int) mContext.getResources().getDimension(R.dimen.extra_column_width));
-        if (view != null && TextView.class.isInstance(view)) {
-            TextView tv = (TextView) view;
-            rootContainer.addView(tv);
-            rootContainer.addView(CreateExtraUIHelper.addHeaderTabSeparator(mContext));
-            return view;
-        }
-        return null;
-    }
-
-    /**
-     * 为额外控件绑定数据
-     */
-    protected void bindExtraUI(final ViewHolder viewHolder, final int position, int viewType) {
-        List<RowConfig> configs = null;
-        switch (viewType) {
-            case Global.PARENT_NODE_HEADER_TYPE:
-                configs = mParentNodeConfigs;
-                break;
-            case Global.CHILD_NODE_ITEM_TYPE:
-                configs = mChildNodeConfigs;
-                break;
-        }
-        if (configs == null || configs.size() == 0)
-            return;
-        final Map<String, Object> mapExt = provideExtraData(position);
-        if (mapExt == null)
-            return;
-
-        for (RowConfig config : configs) {
-            View extraView = viewHolder.findExtraView(config.propertyCode);
-            if (extraView != null && TextView.class.isInstance(extraView)) {
-                TextView tv = (TextView) extraView;
-                Object obj = mapExt.get(config.propertyCode);
-                tv.setText(obj == null ? "" : obj.toString());
-            }
-        }
-    }
-
-    /**
-     * 子类给出额外数据源
-     *
-     * @param position
-     * @return
-     */
-    protected abstract Map<String, Object> provideExtraData(int position);
 }

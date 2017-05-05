@@ -96,8 +96,6 @@ public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectP
         spInv.setEnabled(true);
         tvLocQuantity.setText("");
         tvTotalQuantity.setText("");
-        //初始化额外字段的数据,注意这仅仅是服务器返回的数据，不含有任何缓存数据。
-        bindExtraUI(mSubFunEntity.collectionConfigs, lineData.mapExt);
         if (!cbSingle.isChecked())
             mPresenter.getInvsByWorkId(lineData.workId, getOrgFlag());
     }

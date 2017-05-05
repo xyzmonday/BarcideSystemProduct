@@ -45,10 +45,6 @@ public class QingYangAO_1CollectFragment extends QingYangAOCollectFragment {
             showMessage("请先在抬头界面选择过账日期");
             return;
         }
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
-            return;
-        }
         setEnanble(etMaterialNum,tvActQuantity,spInv,spRefLine);
     }
 

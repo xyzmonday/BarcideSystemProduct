@@ -37,6 +37,11 @@ public class QingYangMSN301HeaderFragment extends BaseMSNHeaderFragment {
     }
 
     @Override
+    public void loadSendInvsComplete() {
+
+    }
+
+    @Override
     public void showRecInvs(List<InvEntity> recInvs) {
         mRecInvs.clear();
         mRecInvs.addAll(recInvs);
@@ -51,6 +56,11 @@ public class QingYangMSN301HeaderFragment extends BaseMSNHeaderFragment {
     @Override
     public void loadRecInvsFail(String message) {
         showMessage("获取接收库位失败;" + message);
+    }
+
+    @Override
+    public void loadRecInvsComplete() {
+
     }
 
     @Override

@@ -22,10 +22,8 @@ import java.util.Map;
 
 public class DSYDetailAdapter extends MultiItemTypeTreeAdapter<RefDetailEntity> {
 
-    public DSYDetailAdapter(Context context, List<RefDetailEntity> allNodes,
-                            List<RowConfig> parentNodeConfigs,
-                            List<RowConfig> childNodeConfigs) {
-        super(context, allNodes, parentNodeConfigs, childNodeConfigs);
+    public DSYDetailAdapter(Context context, List<RefDetailEntity> allNodes) {
+        super(context, allNodes);
         addItemViewDelegate(Global.PARENT_NODE_HEADER_TYPE, new DSYParentHeaderItemDelegate());
         addItemViewDelegate(Global.CHILD_NODE_HEADER_TYPE, new DSYChildHeaderItemDelegate());
         addItemViewDelegate(Global.CHILD_NODE_ITEM_TYPE, new DSYChildItemDelegate());
@@ -66,10 +64,4 @@ public class DSYDetailAdapter extends MultiItemTypeTreeAdapter<RefDetailEntity> 
         }
         return false;
     }
-
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
-    }
-
 }

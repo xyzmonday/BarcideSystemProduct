@@ -32,7 +32,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
     @Override
     public ReferenceEntity getCheckInfo(String userId, String bizType, String checkLevel,
                                         String checkSpecial, String storageNum, String workId,
-                                        String invId, String checkNum) {
+                                        String invId, String checkNum,String checkDate) {
         SQLiteDatabase db = getWritableDB();
         ReferenceEntity refData = new ReferenceEntity();
         clearStringBuffer();
@@ -85,6 +85,8 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
             cv.put("inv_id", invId);
             cv.put("check_special", checkSpecial);
             cv.put("check_num", checkNum);
+            //这里先默认保存盘点日期
+            cv.put("sap_check_num",checkDate);
             cv.put("creation_date", creationDate);
             cv.put("created_by", userId);
             cv.put("check_level", checkLevel);
@@ -411,15 +413,115 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
 
     @Override
     public List<ReferenceEntity> readTransferedData() {
-        return null;
+        SQLiteDatabase db = getWritableDB();
+        ArrayList<ReferenceEntity> datas = new ArrayList<>();
+
+        clearStringBuffer();
+
+        sb.append("select id,storage_num,work_id,inv_id,check_special,check_num,created_by,")
+                .append("check_level,check_type,sap_check_num ")
+                .append("from MTL_CHECK_HEADER ")
+                .append(" where trans_flag = '0' or trans_flag = '1'")
+                .append(" order by creation_date");
+        ReferenceEntity header = null;
+        int index;
+        //1. 读取抬头的信息
+        Cursor cursor = db.rawQuery(sb.toString(), null);
+        while (cursor.moveToNext()) {
+            index = -1;
+            header = new ReferenceEntity();
+            header.checkId = cursor.getString(++index);
+            header.storageNum = cursor.getString(++index);
+            header.workId = cursor.getString(++index);
+            header.invId = cursor.getString(++index);
+            header.specialFlag = cursor.getString(++index);
+            header.checkNum = cursor.getString(++index);
+            header.userId = cursor.getString(++index);
+            header.checkLevel = cursor.getString(++index);
+            header.bizType = cursor.getString(++index);
+            header.voucherDate = cursor.getString(++index);
+            datas.add(header);
+        }
+        cursor.close();
+        clearStringBuffer();
+
+        //库存级时，通过工厂id和库存地点id查询出对应的code，用于显示
+        sb.append("select WORG.org_code as work_code ,WORG.org_name as work_name, ")
+                .append("IORG.org_code as inv_code ,IORG.org_name as inv_name ")
+                .append("from MTL_CHECK_HEADER H ")
+                .append(" left join p_auth_org WORG ")
+                .append(" on H.work_id = WORG.org_id ")
+                .append(" left join p_auth_org IORG ")
+                .append(" on H.inv_id = IORG.org_id ")
+                .append(" where  H.id = ?");
+
+        for (int i = 0, size = datas.size(); i < size; i++) {
+            final ReferenceEntity refData = datas.get(i);
+            if(!TextUtils.isEmpty(refData.workId) && !TextUtils.isEmpty(refData.invId)) {
+                cursor = db.rawQuery(sb.toString(), new String[]{refData.checkId});
+                while (cursor.moveToNext()) {
+                    refData.workCode = cursor.getString(0);
+                    refData.workName = cursor.getString(1);
+                    refData.invCode = cursor.getString(2);
+                    refData.invName = cursor.getString(3);
+                }
+                cursor.close();
+            }
+        }
+
+        clearStringBuffer();
+        //2. 读取明细
+        if (datas.size() == 0) {
+            return datas;
+        }
+
+        sb.append("select L.id,L.work_id,L.inv_id,L.special_flag,L.line_num,L.material_id,")
+                .append("L.location,L.inv_type,L.special_num,L.batch_num,L.quantity,L.new_flag,created_by,L.inv_quantity,")
+                .append("M.material_num,M.material_group,M.material_desc,M.unit ")
+                .append("from MTL_CHECK_LINES L left join base_material_code M ")
+                .append(" on L.material_id = M.id where L.check_id = ? ");
+
+        for (int i = 0, size = datas.size(); i < size; i++) {
+            final ReferenceEntity refData = datas.get(i);
+            refData.checkList = new ArrayList<>();
+            InventoryEntity item = null;
+            cursor = db.rawQuery(sb.toString(), new String[]{refData.checkId});
+            while (cursor.moveToNext()) {
+                item = new InventoryEntity();
+                index = -1;
+                item.checkLineId = cursor.getString(++index);
+                item.workId = cursor.getString(++index);
+                item.invId = cursor.getString(++index);
+                item.specialInvFlag = cursor.getString(++index);
+                item.lineNum = cursor.getString(++index);
+                item.materialId = cursor.getString(++index);
+                item.location = cursor.getString(++index);
+                item.invType = cursor.getString(++index);
+                item.specialInvNum = cursor.getString(++index);
+                item.batchFlag = cursor.getString(++index);
+                item.quantity = cursor.getString(++index);
+                item.newFlag = cursor.getString(++index);
+                item.userId = cursor.getString(++index);
+                item.invQuantity = cursor.getString(++index);
+                item.materialNum = cursor.getString(++index);
+                item.materialGroup = cursor.getString(++index);
+                item.materialDesc = cursor.getString(++index);
+                item.unit = cursor.getString(++index);
+                refData.checkList.add(item);
+            }
+            cursor.close();
+        }
+        //进行数据转换，将子节点转换为Item
+        db.close();
+        return datas;
     }
 
     @Override
-    public boolean setTransFlag(String transId) {
+    public boolean setTransFlag(String checkId) {
         SQLiteDatabase db = getWritableDB();
         ContentValues cv = new ContentValues();
         cv.put("trans_flag", "3");
-        int iResult = db.update("MTL_CHECK_HEADER", cv, "id = ?", new String[]{transId});
+        int iResult = db.update("MTL_CHECK_HEADER", cv, "id = ?", new String[]{checkId});
         db.close();
         return iResult > 0;
     }
@@ -428,4 +530,14 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
     public boolean uploadEditedHeadData(ResultEntity resultEntity) {
         return false;
     }
+
+    @Override
+    public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
+        //删除盘点缓存
+        SQLiteDatabase db = getWritableDB();
+        db.delete("MTL_CHECK_HEADER",null,null);
+        db.delete("MTL_CHECK_LINES",null,null);
+        db.close();
+    }
 }
+

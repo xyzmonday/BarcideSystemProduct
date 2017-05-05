@@ -120,7 +120,7 @@ public class QingHaiWWCDetailFragment extends BaseDetailFragment<QingHaiWWCDetai
         mRefDetail = allNodes;
         if (mAdapter == null) {
             mAdapter = new QingHaiWWCAdapter(mActivity, R.layout.item_qinghai_wwc_item,
-                    allNodes, mSubFunEntity.parentNodeConfigs, mSubFunEntity.childNodeConfigs);
+                    allNodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
         } else {

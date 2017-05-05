@@ -47,10 +47,6 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
             return;
         }
 
-        if (!checkExtraData(mSubFunEntity.headerConfigs)) {
-            showMessage("请先在抬头界面输入必要的字段信息");
-            return;
-        }
         startAutoRefresh();
     }
 
@@ -90,8 +86,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
     public void showNodes(List<RefDetailEntity> nodes, String transId) {
         mTransId = transId;
         if (mAdapter == null) {
-            mAdapter = new QingHaiAODetailAdapter(mActivity, R.layout.item_qinghai_ao_item, nodes,
-                    mSubFunEntity.parentNodeConfigs, null);
+            mAdapter = new QingHaiAODetailAdapter(mActivity, R.layout.item_qinghai_ao_item, nodes);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mRecyclerView.setAdapter(mAdapter);
         } else {
@@ -203,7 +198,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
         mTransNum = "";
         mPresenter.transferCollectionData(mRefData.recordNum, mRefData.refCodeId, mTransId, mBizType,
                 mRefType, mRefData.inspectionType, Global.USER_ID, false,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
     @Override

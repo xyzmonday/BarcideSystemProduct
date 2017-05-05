@@ -21,6 +21,8 @@ public interface UploadContract {
 
         void uploadCollectDataComplete();
 
+        void startReadUploadData();
+
         void showUploadData(ArrayList<ResultEntity> results);
 
         void readUploadDataFail(String message);
@@ -31,10 +33,6 @@ public interface UploadContract {
 
     interface Presenter extends IBaseDetailPresenter<View> {
         void uploadCollectedDataOffLine();
-
-        void uploadInspectionDataOffLine();
-
-        void uploadCheckDataOffline();
 
         void readUploadData(int bizType);
 

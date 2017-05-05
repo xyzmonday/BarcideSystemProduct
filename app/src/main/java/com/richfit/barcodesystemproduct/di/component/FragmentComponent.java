@@ -65,7 +65,7 @@ import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detai
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.header.LQHeaderFragment;
 import com.richfit.barcodesystemproduct.module_local.upload.BuziUploadFragment;
 import com.richfit.barcodesystemproduct.module_local.upload.CheckUploadFragment;
-import com.richfit.barcodesystemproduct.module_local.upload.InspectFragment;
+import com.richfit.barcodesystemproduct.module_local.upload.InspectUploadFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.collect.LACollectFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.header.LAHeaderFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSN311EditFragment;
@@ -310,6 +310,6 @@ public interface FragmentComponent {
 
     void inject(BuziUploadFragment fragment);
     void inject(CheckUploadFragment fragment);
-    void inject(InspectFragment fragment);
+    void inject(InspectUploadFragment fragment);
 
 }

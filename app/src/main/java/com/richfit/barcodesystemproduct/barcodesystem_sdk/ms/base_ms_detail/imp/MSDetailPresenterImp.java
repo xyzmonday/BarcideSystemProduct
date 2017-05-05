@@ -187,9 +187,6 @@ public class MSDetailPresenterImp extends BaseDetailPresenterImp<IMSDetailView>
                     //实收数量
                     bundle.putString(Global.EXTRA_QUANTITY_KEY, node.quantity);
 
-                    //子节点的额外字段的数据
-                    bundle.putSerializable(Global.LOCATION_EXTRA_MAP_KEY, (Serializable) node.mapExt);
-
                     intent.putExtras(bundle);
 
                     Activity activity = (Activity) mContext;
@@ -368,8 +365,6 @@ public class MSDetailPresenterImp extends BaseDetailPresenterImp<IMSDetailView>
             cachedEntity.materialGroup = node.materialGroup;
             cachedEntity.actQuantity = node.actQuantity;
             cachedEntity.workCode = node.workCode;
-            //处理父节点的缓存
-            cachedEntity.mapExt = UiUtil.copyMap(node.mapExt, cachedEntity.mapExt);
             nodes.add(cachedEntity);
         }
 
@@ -404,8 +399,6 @@ public class MSDetailPresenterImp extends BaseDetailPresenterImp<IMSDetailView>
                     childNode.specialInvFlag = location.specialInvFlag;
                     childNode.specialInvNum = location.specialInvNum;
                     childNode.specialConvert = location.specialConvert;
-                    //处理子节点的缓存
-                    childNode.mapExt = location.mapExt;
                     addTreeInfo(parentNode, childNode, nodes);
                 }
             }

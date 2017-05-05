@@ -328,6 +328,8 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         break;
                 }
 
+
+
                 for (RefDetailEntity data : list) {
                     String poLineId = null;
                     switch (bizType) {
@@ -356,6 +358,46 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                                 data.unqualifiedQuantity, data.returnQuantity, data.lineNum105});//注意105必检将
                     } else {
                         ContentValues cv = new ContentValues();
+
+                        //更新sql
+                        StringBuffer updateSql = new StringBuffer();
+                        updateSql.append("update MTL_PO_LINES ");
+                        updateSql.append("(id,po_id,po_line_id,line_num,work_id,inv_id,material_id,")
+                                .append("material_num,material_desc,material_group,")
+                                .append("order_quantity,act_quantity,qm_flag,unit,")
+                                .append("created_by,creation_date,")
+                                .append("send_work_id,send_inv_id,")
+                                .append("status,line_type,biz_type,ref_type,")
+                                .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,qualified_quantity,")
+                                .append("unqualified_quantity,return_quantity,line_num_105)")
+                                .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+                        cv.put("po_id",poId);
+                        cv.put("po_line_id",poId);
+                        cv.put("line_num",data.refLineId);
+                        cv.put("work_id",data.workId);
+                        cv.put("inv_id",data.invId);
+                        cv.put("material_id",data.materialId);
+                        cv.put("material_num",data.materialNum);
+                        cv.put("material_desc",data.materialDesc);
+                        cv.put("material_group",data.materialGroup);
+                        cv.put("order_quantity",data.orderQuantity);
+                        cv.put("act_quantity",data.actQuantity);
+                        cv.put("qm_flag",data.qmFlag);
+                        cv.put("unit",data.unit);
+                        cv.put("send_work_id",data.workId);
+                        cv.put("send_inv_id",data.invId);
+                        cv.put("line_type",data.lineType);
+                        cv.put("biz_type",bizType);
+                        cv.put("ref_type",refType);
+                        cv.put("ref_doc",data.refDoc);
+                        cv.put("ref_doc_item",data.refDocItem);
+                        cv.put("ins_lot",data.insLot);
+                        cv.put("ins_lot_quantity",data.insLotQuantity);
+                        cv.put("qualified_quantity",data.qualifiedQuantity);
+                        cv.put("unqualified_quantity",data.unqualifiedQuantity);
+                        cv.put("return_quantity",data.returnQuantity);
+                        cv.put("line_num_105",data.lineNum105);
                         cv.put("last_updated_by", refData.recordCreator);
                         cv.put("last_update_date", currentDate);
                         db.update("MTL_PO_LINES", cv, "po_id = ? and id = ? and biz_type = ?",

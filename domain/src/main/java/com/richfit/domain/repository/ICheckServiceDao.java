@@ -25,7 +25,7 @@ public interface ICheckServiceDao {
      * @return
      */
     ReferenceEntity getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial,
-                                 String storageNum, String workId, String invId, String checkNum);
+                                 String storageNum, String workId, String invId, String checkNum,String checkDate);
 
 
     /**
@@ -94,4 +94,6 @@ public interface ICheckServiceDao {
     boolean setTransFlag(String transId);
 
     boolean uploadEditedHeadData(ResultEntity resultEntity);
+
+    void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId);
 }

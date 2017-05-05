@@ -10,6 +10,7 @@ import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.ImageEntity;
+import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.repository.IInspectionServiceDao;
@@ -260,14 +261,118 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         return true;
     }
 
+    /**
+     * 读取验收需要上传的数据
+     *
+     * @return
+     */
     @Override
     public List<ReferenceEntity> readTransferedData() {
         SQLiteDatabase db = getWritableDB();
+        ArrayList<ReferenceEntity> datas = new ArrayList<>();
 
+        clearStringBuffer();
+        StringBuffer sql = new StringBuffer();
+        sql.append("select H.id,H.inspection_date,H.po_id,H.ref_code,H.approval_flag,H.edit_flag, ")
+                .append("H.inspection_type,H.created_by ")
+                .append("from MTL_INSPECTION_HEADERS H ")
+                .append(" where H.ins_flag = '1'")
+                .append(" order by H.creation_date");
+        ReferenceEntity header = null;
+        int index;
+        //1. 读取抬头的信息
+        Cursor cursor = db.rawQuery(sql.toString(), null);
+        while (cursor.moveToNext()) {
+            index = -1;
+            header = new ReferenceEntity();
+            header.transId = cursor.getString(++index);
+            header.voucherDate = cursor.getString(++index);
+            header.refCodeId = cursor.getString(++index);
+            header.recordNum = cursor.getString(++index);
+            header.bizType = cursor.getString(++index);
+            header.refType = cursor.getString(++index);
+            header.inspectionType = cursor.getInt(++index);
+            header.recordCreator = cursor.getString(++index);
+            datas.add(header);
+        }
+        cursor.close();
+        sql.setLength(0);
+        //2. 读取明细
+        if (datas.size() == 0) {
+            return datas;
+        }
 
+        sb.append("select L.id,L.inspection_id,L.po_line_id,")
+                .append("L.material_id,M.material_num,M.material_group,M.material_desc,")
+                .append("L.inspection_person,L.inspection_date,")
+                .append("L.line_num,L.inspection_result,L.unit,")
+                .append("L.work_id,WORG.org_code as work_code,WORG.org_name as work_name, ")
+                .append("L.inv_id,IORG.org_code as inv_code,IORG.org_name as inv_name,")
+                .append("L.created_by,L.quantity,L.qualified_quantity,")
+                .append("S.random_quantity,S.rust_quantity,S.damaged_quantity,")
+                .append("S.bad_quantity,S.other_quantity,S.z_package,S.qm_num,")
+                .append("S.certificate,S.instructions,S.qm_certificate,S.claim_num,")
+                .append("S.manufacturer,S.inspection_quantity ")
+                .append("from MTL_INSPECTION_LINES L ")
+                .append("left join base_material_code M ")
+                .append("on L.material_id = M.id ")
+                .append("left join P_AUTH_ORG WORG ")
+                .append("on L.work_id = WORG.org_id ")
+                .append("left join P_AUTH_ORG IORG ")
+                .append("on L.inv_id = IORG.org_id ")
+                .append("left join MTL_INSPECTION_LINES_CUSTOM S ")
+                .append("on L.id = S.inspection_line_id ")
+                .append(" where L.inspection_id = ?");
 
+        for (int i = 0, size = datas.size(); i < size; i++) {
+            final ReferenceEntity refData = datas.get(i);
+            refData.billDetailList = new ArrayList<>();
+            RefDetailEntity detail = null;
+            cursor = db.rawQuery(sb.toString(), new String[]{refData.transId});
+            while (cursor.moveToNext()) {
+                detail = new RefDetailEntity();
+                index = -1;
+                detail.transLineId = cursor.getString(++index);
+                detail.transId = cursor.getString(++index);
+                detail.refLineId = cursor.getString(++index);
+                detail.materialId = cursor.getString(++index);
+                detail.materialNum = cursor.getString(++index);
+                detail.materialGroup = cursor.getString(++index);
+                detail.materialDesc = cursor.getString(++index);
+                detail.inspectionPerson = cursor.getString(++index);
+                detail.inspectionDate = cursor.getString(++index);
+                detail.lineNum = cursor.getString(++index);
+                detail.inspectionResult = cursor.getString(++index);
+                detail.unit = cursor.getString(++index);
+                detail.workId = cursor.getString(++index);
+                detail.workCode = cursor.getString(++index);
+                detail.workName = cursor.getString(++index);
+                detail.invId = cursor.getString(++index);
+                detail.invCode = cursor.getString(++index);
+                detail.invName = cursor.getString(++index);
+                detail.userId = cursor.getString(++index);
+                detail.quantity = cursor.getString(++index);
+                detail.qualifiedQuantity = cursor.getString(++index);
+                detail.randomQuantity = cursor.getString(++index);
+                detail.rustQuantity = cursor.getString(++index);
+                detail.damagedQuantity = cursor.getString(++index);
+                detail.badQuantity = cursor.getString(++index);
+                detail.otherQuantity = cursor.getString(++index);
+                detail.sapPackage = cursor.getString(++index);
+                detail.qmNum = cursor.getString(++index);
+                detail.certificate = cursor.getString(++index);
+                detail.instructions = cursor.getString(++index);
+                detail.qmCertificate = cursor.getString(++index);
+                detail.claimNum = cursor.getString(++index);
+                detail.manufacturer = cursor.getString(++index);
+                detail.inspectionQuantity = cursor.getString(++index);
+                refData.billDetailList.add(detail);
+            }
+            cursor.close();
+        }
+        //进行数据转换，将子节点转换为Item
         db.close();
-        return null;
+        return datas;
     }
 
     @Override
@@ -283,6 +388,16 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
     @Override
     public boolean uploadEditedHeadData(ResultEntity resultEntity) {
         return false;
+    }
+
+    @Override
+    public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
+        SQLiteDatabase db = getWritableDB();
+        //删除缓存
+        db.delete("MTL_INSPECTION_HEADERS", null, null);
+        db.delete("MTL_INSPECTION_LINES", null, null);
+        db.delete("MTL_INSPECTION_LINES_CUSTOM", null, null);
+        db.close();
     }
 
     /**
@@ -312,22 +427,21 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             cv.put("id", insId);
             cv.put("po_id", param.refCodeId);
             cv.put("ref_code", param.refCode);
+            //缓存标识
             cv.put("ins_flag", "1");
-            cv.put("inspection_date", currentDate);
-            cv.put("workflow_level", "0");
-            cv.put("approval_flag", "1");
-            cv.put("edit_flag", "N");
-            cv.put("print_flag", "N");
-            cv.put("status", "Y");
+            //过账日期
+            cv.put("inspection_date", param.voucherDate);
             cv.put("inspection_type", param.inspectionType);
-            cv.put("system_flag", "1");
             cv.put("arrival_date", currentDate);
             //保存成功系统生成的验收单号
-            cv.put("inspection_num", "");
             cv.put("created_by", param.userId);
             cv.put("creation_date", creationDate);
+            //注意这里实际上没有保存bizType和refType，为了数据上传方便强制保存
+            cv.put("approval_flag", param.businessType);
+            cv.put("edit_flag", param.refType);
             iResult = db.insert("MTL_INSPECTION_HEADERS", null, cv);
         } else {
+            cv.put("inspection_date", param.voucherDate);
             cv.put("last_updated_by", param.userId);
             cv.put("last_update_date", creationDate);
             iResult = db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{insId});

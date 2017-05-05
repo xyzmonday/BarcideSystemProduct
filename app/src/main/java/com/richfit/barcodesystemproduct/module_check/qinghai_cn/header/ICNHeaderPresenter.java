@@ -38,7 +38,7 @@ public interface ICNHeaderPresenter extends IBaseHeaderPresenter<ICNHeaderView> 
      * @param invId:库存地点id
      */
     void getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial,
-                      String storageNum, String workId, String invId);
+                      String storageNum, String workId, String invId,String checkDate);
 
     /**
      * 删除整单盘点数据

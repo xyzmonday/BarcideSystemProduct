@@ -8,12 +8,10 @@ import android.text.TextUtils;
 import com.richfit.common_lib.IInterface.IPresenter;
 import com.richfit.common_lib.basetreerv.RecycleTreeViewHelper;
 import com.richfit.common_lib.rxutils.SimpleRxBus;
-import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.data.repository.Repository;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
 
 import java.lang.ref.Reference;
@@ -21,7 +19,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -29,7 +26,6 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
  * presenter的基类，实现类IPresenter的方法.
@@ -203,84 +199,6 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
             }
         }
         return pos;
-    }
-
-
-    @Override
-    public void readExtraConfigs(String companyId, String bizType, String refType, String... configTypes) {
-        final T view = getView();
-
-        if (view == null)
-            return;
-
-        if (TextUtils.isEmpty(companyId) || TextUtils.isEmpty(bizType)) {
-            view.readConfigsFail("读取配置信息失败,请检查传入的参数!");
-            return;
-        }
-
-        if (configTypes.length == 0) {
-            view.readConfigsFail("请输入读取配置信息的类型");
-            return;
-        }
-
-        ResourceSubscriber<List<ArrayList<RowConfig>>> subscriber =
-                Flowable.fromArray(configTypes)
-                        .concatMap(configType -> mRepository.readExtraConfigInfo(companyId, bizType, refType, configType))
-                        .buffer(configTypes.length)
-                        .filter(configs -> configs.size() == configTypes.length)
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new ResourceSubscriber<List<ArrayList<RowConfig>>>() {
-                            @Override
-                            public void onNext(List<ArrayList<RowConfig>> configs) {
-                                view.readConfigsSuccess(configs);
-                            }
-
-                            @Override
-                            public void onError(Throwable t) {
-                                view.readConfigsFail(t.getMessage());
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                view.readConfigsComplete();
-                            }
-                        });
-        addSubscriber(subscriber);
-    }
-
-    @Override
-    public void readExtraDataSourceDictionary(List<RowConfig> configs) {
-        final T view = getView();
-        if (view == null)
-            return;
-
-        if (configs == null || configs.size() == 0)
-            return;
-
-        ResourceSubscriber<Map<String, Object>> subscriber =
-                Flowable.fromIterable(configs)
-                        .filter(config -> !TextUtils.isEmpty(config.dataSource) &&
-                                !TextUtils.isEmpty(config.propertyCode))
-                        .flatMap(config -> mRepository.readExtraDataSourceByDictionary(config.propertyCode, config.dataSource))
-                        .filter(extraMap -> extraMap != null && extraMap.size() > 0)
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new ResourceSubscriber<Map<String, Object>>() {
-                            @Override
-                            public void onNext(Map<String, Object> extraMap) {
-                                view.readExtraDictionarySuccess(extraMap);
-                            }
-
-                            @Override
-                            public void onError(Throwable t) {
-                                view.readExtraDictionaryFail(t.getMessage());
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                view.readExtraDictionaryComplete();
-                            }
-                        });
-        addSubscriber(subscriber);
     }
 
     /**

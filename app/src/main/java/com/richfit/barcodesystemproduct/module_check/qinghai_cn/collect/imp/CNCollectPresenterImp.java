@@ -40,7 +40,12 @@ public class CNCollectPresenterImp extends BasePresenter<ICNCollectView>
 
         RxSubscriber<List<InventoryEntity>> subscriber =
                 mRepository.getMaterialInfo(queryType, materialNum)
-                        .filter(materialEntity -> materialEntity != null && !TextUtils.isEmpty(materialEntity.id))
+                        .flatMap(materialInfo -> {
+                            if (materialInfo != null && !TextUtils.isEmpty(materialInfo.id)) {
+                                return Flowable.just(materialInfo);
+                            }
+                            return Flowable.error(new Throwable("未获取到该物料信息"));
+                        })
                         .flatMap(materialEntity -> mRepository.getCheckTransferInfoSingle(checkId, materialEntity.id, materialEntity.materialNum, location, bizType))
                         .filter(list -> list != null && list.size() > 0)
                         .compose(TransformerHelper.io2main())

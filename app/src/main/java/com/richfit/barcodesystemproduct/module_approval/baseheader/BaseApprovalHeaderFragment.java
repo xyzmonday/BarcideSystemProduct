@@ -17,11 +17,6 @@ import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.ReferenceEntity;
-import com.richfit.domain.bean.RowConfig;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 
@@ -66,18 +61,12 @@ public abstract class BaseApprovalHeaderFragment extends BaseHeaderFragment<Appr
     @Override
     public void initVariable(Bundle savedInstanceState) {
         mRefData = null;
-        mSubFunEntity.headerConfigs = null;
-        mSubFunEntity.parentNodeConfigs = null;
-        mSubFunEntity.childNodeConfigs = null;
-        mSubFunEntity.collectionConfigs = null;
-        mSubFunEntity.locationConfigs = null;
     }
 
     @Override
     protected void initView() {
         etApprovalDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
         erArrivalDate.setText(UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE1));
-        mPresenter.readExtraConfigs(mCompanyCode, mBizType, mRefType, Global.HEADER_CONFIG_TYPE);
     }
 
     /**
@@ -103,18 +92,6 @@ public abstract class BaseApprovalHeaderFragment extends BaseHeaderFragment<Appr
     public void initData() {
         ArrayAdapter adapter = new ArrayAdapter(mActivity, R.layout.item_simple_sp, APPROVAL_TYPES);
         spApprovalType.setAdapter(adapter);
-    }
-
-    @Override
-    public void readConfigsSuccess(List<ArrayList<RowConfig>> extraHeaderConfigs) {
-        mSubFunEntity.headerConfigs = extraHeaderConfigs.get(0);
-        createExtraUI(mSubFunEntity.headerConfigs, EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
-    public void readConfigsFail(String message) {
-        showMessage(message);
-        mSubFunEntity.headerConfigs = null;
     }
 
     protected void getRefData(String refNum) {
@@ -194,15 +171,12 @@ public abstract class BaseApprovalHeaderFragment extends BaseHeaderFragment<Appr
             tvRefNum.setText(mRefData.recordNum);
             tvSupplier.setText(mRefData.supplierNum);
             tvApprovalName.setText(Global.LOGIN_ID);
-            //绑定额外字段
-            bindExtraUI(mSubFunEntity.headerConfigs, mRefData.mapExt);
         }
     }
 
     @Override
     public void clearAllUI() {
         clearCommonUI(tvRefNum, tvSupplier, tvApprovalName);
-        clearExtraUI(mSubFunEntity.headerConfigs);
     }
 
     @Override
@@ -215,13 +189,12 @@ public abstract class BaseApprovalHeaderFragment extends BaseHeaderFragment<Appr
 
     @Override
     public void _onPause() {
+        super._onPause();
         //再次检查用户是否输入的额外字段而且必须输入的字段（情景是用户请求单据之前没有输入该字段，回来填上后，但是没有请求单据而是直接）
         //切换了页面
         if (mRefData != null) {
             mRefData.voucherDate = getString(etApprovalDate);
             mRefData.inspectionType = spApprovalType.getSelectedItemPosition() + 1;
-            Map<String, Object> extraHeaderMap = saveExtraUIData(mSubFunEntity.headerConfigs);
-            mRefData.mapExt = UiUtil.copyMap(extraHeaderMap, mRefData.mapExt);
         }
     }
 

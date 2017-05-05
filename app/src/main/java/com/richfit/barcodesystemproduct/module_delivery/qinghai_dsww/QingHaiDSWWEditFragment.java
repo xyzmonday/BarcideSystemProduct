@@ -45,17 +45,6 @@ public class QingHaiDSWWEditFragment extends BaseDSEditFragment<DSEditPresenterI
             showMessage("输入出库数量不合理,请重新输入");
             return false;
         }
-
-        //检查额外字段是否合格
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
-
-        if (!checkExtraData(mSubFunEntity.locationConfigs)) {
-            showMessage("请检查输入数据");
-            return false;
-        }
         /*lastFlag 委外出库行数量判断标识如果 lastFlag = 'X'  则累计录入数量不能大于应发数量*/
         RefDetailEntity lineData = mRefData.billDetailList.get(mPosition);
         float quantityV = UiUtil.convertToFloat(getString(etQuantity), 0.0f);

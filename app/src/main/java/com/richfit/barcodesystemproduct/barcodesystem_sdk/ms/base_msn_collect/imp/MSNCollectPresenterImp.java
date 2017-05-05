@@ -20,6 +20,8 @@ import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -77,24 +79,7 @@ public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
         RxSubscriber<ReferenceEntity> subscriber = mRepository.getTransferInfoSingle("", "", bizType, "",
                 workId, invId, recWorkId, recInvId, materialNum, batchFlag, "", refDoc, refDocItem, userId)
                 .filter(refData -> refData != null && refData.billDetailList.size() > 0)
-                .map(refData -> {
-                    float totalQuantity = 0;
-                    totalQuantity = 0;
-                    List<RefDetailEntity> billDetailList = refData.billDetailList;
-                    for (RefDetailEntity target : billDetailList) {
-                        List<LocationInfoEntity> locationList = target.locationList;
-                        if (locationList != null && locationList.size() > 0) {
-                            for (LocationInfoEntity loc : locationList) {
-                                totalQuantity += UiUtil.convertToFloat(loc.quantity, 0.0f);
-                                L.e("totalQuantity = " + totalQuantity);
-                            }
-                            for (LocationInfoEntity loc : locationList) {
-                                loc.quantity = String.valueOf(totalQuantity);
-                            }
-                        }
-                    }
-                    return refData;
-                })
+                .map(refData -> calcTotalQuantity(refData))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext, "正在获取缓存信息...") {
                     @Override
@@ -133,6 +118,43 @@ public class MSNCollectPresenterImp extends BasePresenter<IMSNCollectView>
                     }
                 });
         addSubscriber(subscriber);
+    }
+
+    private ReferenceEntity calcTotalQuantity(ReferenceEntity refData) {
+        List<RefDetailEntity> billDetailList = refData.billDetailList;
+        for (RefDetailEntity target : billDetailList) {
+            HashSet<String> sendLocationSet = new HashSet<>();
+            List<LocationInfoEntity> locationList = target.locationList;
+            if (locationList == null || locationList.size() == 0)
+                return refData;
+            //保存所有不重复的发出仓位
+            for (LocationInfoEntity loc : locationList) {
+                if (!TextUtils.isEmpty(loc.location)) {
+                    sendLocationSet.add(loc.location);
+                }
+            }
+
+
+            //计算发出仓位的所有接收仓位的数量作为该发出仓位的仓位数量
+            HashMap<String, String> locQuantityMap = new HashMap<>();
+            for (String sendLocation : sendLocationSet) {
+                //将缓存中相同的发出仓位的所有接收仓位的仓位数量累加
+                float totalQuantity = 0;
+                for (LocationInfoEntity loc : locationList) {
+                    if (sendLocation.equalsIgnoreCase(loc.location)) {
+                        totalQuantity += UiUtil.convertToFloat(loc.quantity, 0.0F);
+                    }
+                }
+                locQuantityMap.put(sendLocation, String.valueOf(totalQuantity));
+            }
+            L.e("发出仓位的仓位数量 = " + locQuantityMap);
+            //改变所有发出仓位的quantity
+            for (LocationInfoEntity loc : locationList) {
+                loc.quantity = locQuantityMap.get(loc.location);
+            }
+
+        }
+        return refData;
     }
 
     @Override

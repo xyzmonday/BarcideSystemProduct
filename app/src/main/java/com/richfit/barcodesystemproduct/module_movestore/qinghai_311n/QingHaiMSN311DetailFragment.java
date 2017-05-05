@@ -56,11 +56,6 @@ public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<MSNDetail
             setRefreshing(false, "获取明细失败,请先选择接收库位");
             return;
         }
-
-        if (!checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请先在抬头界面输入必要的信息");
-            return;
-        }
         //注意这必须调用父类的方法将寄售转自有的相关标识清空
         super.initDataLazily();
     }
@@ -80,7 +75,7 @@ public class QingHaiMSN311DetailFragment extends BaseMSNDetailFragment<MSNDetail
             return;
         }
         mPresenter.submitData2BarcodeSystem(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
     @Override

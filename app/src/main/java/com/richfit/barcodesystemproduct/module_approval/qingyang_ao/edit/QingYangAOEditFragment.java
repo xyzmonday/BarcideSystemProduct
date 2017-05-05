@@ -51,7 +51,6 @@ public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPr
 
     String mCompanyCode;
     String mRefLineId;
-    Map<String, Object> mExtraCollectMap;
     //要修改的明细索引
     int mPosition;
 
@@ -66,12 +65,6 @@ public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPr
     }
 
     @Override
-    protected void initView() {
-         /*生成额外控件*/
-        createExtraUI(mSubFunEntity.collectionConfigs, BaseFragment.EXTRA_VERTICAL_ORIENTATION_TYPE);
-    }
-
-    @Override
     public void initEvent() {
         //监听到货数量
         RxTextView.textChanges(etQuantity)
@@ -83,7 +76,6 @@ public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPr
     @Override
     public void initData() {
         Bundle bundle = getArguments();
-        mExtraCollectMap = (Map<String, Object>) bundle.getSerializable(Global.COLLECT_EXTRA_MAP_KEY);
         mPosition = bundle.getInt(Global.EXTRA_POSITION_KEY);
         mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);
         mCompanyCode = bundle.getString(Global.EXTRA_COMPANY_CODE_KEY);
@@ -104,9 +96,6 @@ public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPr
             tvOrderQuantity.setText(lineData.orderQuantity);
             etQuantity.setText(quantity);
             tvBalanceQuantity.setText(quantity);
-
-           /*绑定额外字段的数据*/
-            bindExtraUI(mSubFunEntity.collectionConfigs, mExtraCollectMap, false);
         }
     }
 
@@ -123,10 +112,6 @@ public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPr
 
         if (Float.compare(quantityV, actQuantityV) > 0.0f || quantityV <= 0.0f) {
             showMessage("输入合格数量有误，请重新输入");
-            return false;
-        }
-        if (!checkExtraData(mSubFunEntity.collectionConfigs)) {
-            showMessage("请先输入必输字段");
             return false;
         }
         return true;
@@ -151,9 +136,6 @@ public class QingYangAOEditFragment extends BaseEditFragment<ApprovalOtherEditPr
             result.invId = tvInv.getTag() != null ? tvInv.getTag().toString() : "";
             result.modifyFlag = "Y";
             result.quantity = getString(etQuantity);
-            result.mapExHead = createExtraMap(Global.EXTRA_HEADER_MAP_TYPE, lineData.mapExt);
-            result.mapExLine = createExtraMap(Global.EXTRA_LINE_MAP_TYPE, lineData.mapExt);
-
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())

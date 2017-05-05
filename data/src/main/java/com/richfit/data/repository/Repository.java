@@ -244,7 +244,8 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<String> getLocationInfo(String queryType, String workId, String invId, String storageNum, String location) {
-        return mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location));
+        return isLocal ? mLocalRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location)) : mServerRepository.getLocationInfo(queryType, workId, invId, storageNum, CommonUtil.toUpperCase(location));
+
     }
 
     @Override
@@ -330,9 +331,9 @@ public class Repository implements ILocalRepository, IServerRepository {
 
     @Override
     public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial,
-                                                  String storageNum, String workId, String invId, String checkNum) {
-        return isLocal ? mLocalRepository.getCheckInfo(userId, bizType, checkLevel, checkSpecial, storageNum, workId, invId, checkNum) :
-                mServerRepository.getCheckInfo(userId, bizType, checkLevel, checkSpecial, storageNum, workId, invId, checkNum);
+                                                  String storageNum, String workId, String invId, String checkNum, String checkDate) {
+        return isLocal ? mLocalRepository.getCheckInfo(userId, bizType, checkLevel, checkSpecial, storageNum, workId, invId, checkNum, checkDate) :
+                mServerRepository.getCheckInfo(userId, bizType, checkLevel, checkSpecial, storageNum, workId, invId, checkNum, checkDate);
     }
 
     @Override
@@ -494,6 +495,11 @@ public class Repository implements ILocalRepository, IServerRepository {
     @Override
     public Flowable<String> uploadCollectionDataOffline(List<ResultEntity> results) {
         return mServerRepository.uploadCollectionDataOffline(results);
+    }
+
+    @Override
+    public Flowable<String> uploadCheckDataOffline(List<ResultEntity> results) {
+        return mServerRepository.uploadCheckDataOffline(results);
     }
 
     @Override

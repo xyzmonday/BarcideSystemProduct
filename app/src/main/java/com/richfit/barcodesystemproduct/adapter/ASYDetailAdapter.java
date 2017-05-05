@@ -9,10 +9,8 @@ import com.richfit.common_lib.basetreerv.MultiItemTypeTreeAdapter;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 标准物资入库有参考明细界面适配器
@@ -22,10 +20,8 @@ import java.util.Map;
 public class ASYDetailAdapter extends MultiItemTypeTreeAdapter<RefDetailEntity> {
 
 
-    public ASYDetailAdapter(Context context, List<RefDetailEntity> allNodes,
-                            List<RowConfig> parentNodeConfigs,
-                            List<RowConfig> childNodeConfigs) {
-        super(context, allNodes, parentNodeConfigs, childNodeConfigs);
+    public ASYDetailAdapter(Context context, List<RefDetailEntity> allNodes) {
+        super(context, allNodes);
         addItemViewDelegate(Global.PARENT_NODE_HEADER_TYPE,new ASYParentHeaderItemDelegate());
         addItemViewDelegate(Global.CHILD_NODE_HEADER_TYPE,new ASYChildHeaderItemDelegate());
         addItemViewDelegate(Global.CHILD_NODE_ITEM_TYPE,new ASYChildItemDelegate());
@@ -47,8 +43,4 @@ public class ASYDetailAdapter extends MultiItemTypeTreeAdapter<RefDetailEntity> 
 
     }
 
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return mVisibleNodes.get(position).mapExt;
-    }
 }

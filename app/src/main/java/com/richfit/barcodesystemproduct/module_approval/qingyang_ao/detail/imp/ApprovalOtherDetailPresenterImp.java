@@ -152,9 +152,6 @@ public class ApprovalOtherDetailPresenterImp extends BaseDetailPresenterImp<IApp
         bundle.putString(Global.EXTRA_BATCH_FLAG_KEY, node.batchFlag);
         bundle.putString(Global.EXTRA_TOTAL_QUANTITY_KEY, node.totalQuantity);
 
-        //额外字段的数据
-        bundle.putSerializable(Global.COLLECT_EXTRA_MAP_KEY, (Serializable) node.mapExt);
-
         intent.putExtras(bundle);
         mContext.startActivity(intent);
     }

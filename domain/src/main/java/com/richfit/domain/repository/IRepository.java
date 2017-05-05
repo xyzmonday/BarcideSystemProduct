@@ -143,7 +143,7 @@ public interface IRepository {
      * @return
      */
     Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial,
-                                           String storageNum, String workId, String invId, String checkNum);
+                                           String storageNum, String workId, String invId, String checkNum,String checkDate);
 
     /**
      * 删除整个盘点单

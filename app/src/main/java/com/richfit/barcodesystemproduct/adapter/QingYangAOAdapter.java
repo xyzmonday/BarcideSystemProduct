@@ -22,10 +22,8 @@ import java.util.Map;
 public class QingYangAOAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
     public QingYangAOAdapter(Context context, int layoutId,
-                             List<RefDetailEntity> allNodes,
-                             List<RowConfig> parentNodeConfigs,
-                             List<RowConfig> childNodeConfigs) {
-        super(context, layoutId, allNodes, parentNodeConfigs, childNodeConfigs);
+                             List<RefDetailEntity> allNodes) {
+        super(context, layoutId, allNodes);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -47,7 +45,7 @@ public class QingYangAOAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
         if (Float.compare(UiUtil.convertToFloat(item.actQuantity, 0.0F), 0.0F) <= 0) {
             //注意使用setBackgroundColor显示为混合的颜色
-            holder.setBackgroundRes(R.id.root_id,R.color.red_200);
+            holder.setBackgroundRes(R.id.root_id, R.color.red_200);
         }
 
         //如果没有过账，但是有缓存数据
@@ -67,10 +65,5 @@ public class QingYangAOAdapter extends CommonTreeAdapter<RefDetailEntity> {
         deleteNode.invCode = "";
         deleteNode.totalQuantity = "";
         notifyItemChanged(position);
-    }
-
-    @Override
-    protected Map<String, Object> provideExtraData(int position) {
-        return null;
     }
 }

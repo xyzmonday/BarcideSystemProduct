@@ -88,11 +88,6 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
             showMessage("未获取到单据类型");
             return;
         }
-
-        if (mSubFunEntity.headerConfigs != null && !checkExtraData(mSubFunEntity.headerConfigs, mRefData.mapExt)) {
-            showMessage("请在抬头界面输入额外必输字段信息");
-            return;
-        }
         //开始刷新
         startAutoRefresh();
     }
@@ -106,8 +101,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
     public void showNodes(List<RefDetailEntity> allNodes) {
         saveTransId(allNodes);
         if (mAdapter == null) {
-            mAdapter = new ASYDetailAdapter(mActivity, allNodes, mSubFunEntity.parentNodeConfigs,
-                    mSubFunEntity.childNodeConfigs);
+            mAdapter = new ASYDetailAdapter(mActivity, allNodes);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.setOnItemEditAndDeleteListener(this);
             mAdapter.setAdapterStateListener(this);
@@ -146,12 +140,13 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
             showMessage("已经过账,不允许修改");
             return;
         }
-        mPresenter.editNode(null,null, mRefData, node, mCompanyCode, mBizType,
+        mPresenter.editNode(null, null, mRefData, node, mCompanyCode, mBizType,
                 mRefType, getSubFunName(), -1);
     }
 
     /**
      * 删除子节点信息。注意如果该明细界面不具有父子节点结构那么需要重写该方法。
+     *
      * @param node
      * @param position
      */
@@ -189,6 +184,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
     /**
      * 显示过账，上传等底部菜单之前进行必要的检查。注意子类可以根据自己的需求
      * 自行添加检查的字段。父类仅仅做了最基本的检查。
+     *
      * @return
      */
     @Override
@@ -220,7 +216,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
         }
         mTransNum = "";
         mPresenter.submitData2BarcodeSystem(mTransId, mBizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
     /**
@@ -233,6 +229,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
 
     /**
      * 第一步过账失败显示错误信息
+     *
      * @param message
      */
     @Override
@@ -252,7 +249,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
         }
         mInspectionNum = "";
         mPresenter.submitData2SAP(mTransId, mRefData.bizType, mRefType, Global.USER_ID,
-                mRefData.voucherDate, transToSapFlag, createExtraHeaderMap());
+                mRefData.voucherDate, transToSapFlag, null);
     }
 
     /**
@@ -274,6 +271,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
 
     /**
      * 第二步上架失败显示失败信息
+     *
      * @param messages
      */
     @Override

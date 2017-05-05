@@ -191,7 +191,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         SQLiteDatabase db = getWritableDB();
         clearStringBuffer();
         sb.append("select user_id,login_id,user_name,company_id,company_code,auth_orgs,batch_flag ")
-                .append("from T_USER where user_name = ? limit 0,1");
+                .append("from T_USER where login_id = ? ");
         UserEntity user = null;
         Cursor cursor = db.rawQuery(sb.toString(), new String[]{userName});
 
@@ -206,6 +206,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             user.batchFlag = cursor.getString(6);
         }
         db.close();
+        L.e("离线登陆登录 = " + user);
         return user;
     }
 
@@ -361,7 +362,6 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
      */
     @Override
     public void saveLoadBasicDataTaskDate(String queryDate,List<String> queryTypes) {
-        L.e("saveLoadBasicDataTaskDate");
         SQLiteDatabase db = getWritableDB();
         for (String type : queryTypes) {
             db.delete("REQUEST_DATE", "query_type = ?", new String[]{type});
@@ -413,6 +413,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             tableIndex = 7;
         } else if ("XM".equals(queryType)) {
             tableIndex = 8;
+        } else if("WL".equals(queryType)) {
+            tableIndex = 9;
         }
         boolean isCWFirst = "0001/01/01".equalsIgnoreCase(queryDate);
         insertData(maps, tableIndex, isFirstPage, isCWFirst);
@@ -504,6 +506,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         .append(" (id,org_id,supplier_code,supplier_desc)")
                         .append(" VALUES (?,?,?,?)");
                 break;
+
             case 6:
                 tableName = "T_EXTRA_DATA_SOURCE";
                 db.execSQL("delete from " + tableName);
@@ -524,7 +527,16 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         .append(" (id,org_id,project_num_code,project_num_desc)")
                         .append(" VALUES (?,?,?,?)");
                 break;
-
+            case 9:
+                tableName = "BASE_MATERIAL_CODE";
+                if (isFirstPage) {
+                    db.execSQL("delete from " + tableName);
+                }
+                sql.append("INSERT INTO ")
+                        .append(tableName)
+                        .append(" (id,material_num,material_desc,material_group,unit)")
+                        .append(" VALUES (?,?,?,?,?)");
+                break;
         }
         db.close();
         patchUpdateBaseData(source, 1, source.size(), 0, sql.toString(), tableIndex, isCWFirst);
@@ -660,6 +672,19 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         stmt.bindString(2, item.get(Global.PARENTID_KEY).toString());
                         stmt.bindString(3, item.get(Global.CODE_KEY).toString());
                         stmt.bindString(4, item.get(Global.NAME_KEY).toString());
+                        stmt.execute();
+                        stmt.clearBindings();
+                    }
+                    break;
+                case 9:
+                    //物料
+                    for (int i = start; i < end; i++) {
+                        item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(3, item.get(Global.NAME_KEY).toString());
+                        stmt.bindString(4,item.get("materialGroup").toString());
+                        stmt.bindString(5, item.get("unit").toString());
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -898,17 +923,22 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                     .append(tableName)
                     .append("  P,BASE_COST_CENTER B ")
                     .append(" where P.parent_id = B.org_id ")
-                    .append(" and P.org_level = 2 and P.org_code = ? and start_date >= ")
+                    .append(" and P.org_level = '2' and P.org_code = ? and start_date <= ")
+                    .append("'")
                     .append(currentDate)
-                    .append(" and end_date <= ")
-                    .append(currentDate);
+                    .append("'")
+                    .append(" and end_date >= ")
+                    .append("'")
+                    .append(currentDate)
+                    .append("'");
+
             if (!TextUtils.isEmpty(keyWord)) {
                 sb.append("like ").append("'%").append(keyWord).append("%'");
             } else if (defaultItemNum > 0) {
                 sb.append(" limit 0, ")
                         .append(defaultItemNum);
             }
-            cursor = db.rawQuery(sb.toString(), new String[]{workCode, currentDate, currentDate});
+            cursor = db.rawQuery(sb.toString(), new String[]{workCode});
             while (cursor.moveToNext()) {
                 SimpleEntity entity = new SimpleEntity();
                 entity.id = cursor.getString(0);
@@ -1143,20 +1173,13 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         SQLiteDatabase db = getWritableDB();
         //先删除历史的菜单
         db.delete("T_HOME_MENUS", "login_id = ?", new String[]{loginId});
-        //插入一行
-        ContentValues cv = new ContentValues();
+        clearStringBuffer();
+        sb.append("insert or replace into T_HOME_MENUS(id,parent_id,biz_type,ref_type,")
+                .append("caption,functionCode,login_id,mode,tree_level) ")
+                .append("values(?,?,?,?,?,?,?,?,?)");
         for (MenuNode menu : menus) {
-            cv.clear();
-            cv.put("id", menu.getId());
-            cv.put("parent_id", menu.getParentId());
-            cv.put("biz_type", menu.getBusinessType());
-            cv.put("ref_type", menu.getRefType());
-            cv.put("caption", menu.getCaption());
-            cv.put("functionCode", menu.getFunctionCode());
-            cv.put("login_id", loginId);
-            cv.put("mode", menu.getMode());
-            cv.put("tree_level", menu.getLevel());
-            db.insert("T_HOME_MENUS", null, cv);
+            db.execSQL(sb.toString(),new Object[]{menu.getId(),menu.getParentId(),menu.getBusinessType(),
+            menu.getRefType(),menu.getCaption(),menu.getFunctionCode(),loginId,menu.getMode(),menu.getLevel()});
         }
         db.close();
         return menus;
