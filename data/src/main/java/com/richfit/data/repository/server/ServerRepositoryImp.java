@@ -42,9 +42,7 @@ import okhttp3.RequestBody;
 
 public class ServerRepositoryImp implements IServerRepository {
 
-
     private IRequestApi mRequestApi;
-
     private HashMap<String, Object> mRequestParam;
 
     @Inject
@@ -52,6 +50,8 @@ public class ServerRepositoryImp implements IServerRepository {
         this.mRequestApi = requestApi;
         this.mRequestParam = new HashMap<>();
     }
+
+
 
     @Override
     public Flowable<UserEntity> Login(String userName, String password) {
@@ -75,6 +75,12 @@ public class ServerRepositoryImp implements IServerRepository {
         mRequestParam.put("COMPANY_ID", companyId);
         return mRequestApi.loadExtraConfig(JsonUtil.map2Json(mRequestParam))
                 .compose(TransformerHelper.handleResponse());
+    }
+
+    @Override
+    public Flowable<String> getConnectionStatus() {
+        return mRequestApi.getConnectionStatus()
+                .compose(TransformerHelper.MapTransformer);
     }
 
     @Override

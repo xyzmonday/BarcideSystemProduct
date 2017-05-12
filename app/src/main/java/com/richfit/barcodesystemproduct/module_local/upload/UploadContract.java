@@ -34,7 +34,7 @@ public interface UploadContract {
     interface Presenter extends IBaseDetailPresenter<View> {
         void uploadCollectedDataOffLine();
 
-        void readUploadData(int bizType);
+        void readUploadData();
 
         void resetStateAfterUpload();
     }

@@ -96,6 +96,8 @@ public class Global {
     public static final String RETRY_TRANSFER_DATA_ACTION = "retry_transfer_data_action";
     /*数据上传*/
     public static final String RETRY_UPLOAD_DATA_ACTION = "retry_upload_data_action";
+    /*离线数据上传*/
+    public static final String RETRY_UPLOAD_LOCAL_DATE_ACTION = "retry_upload_local_date_action";
     /*数据采集界面获取库存*/
     public static final String RETRY_LOAD_INVENTORY_ACTION = "retry_load_inventory_action";
     public static final String RETRY_LOAD_REC_INVENTORY_ACTION = "retry_load_rec_inventory_action";
@@ -133,7 +135,8 @@ public class Global {
     public static final String STORAGENUM_KEY = "storageNum";
     public static final String SORT_KEY = "sort";
     public static final String VALUE_KEY = "value";
-    public static final String SAPUPDATEDATE_KEY = "sapUpdateDate";
+    public static final String START_DATE_KEY = "startDate";
+    public static final String END_DATE_KEY = "endDate";
     public static final String WORK_ID = "work_id";
     public static final String INV_ID = "inv_id";
     public static final String EXTRA_LOCATION_LIST_KEY = "extra_location_list";
@@ -152,9 +155,8 @@ public class Global {
     public static final String EXTRA_INV_QUANTITY_KEY = "extra_inv_quantity";
     public static final String EXTRA_BIZ_TYPE_KEY = "extra_biz_type";
     public static final String EXTRA_REF_TYPE_KEY = "extra_ref_type";
-    public static final String START_DATE_KEY = "start_date_key";
-    public static final String EXTRA_DEVICE_ID_KEY = "extra_device_id_key";
-    public static final String END_DATE_KEY = "end_date_key";
+
+    public static final String EXTRA_DEVICE_ID_KEY = "extra_device_id";
 
     public static final String EXTRA_REC_LOCATION_KEY = "extra_rec_location";
     public static final String EXTRA_REC_BATCH_FLAG_KEY = "extra_rec_batch_flag";
@@ -192,7 +194,7 @@ public class Global {
     public static final String EXTRA_QM_CERTIFICATE_KEY = "extra_qm_certificate";
     /*检验结果*/
     public static final String EXTRA_INSPECTION_RESULT_KEY = "extra_inspection_result";
-
+    public static final String IS_INITED_FRAGMENT_CONFIG_KEY ="is_inited_fragment_config";
     public static final String IMAGE_DEFAULT_FORMAT = ".jpeg";
     public static final String EXTRA_TAKE_PHOTO_TYPE = "extra_take_photo_type";
     public static final String EXTRA_TITLE_KEY = "extra_title";
@@ -220,5 +222,6 @@ public class Global {
     /*料签*/
     public static final int MATERIAL_POS_L = 4;
     public static final int BATCHFALG_POS_L = 6;
+
 
 }

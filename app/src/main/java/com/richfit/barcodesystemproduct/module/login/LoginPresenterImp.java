@@ -48,7 +48,6 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
             mView.loginFail("用户名或者密码为空");
             return;
         }
-
         ResourceSubscriber<UserEntity> subscriber =
                 mRepository.Login(userName, password)
                         .doOnNext(userEntity -> mRepository.saveUserInfo(userEntity))
@@ -173,6 +172,5 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
                 });
         addSubscriber(subscriber);
     }
-
 
 }

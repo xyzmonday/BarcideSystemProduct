@@ -37,5 +37,8 @@ public interface IBlindDetailView extends BaseView {
     void transferCheckDataSuccess();
     void showTransferedNum(String transNum);
     void transferCheckDataFail(String message);
+    void setTransFlagFail(String message);
+    void setTransFlagsComplete();
+
 
 }

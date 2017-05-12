@@ -41,6 +41,12 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
 
     ArrayList<LoadBasicDataWrapper> mRequestParam;
 
+    static {
+        System.loadLibrary("IAL");
+        System.loadLibrary("SDL");
+        System.loadLibrary("barcodereader44");
+    }
+
     @Override
     protected int getContentId() {
         return 0;
@@ -127,7 +133,6 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
      */
     @Override
     public void registered() {
-        //每一个公司是否都需要下载数据库?
         switch (BuildConfig.APP_NAME) {
             case Global.QINGYANG:
                 startSyncBasicData();

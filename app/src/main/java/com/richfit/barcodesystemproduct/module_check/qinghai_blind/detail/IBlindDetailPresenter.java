@@ -53,4 +53,6 @@ public interface IBlindDetailPresenter extends IPresenter<IBlindDetailView> {
      * @param position
      */
     void showHeadFragmentByPosition(int position);
+
+    void setTransFlag(String bizType,String transId,String transFlag);
 }

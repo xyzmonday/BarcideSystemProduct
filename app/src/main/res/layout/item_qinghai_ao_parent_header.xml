@@ -28,7 +28,7 @@
     <TextView
         android:id="@+id/specialInvFlag"
         style="@style/TableHeaderStyle"
-        android:layout_width="80dp"
+        android:layout_width="120dp"
         android:text="@string/special_inv_flag" />
 
     <View style="@style/ItemSeperatorLayout"/>

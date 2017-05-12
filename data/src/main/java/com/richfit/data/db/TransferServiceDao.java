@@ -433,7 +433,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         switch (refType) {
             case "0":
                 Cursor cursor = db.rawQuery("select count(*) as count from mtl_inspection_headers t where t.po_id = ? and t.ins_flag = ?",
-                        new String[]{refCodeId, "1"});
+                        new String[]{refCodeId, "0"});
                 int count = -1;
                 while (cursor.moveToNext()) {
                     count = cursor.getInt(0);

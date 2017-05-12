@@ -65,11 +65,10 @@ import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detai
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.header.LQHeaderFragment;
 import com.richfit.barcodesystemproduct.module_local.upload.BuziUploadFragment;
 import com.richfit.barcodesystemproduct.module_local.upload.CheckUploadFragment;
-import com.richfit.barcodesystemproduct.module_local.upload.InspectUploadFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.collect.LACollectFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.header.LAHeaderFragment;
+import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSN311CollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSN311EditFragment;
-import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiLMSNC311CollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311CollectFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311DetailFragment;
 import com.richfit.barcodesystemproduct.module_movestore.qinghai_311n.QingHaiMSN311EditFragment;
@@ -109,6 +108,9 @@ import com.richfit.common_lib.scope.FragmentScope;
 
 import dagger.Component;
 
+/**
+ * Fragment公共组件
+ */
 @FragmentScope
 @Component(modules = FragmentModule.class, dependencies = AppComponent.class)
 public interface FragmentComponent {
@@ -120,6 +122,12 @@ public interface FragmentComponent {
     Context getActivityContext();
 
     Activity getActivity();
+
+    void inject(ShowAndTakePhotoFragment fragment);
+
+    //**********************************************************//
+    //                      庆阳
+    //**********************************************************//
 
     void inject(QingYangASNHeaderFragment fragment);
 
@@ -137,8 +145,6 @@ public interface FragmentComponent {
 
     void inject(QingYangAOEditFragment fragment);
 
-    void inject(ShowAndTakePhotoFragment fragment);
-
     void inject(QingYangDSYHeaderFragment fragment);
 
     void inject(QingYangDSYDetailFragment fragment);
@@ -146,7 +152,7 @@ public interface FragmentComponent {
     void inject(QingYangDSYCollectFragment fragment);
 
     void inject(QingYangDSYEditFragment fragment);
-//
+
     void inject(QingYangMSN301HeaderFragment fragment);
 
     void inject(QingYangMSN301DetailFragment fragment);
@@ -155,6 +161,9 @@ public interface FragmentComponent {
 
     void inject(QingYangMSN301EditFragment fragment);
 
+    //**********************************************************//
+    //                      青海
+    //********************************************************//
     void inject(QingHaiDSXSHeaderFragment fragment);
 
     void inject(QingHaiDSXSDetailFFragment fragment);
@@ -234,7 +243,7 @@ public interface FragmentComponent {
     void inject(QingHaiRSYCollectFragment fragment);
 
     void inject(QingHaiRSYEditFragment fragment);
-//
+
     void inject(QingHaiAOHeaderFragment fragment);
 
     void inject(QingHaiAODetailFragment fragment);
@@ -242,7 +251,7 @@ public interface FragmentComponent {
     void inject(QingHaiAOCollectFragment fragment);
 
     void inject(QingHaiAOEditFragment fragment);
-//
+
     void inject(QingHaiAS105HeaderFragment fragment);
 
     void inject(QingHaiAS105DetailFragment fragment);
@@ -250,7 +259,8 @@ public interface FragmentComponent {
     void inject(QingHaiAS105CollectFragment fragment);
 
     void inject(QingHaiAS105EditFragment fragment);
-//
+
+
     void inject(QingHaiRSNHeaderFragment fragment);
 
     void inject(QingHaiRSNDetailFragment fragment);
@@ -258,7 +268,7 @@ public interface FragmentComponent {
     void inject(QingHaiRSNCollectFragment fragment);
 
     void inject(QingHaiRSNEditFragment fragment);
-//
+
     void inject(QingHaiCNHeaderFragment fragment);
 
     void inject(QingHaiCNDetailFragment fragment);
@@ -294,22 +304,29 @@ public interface FragmentComponent {
     void inject(LACollectFragment fragment);
 
     void inject(MaterialInfoQueryFragment fragment);
+
     void inject(LQHeaderFragment fragment);
+
     void inject(LQDetailFragment fragment);
 
     void inject(QingYangRSYHeaderFragment fragment);
+
     void inject(QingYangRSYDetailFragment fragment);
+
     void inject(QingYangRSYCollectFragment fragment);
+
     void inject(QingYangRSYEditFragment framgent);
 
-    void inject(QingHaiLMSNC311CollectFragment fragment);
+    void inject(QingHaiLMSN311CollectFragment fragment);
+
     void inject(QingHaiLMSN311EditFragment framgent);
 
     void inject(QingHaiUbSto351LCollectFragment fragment);
+
     void inject(QingHaiUbSto351LEditFragment fragment);
 
     void inject(BuziUploadFragment fragment);
+
     void inject(CheckUploadFragment fragment);
-    void inject(InspectUploadFragment fragment);
 
 }

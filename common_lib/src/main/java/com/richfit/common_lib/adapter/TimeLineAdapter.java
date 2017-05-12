@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import com.richfit.common_lib.R;
 import com.richfit.common_lib.utils.AppCompat;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.UploadMsgEntity;
 
 import java.util.List;
@@ -46,6 +47,7 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
     @Override
     public void onBindViewHolder(TimeLineViewHolder viewHolder, int position) {
         UploadMsgEntity item = mDataSet.get(position);
+        L.e("pos = " + position);
         mMessage.setLength(0);
         if (position == 0) {
             //提示信息

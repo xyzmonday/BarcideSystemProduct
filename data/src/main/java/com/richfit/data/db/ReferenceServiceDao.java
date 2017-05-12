@@ -116,9 +116,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 case "01":
                     // 青海的验收功能相关处理
                     clearStringBuffer();
-                    sb.append("select l.id as trans_line_id,")
-                            .append("l.work_id,l.inv_id,")
-                            .append("l.material_id ,l.unit,")
+                    sb.append("select l.id as trans_line_id,l.inspection_id as trans_id,")
                             .append("l.quantity,l.qualified_quantity,")
                             .append("l.inspection_result,l.remark,")
                             .append("i.org_code as inv_code,")
@@ -135,7 +133,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                             .append(" left join p_auth_org i")
                             .append(" on l.inv_id = i.org_id, ")
                             .append(" mtl_po_lines mpl ");
-                    sb.append(" where h.id = l.inspection_id   and h.ins_flag = '1'")
+                    sb.append(" where h.id = l.inspection_id   and h.ins_flag = '0'")
                             .append(" and h.po_id = ? and l.po_line_id = ?");
                     // 逐行赋值验收数据
                     for (RefDetailEntity d : billDetailList) {
@@ -145,10 +143,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                             // 缓存的id
                             index = -1;
                             d.transLineId = cursor.getString(++index);
-                            d.workId = cursor.getString(++index);
-                            d.invId = cursor.getString(++index);
-                            d.materialId = cursor.getString(++index);
-                            d.unit = cursor.getString(++index);
+                            d.transId = cursor.getString(++index);
                             // 缓存的应收数量
                             d.totalQuantity = cursor.getString(++index);
                             // 缓存的完好数量
@@ -194,7 +189,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                             .append(" t.inspection_type,")
                             .append(" ph.po_num from mtl_inspection_headers t, mtl_po_headers ph ")
                             .append(" where t.po_id = ph.id and t.po_id = ?  and t.ins_flag = ?");
-                    cursor = db.rawQuery(sb.toString(), new String[]{refData.refCodeId, "1"});
+                    cursor = db.rawQuery(sb.toString(), new String[]{refData.refCodeId, "0"});
                     while (cursor.moveToNext()) {
                         refData.transId = cursor.getString(0);
                         refData.inspectionType = cursor.getInt(1);
@@ -282,6 +277,9 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
     @Override
     public void savePoInfo(ReferenceEntity refData, String bizType, String refType) {
         SQLiteDatabase db = getWritableDB();
+        if(refData == null || refData.billDetailList == null || refData.billDetailList.size() == 0) {
+            return;
+        }
         try {
             //1. 处理抬头
             String poId = refData.refCodeId;
@@ -313,9 +311,8 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         .append("created_by,creation_date,")
                         .append("send_work_id,send_inv_id,")
                         .append("status,line_type,biz_type,ref_type,")
-                        .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,qualified_quantity,")
-                        .append("unqualified_quantity,return_quantity,line_num_105)")
-                        .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                        .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,line_num_105) ")
+                        .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
                 //先将明细的行的主键查出来
                 StringBuffer lineSql = new StringBuffer();
                 lineSql.append("select id from MTL_PO_LINES where po_id = ? and biz_type = ? and ref_type = ?");
@@ -327,8 +324,6 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         lineSql.append(" and po_line_id = ?");
                         break;
                 }
-
-
 
                 for (RefDetailEntity data : list) {
                     String poLineId = null;
@@ -354,27 +349,13 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                                 data.qmFlag, data.unit, refData.recordCreator, currentDate,
                                 data.workId, data.invId, "Y", data.lineType, bizType, refType,
                                 data.refDoc, data.refDocItem, data.insLot,
-                                data.insLotQuantity, data.qualifiedQuantity,
-                                data.unqualifiedQuantity, data.returnQuantity, data.lineNum105});//注意105必检将
+                                data.insLotQuantity, data.lineNum105});//注意105必检将
                     } else {
                         ContentValues cv = new ContentValues();
 
-                        //更新sql
-                        StringBuffer updateSql = new StringBuffer();
-                        updateSql.append("update MTL_PO_LINES ");
-                        updateSql.append("(id,po_id,po_line_id,line_num,work_id,inv_id,material_id,")
-                                .append("material_num,material_desc,material_group,")
-                                .append("order_quantity,act_quantity,qm_flag,unit,")
-                                .append("created_by,creation_date,")
-                                .append("send_work_id,send_inv_id,")
-                                .append("status,line_type,biz_type,ref_type,")
-                                .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,qualified_quantity,")
-                                .append("unqualified_quantity,return_quantity,line_num_105)")
-                                .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-
                         cv.put("po_id",poId);
-                        cv.put("po_line_id",poId);
-                        cv.put("line_num",data.refLineId);
+                        cv.put("po_line_id",poLineId);
+                        cv.put("line_num",data.lineNum);
                         cv.put("work_id",data.workId);
                         cv.put("inv_id",data.invId);
                         cv.put("material_id",data.materialId);
@@ -394,9 +375,6 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         cv.put("ref_doc_item",data.refDocItem);
                         cv.put("ins_lot",data.insLot);
                         cv.put("ins_lot_quantity",data.insLotQuantity);
-                        cv.put("qualified_quantity",data.qualifiedQuantity);
-                        cv.put("unqualified_quantity",data.unqualifiedQuantity);
-                        cv.put("return_quantity",data.returnQuantity);
                         cv.put("line_num_105",data.lineNum105);
                         cv.put("last_updated_by", refData.recordCreator);
                         cv.put("last_update_date", currentDate);
@@ -427,8 +405,6 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
         //查询的表
         sb.append("from mtl_po_headers po left join P_AUTH_ORG worg on ")
                 .append("po.work_id = worg.org_id where po.po_num = ?");
-
-        L.e("读取采购订单单据抬头sql = " + sb.toString());
         return sb.toString();
     }
 
@@ -453,7 +429,6 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
 
         //抬头id和行id
         sb.append("where L.po_id = ? and L.biz_type = ? order by L.line_num");
-        L.e("读取采购订单单据明细sql = " + sb.toString());
         return sb.toString();
     }
 

@@ -59,7 +59,7 @@ public class DateChooseHelper {
 //        final int hour = mycalendar.get(Calendar.HOUR_OF_DAY);
 //        final int minute = mycalendar.get(Calendar.MINUTE);
 //        final int second = mycalendar.get(Calendar.SECOND);
-//        DatePickerDialog dpd = new DatePickerDialog(context,
+//        DatePickerDialog dpd = new DatePickerDialog(mContext,
 //                new DatePickerDialog.OnDateSetListener() {
 //                    /**
 //                     * params：com.richfit.dgshbarcodesystem.view：该事件关联的组件 params：myyear：当前选择的年

@@ -1,5 +1,6 @@
 package com.richfit.barcodesystemproduct.module_approval.qinghai_ao.detail;
 
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
@@ -68,7 +69,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
         //清除过账凭证
         mTransNum = "";
         //获取缓存累计数量缓存
-        mPresenter.getReference(mRefData, recordNum, refType, bizType, moveType,"", Global.USER_ID);
+        mPresenter.getReference(mRefData, recordNum, refType, bizType, moveType, "", Global.USER_ID);
     }
 
     @Override
@@ -112,7 +113,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
             showMessage("该行还未进行数据采集!");
             return;
         }
-        mPresenter.editNode(null,null,null,node, mCompanyCode, mBizType, mRefType, "验收结果修改", position);
+        mPresenter.editNode(null, null, null, node, mCompanyCode, mBizType, mRefType, "验收结果修改", position);
     }
 
     /**
@@ -129,7 +130,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
             return;
         }
         mPresenter.deleteNode("N", mRefData.recordNum, node.lineNum, node.refLineId,
-                mRefData.refType, mRefData.bizType, Global.USER_ID, position, mCompanyCode);
+                mRefData.refType, mRefData.bizType, Global.USER_ID, position, mCompanyCode,mPresenter.isLocal());
     }
 
     @Override
@@ -175,17 +176,28 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
      */
     @Override
     public void showOperationMenuOnDetail(final String companyCode) {
-        android.support.v7.app.AlertDialog.Builder dialog = new android.support.v7.app.AlertDialog.Builder(mActivity);
-        dialog.setTitle("提示");
-        dialog.setMessage("您真的需要过账该张验收单据吗?");
-        dialog.setPositiveButton("确定", (dialogInterface, i) -> {
-            submit2BarcodeSystem("");
-            dialogInterface.dismiss();
-        });
-        dialog.setNegativeButton("取消", (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
-        dialog.show();
+        if (mPresenter.isLocal()) {
+            //如果是离线
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("温馨提示")
+                    .setMessage("您是否要结束本次操作?")
+                    .setPositiveButton("结束本次操作", (dialog, which) -> {
+                        dialog.dismiss();
+                        mPresenter.setTransFlag(mBizType,mTransId, "2");
+                    }).setNegativeButton("取消", (dialog, which) -> dialog.dismiss()).show();
+        } else {
+            android.support.v7.app.AlertDialog.Builder dialog = new android.support.v7.app.AlertDialog.Builder(mActivity);
+            dialog.setTitle("提示");
+            dialog.setMessage("您真的需要过账该张验收单据吗?");
+            dialog.setPositiveButton("确定", (dialogInterface, i) -> {
+                submit2BarcodeSystem("");
+                dialogInterface.dismiss();
+            });
+            dialog.setNegativeButton("取消", (dialogInterface, i) -> {
+                dialogInterface.dismiss();
+            });
+            dialog.show();
+        }
     }
 
 
@@ -222,6 +234,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
 
     /**
      * 因为物资验收只有一步过账所以可以每次进入明细界面都刷新界面
+     *
      * @return
      */
     @Override

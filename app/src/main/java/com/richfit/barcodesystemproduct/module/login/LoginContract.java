@@ -2,6 +2,7 @@ package com.richfit.barcodesystemproduct.module.login;
 
 
 import com.richfit.barcodesystemproduct.base.BaseView;
+import com.richfit.barcodesystemproduct.di.component.AppComponent;
 import com.richfit.common_lib.IInterface.IPresenter;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public interface LoginContract {
         //显示历史登陆用户
         void showUserInfos(ArrayList<String> list);
         void loadUserInfosFail(String message);
+
     }
 
     interface Presenter extends IPresenter<View> {
@@ -27,5 +29,6 @@ public interface LoginContract {
         void readUserInfos();
 
         void uploadCrashLogFiles();
+
     }
 }

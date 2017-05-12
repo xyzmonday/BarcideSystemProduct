@@ -1,14 +1,11 @@
 package com.richfit.domain.repository;
 
-import android.support.annotation.NonNull;
-
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
-import com.richfit.domain.bean.RowConfig;
 import com.richfit.domain.bean.SimpleEntity;
 import com.richfit.domain.bean.UserEntity;
 import com.richfit.domain.bean.WorkEntity;
@@ -16,7 +13,6 @@ import com.richfit.domain.bean.WorkEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Flowable;
 
@@ -44,28 +40,6 @@ public interface ILocalRepository extends IRepository {
     void saveUserInfo(UserEntity userEntity);
 
     /**
-     * 保存配置文件
-     *
-     * @param configs：配置文件
-     */
-    void saveExtraConfigInfo(List<RowConfig> configs);
-
-    /**
-     * 读取配置文件
-     */
-    Flowable<ArrayList<RowConfig>> readExtraConfigInfo(String companyCode, String bizType,
-                                                       String refType, String configType);
-
-    /**
-     * 读取额外字段数据源
-     *
-     * @param propertyCode:额外字段的编码
-     * @param dictionaryCode：需要查询的字典编码
-     * @return :查询结果列表
-     */
-    Flowable<Map<String, Object>> readExtraDataSourceByDictionary(@NonNull String propertyCode, @NonNull String dictionaryCode);
-
-    /**
      * 获取本次基础数据下载的下载日期
      *
      * @param queryType：下载基础数据的请求类型
@@ -87,15 +61,6 @@ public interface ILocalRepository extends IRepository {
      * @param maps：数据源
      */
     Flowable<Integer> saveBasicData(List<Map<String, Object>> maps);
-
-
-    /**
-     * 更新额外字段的表字段
-     *
-     * @param map:需要插入的字段（列明），key表示需要插入的表的类型分别是抬头，明细和采集； value表示需要插入的列明的集合
-     */
-    void updateExtraConfigTable(Map<String, Set<String>> map);
-
 
     /**
      * 通过工厂id获取该工厂下的困地点列表
@@ -278,11 +243,13 @@ public interface ILocalRepository extends IRepository {
     void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId);
 
     /**
-     * 01成功后修改抬头的缓存标识
-     *
+     * 结束本次操作，修改缓存标识。
+     * @param bizType
      * @param transId
+     * @param transFlag
+     * @return
      */
-    Flowable<String> setTransFlag(String bizType,String transId);
+    Flowable<String> setTransFlag(String bizType,String transId,String transFlag);
 
     /**
      * 保存离线抬头修改后的抬头数据

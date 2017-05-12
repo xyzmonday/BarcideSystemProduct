@@ -383,15 +383,37 @@ public class QingHaiBlindDetailFragment extends BaseFragment<BlindDetailPresente
      */
     @Override
     public void showOperationMenuOnDetail(final String companyCode) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setTitle("提示");
-        builder.setMessage("您真的要过账本次盘点?");
-        builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
-        builder.setPositiveButton("确定", (dialog, which) -> {
-            dialog.dismiss();
-            transferCheckData();
-        });
-        builder.show();
+        if (mPresenter.isLocal()) {
+            //如果是离线
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("温馨提示")
+                    .setMessage("您是否要结束本次操作?")
+                    .setPositiveButton("结束本次操作", (dialog, which) -> {
+                        dialog.dismiss();
+                        mPresenter.setTransFlag(mBizType,mRefData.checkId, "2");
+                    }).setNegativeButton("取消", (dialog, which) -> dialog.dismiss()).show();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("提示");
+            builder.setMessage("您真的要过账本次盘点?");
+            builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
+            builder.setPositiveButton("确定", (dialog, which) -> {
+                dialog.dismiss();
+                transferCheckData();
+            });
+            builder.show();
+        }
+    }
+
+    @Override
+    public void setTransFlagFail(String message) {
+        showMessage(message);
+    }
+
+    @Override
+    public void setTransFlagsComplete() {
+        showMessage("结束本次操作!");
+        startAutoRefresh();
     }
 
     /**

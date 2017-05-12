@@ -76,6 +76,8 @@ android {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingYang.json"'
             buildConfigField "String","APP_NAME",'"qingyang"'
+            versionCode 2
+            versionName "1.1"
             signingConfig signingConfigs.sign_qingyang
         }
 
@@ -83,6 +85,8 @@ android {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingHai.json"'
             buildConfigField "String","APP_NAME",'"qinghai"'
+            versionCode 1
+            versionName "1.0"
             signingConfig signingConfigs.sign_qinghai
         }
     }
@@ -116,11 +120,7 @@ android {
         exclude 'META-INF/LGPL2.1'
     }
 
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['libs']
-        }
-    }
+
 }
 
 

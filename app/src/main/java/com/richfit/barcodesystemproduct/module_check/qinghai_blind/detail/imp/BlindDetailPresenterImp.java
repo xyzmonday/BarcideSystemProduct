@@ -216,4 +216,49 @@ public class BlindDetailPresenterImp extends BasePresenter<IBlindDetailView>
         }
     }
 
+    @Override
+    public void setTransFlag(String bizType,String transId,String transFlag) {
+        mView = getView();
+        if(TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transFlag) || TextUtils.isEmpty(transId)) {
+            return;
+        }
+        RxSubscriber<String> subscriber = mRepository.setTransFlag(bizType,transId, transFlag)
+                .compose(TransformerHelper.io2main())
+                .subscribeWith(new RxSubscriber<String>(mContext, "正在结束本次操作") {
+                    @Override
+                    public void _onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void _onNetWorkConnectError(String message) {
+                        if (mView != null) {
+                            mView.networkConnectError(Global.RETRY_SET_TRANS_FLAG_ACTION);
+                        }
+                    }
+
+                    @Override
+                    public void _onCommonError(String message) {
+                        if(mView != null) {
+                            mView.setTransFlagFail(message);
+                        }
+                    }
+
+                    @Override
+                    public void _onServerError(String code, String message) {
+                        if(mView != null) {
+                            mView.setTransFlagFail(message);
+                        }
+                    }
+
+                    @Override
+                    public void _onComplete() {
+                        if(mView != null) {
+                            mView.setTransFlagsComplete();
+                        }
+                    }
+                });
+        addSubscriber(subscriber);
+
+    }
 }

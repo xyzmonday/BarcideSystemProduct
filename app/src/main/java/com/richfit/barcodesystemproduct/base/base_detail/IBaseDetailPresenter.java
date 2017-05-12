@@ -94,5 +94,5 @@ public interface IBaseDetailPresenter<V extends IBaseDetailView> extends IPresen
      */
     void showHeadFragmentByPosition(int position);
 
-    void setTransFlag(String bizType,String transFlag);
+    void setTransFlag(String bizType,String transId,String transFlag);
 }

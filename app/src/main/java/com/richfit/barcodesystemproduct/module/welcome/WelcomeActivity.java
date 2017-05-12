@@ -14,8 +14,6 @@ import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.GUIUtils;
 import com.richfit.common_lib.utils.Global;
 
-import java.util.concurrent.TimeUnit;
-
 import butterknife.BindView;
 
 /**
@@ -51,14 +49,14 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
                 break;
         }
         RxView.clicks(btnOnlineMode)
-                .throttleFirst(500, TimeUnit.MILLISECONDS)
+//                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.ONLINE_MODE;
                     mPresenter.loadFragmentConfig(Global.COMPANY_ID, BuildConfig.CONFIG_FILE_NAME);
                 });
 
         RxView.clicks(btnOfflineMode)
-                .throttleFirst(500, TimeUnit.MILLISECONDS)
+//                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.OFFLINE_MODE;
                     mPresenter.loadFragmentConfig(Global.COMPANY_ID, BuildConfig.CONFIG_FILE_NAME);
@@ -77,18 +75,6 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
         toHome();
     }
 
-    /**
-     * 下载配置文件成功。注意不管是否下载扩展字段的配置信息都必须去下载
-     */
-//    @Override
-//    public void loadExtraConfigSuccess() {
-//        toHome();
-//    }
-//
-//    @Override
-//    public void loadExtraConfigFail(String message) {
-//        toHome();
-//    }
 
     /**
      * 显示动画，在动画结束后直接跳转到home页面

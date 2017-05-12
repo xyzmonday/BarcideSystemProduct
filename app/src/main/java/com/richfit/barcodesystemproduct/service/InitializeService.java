@@ -39,6 +39,7 @@ public class InitializeService extends IntentService {
     private void performInit() {
         initSPrefUtils();
         initCrashManage();
+        loadScanLibrary();
     }
 
     private void initSPrefUtils() {
@@ -48,6 +49,13 @@ public class InitializeService extends IntentService {
     private void initCrashManage() {
         CrashManager crashManager = CrashManager.getInstance();
         HttpCrashReport httpCrashReport = new HttpCrashReport();
-        crashManager.init(getApplication(),httpCrashReport);
+        crashManager.init(getApplication(), httpCrashReport);
+    }
+
+
+    private void loadScanLibrary() {
+        System.loadLibrary("IAL");
+        System.loadLibrary("SDL");
+        System.loadLibrary("barcodereader44");
     }
 }

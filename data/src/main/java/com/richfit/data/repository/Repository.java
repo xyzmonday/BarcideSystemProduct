@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -60,8 +59,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     public void setLocal(boolean local) {
-        L.e("isLocal = " + local);
         isLocal = local;
+        L.e("isLocal = " + isLocal);
     }
 
     @Override
@@ -77,6 +76,11 @@ public class Repository implements ILocalRepository, IServerRepository {
     @Override
     public Flowable<ArrayList<RowConfig>> loadExtraConfig(String companyId) {
         return isLocal ? mLocalRepository.loadExtraConfig(companyId) : mServerRepository.loadExtraConfig(companyId);
+    }
+
+    @Override
+    public Flowable<String> getConnectionStatus() {
+        return mServerRepository.getConnectionStatus();
     }
 
     @Override
@@ -154,21 +158,6 @@ public class Repository implements ILocalRepository, IServerRepository {
         mLocalRepository.saveUserInfo(userEntity);
     }
 
-    @Override
-    public void saveExtraConfigInfo(List<RowConfig> configs) {
-        mLocalRepository.saveExtraConfigInfo(configs);
-    }
-
-    @Override
-    public Flowable<ArrayList<RowConfig>> readExtraConfigInfo(String companyCode, String bizType, String refType, String configType) {
-        return mLocalRepository.readExtraConfigInfo(companyCode, bizType, refType, configType);
-    }
-
-    @Override
-    public Flowable<Map<String, Object>> readExtraDataSourceByDictionary(@NonNull String propertyCode, @NonNull String dictionaryCode) {
-        return mLocalRepository.readExtraDataSourceByDictionary(propertyCode, dictionaryCode);
-    }
-
     /**
      * 获取基础数据下载的日期
      *
@@ -179,17 +168,6 @@ public class Repository implements ILocalRepository, IServerRepository {
     public String getLoadBasicDataTaskDate(@NonNull String requestType) {
         return mLocalRepository.getLoadBasicDataTaskDate(requestType);
     }
-
-    /**
-     * 更新额外信息表字段
-     *
-     * @param map:需要插入的字段（列明），key表示需要插入的表的类型分别是抬头，明细和采集； value表示需要插入的列明的集合
-     */
-    @Override
-    public void updateExtraConfigTable(Map<String, Set<String>> map) {
-        mLocalRepository.updateExtraConfigTable(map);
-    }
-
 
     @Override
     public Flowable<String> uploadCollectionDataSingle(ResultEntity result) {
@@ -513,8 +491,8 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<String> setTransFlag(String bizType, String transId) {
-        return mLocalRepository.setTransFlag(bizType, transId);
+    public Flowable<String> setTransFlag(String bizType, String transId,String transFlag) {
+        return mLocalRepository.setTransFlag(bizType, transId,transFlag);
     }
 
     @Override

@@ -8,8 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.BaseScannerActivity;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.BizFragmentConfig;
 
@@ -20,7 +20,7 @@ import butterknife.OnClick;
  * Created by monday on 2016/11/19.
  */
 
-public class EditActivity extends BaseActivity<EditPresenterImp> implements IEditContract.View {
+public class EditActivity extends BaseScannerActivity<EditPresenterImp> implements IEditContract.View {
 
     protected FragmentManager mFragmentManager;
     protected BaseFragment mFragment = null;

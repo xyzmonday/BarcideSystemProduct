@@ -75,6 +75,8 @@ public class QingHaiAODetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
         deleteNode.instructions = "";
         deleteNode.qmCertificate = "";
         deleteNode.inspectionResult = "";
+        deleteNode.inspectionQuantity = "" ;
+        deleteNode.claimNum = "";
         notifyItemChanged(position);
     }
 }

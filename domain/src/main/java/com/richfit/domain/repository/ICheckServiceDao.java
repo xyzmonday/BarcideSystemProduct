@@ -91,7 +91,7 @@ public interface ICheckServiceDao {
 
     List<ReferenceEntity> readTransferedData();
 
-    boolean setTransFlag(String transId);
+    boolean setTransFlag(String transId,String transFlag);
 
     boolean uploadEditedHeadData(ResultEntity resultEntity);
 

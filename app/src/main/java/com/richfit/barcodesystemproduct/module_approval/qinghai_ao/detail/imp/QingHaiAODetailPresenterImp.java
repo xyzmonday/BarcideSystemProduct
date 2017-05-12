@@ -6,12 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.detail.IQingHaiAODetailPresenter;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.detail.IQingHaiAODetailView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.FileUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.ImageEntity;
@@ -20,7 +20,6 @@ import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -80,14 +79,15 @@ public class QingHaiAODetailPresenterImp extends BaseDetailPresenterImp<IQingHai
     }
 
     @Override
-    public void deleteNode(String lineDeleteFlag, String refNum, String refLineNum, String refLineId, String refType, String bizType, String userId, int position, String companyCode) {
+    public void deleteNode(String lineDeleteFlag, String refNum, String refLineNum, String refLineId,
+                           String refType, String bizType, String userId, int position, String companyCode,boolean isLocal) {
         mView = getView();
 
         RxSubscriber<String> subscriber =
                 mRepository.deleteCollectionDataSingle("", "", "", "", refType, bizType, refLineId,
                         userId, position, companyCode)
-                        .doOnNext(str -> mRepository.deleteInspectionImagesSingle(refNum, refLineNum, refLineId, false))
-                        .doOnNext(str -> FileUtil.deleteDir(FileUtil.getImageCacheDir(mContext.getApplicationContext(), refNum, refLineNum, false)))
+                        .doOnNext(str -> mRepository.deleteInspectionImagesSingle(refNum, refLineNum, refLineId, isLocal))
+                        .doOnNext(str -> FileUtil.deleteDir(FileUtil.getImageCacheDir(mContext.getApplicationContext(), refNum, refLineNum, isLocal)))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<String>(mContext) {
                             @Override

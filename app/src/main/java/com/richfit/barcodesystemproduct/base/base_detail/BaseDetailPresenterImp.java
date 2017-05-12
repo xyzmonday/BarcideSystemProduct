@@ -21,7 +21,8 @@ import javax.inject.Inject;
  * Created by monday on 2017/3/18.
  */
 
-public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePresenter<V> implements IBaseDetailPresenter<V> {
+public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePresenter<V> implements
+        IBaseDetailPresenter<V> {
 
     protected V mView;
 
@@ -58,12 +59,13 @@ public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePrese
     }
 
     @Override
-    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate,String transToSapFlag, Map<String, Object> extraHeaderMap, int submitFlag) {
+    public void sapUpAndDownLocation(String transId, String bizType, String refType, String userId, String voucherDate, String transToSapFlag, Map<String, Object> extraHeaderMap, int submitFlag) {
 
     }
 
     /**
      * 子类不可以重写该方法，注意这里不让重写的目的是统一发送清除抬头UI控件的信号
+     *
      * @param position
      */
     @Override
@@ -78,12 +80,12 @@ public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePrese
     }
 
     @Override
-    public void setTransFlag(String bizType,String transFlag) {
+    public void setTransFlag(String bizType, String transId, String transFlag) {
         mView = getView();
-        if(TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transFlag)) {
+        if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transFlag) || TextUtils.isEmpty(transId)) {
             return;
         }
-        RxSubscriber<String> subscriber = mRepository.setTransFlag(bizType, transFlag)
+        RxSubscriber<String> subscriber = mRepository.setTransFlag(bizType, transId, transFlag)
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在结束本次操作") {
                     @Override
@@ -100,21 +102,21 @@ public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePrese
 
                     @Override
                     public void _onCommonError(String message) {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.setTransFlagFail(message);
                         }
                     }
 
                     @Override
                     public void _onServerError(String code, String message) {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.setTransFlagFail(message);
                         }
                     }
 
                     @Override
                     public void _onComplete() {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.setTransFlagsComplete();
                         }
                     }

@@ -37,14 +37,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".PreLoadDexActivity"
+        <activity
+            android:name=".PreLoadDexActivity"
+            android:alwaysRetainTaskState="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
             android:process=":preloaddex"
-            android:alwaysRetainTaskState= "false"
-            android:theme="@style/SplashTheme"
-            android:launchMode= "singleTask"
-            android:excludeFromRecents= "true"
-            android:screenOrientation= "portrait"
-            />
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme" />
 
         <activity android:name=".module_local.upload.UploadActivity" />
 

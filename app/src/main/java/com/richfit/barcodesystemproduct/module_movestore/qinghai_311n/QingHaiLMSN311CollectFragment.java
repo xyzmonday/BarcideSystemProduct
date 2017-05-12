@@ -24,11 +24,13 @@ import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
 
 /**
- * 庆阳离线移库311数据采集界面
+ * 庆阳离线移库311数据采集界面。注意这里选择完库存地点后加载发出库存，
+ * 这里将spSendLoc禁止，那么不会去加载发出库存，同时也不会去加载接收库存。
+ * 因为离线不考虑库存。
  * Created by monday on 2017/4/12.
  */
 
-public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCollectPresenterImp> {
+public class QingHaiLMSN311CollectFragment extends BaseMSNCollectFragment<MSNCollectPresenterImp> {
 
     @BindView(R.id.et_send_location)
     RichEditText etSendLocation;
@@ -51,12 +53,10 @@ public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCo
 
     @Override
     protected void initView() {
-        //这里将发出仓位禁止，作用是选择发出库位后过滤本次选择事件
+        //这里将发出仓位禁止，作用是选择发出库位后过滤本次获取发出仓位库存的事件
         spSendLoc.setEnabled(false);
         //工厂内移库不需要接收批次
         setVisibility(View.GONE, llRecBatch);
-        //青海的接收仓位默认与发出仓位一致，而且不允许修改
-        setVisibility(View.GONE, llRecLocation);
         super.initView();
     }
 
@@ -121,6 +121,8 @@ public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCo
         }
         return true;
     }
+
+
 
     /**
      * 在匹配缓存前先检查仓位是否存在
@@ -299,6 +301,13 @@ public class QingHaiLMSNC311CollectFragment extends BaseMSNCollectFragment<MSNCo
         //实发数量
         if (Float.valueOf(getString(etQuantity)) < 0.0f) {
             showMessage("输入数量不合理");
+            return false;
+        }
+
+        //检查接收仓位
+        final String recLocation = getString(autoRecLoc);
+        if(TextUtils.isEmpty(recLocation) || recLocation.length() > 10) {
+            showMessage("您输入的接收仓位不合理");
             return false;
         }
         return true;

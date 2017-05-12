@@ -8,6 +8,7 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.MenuNode;
 import com.richfit.domain.bean.ReferenceEntity;
 

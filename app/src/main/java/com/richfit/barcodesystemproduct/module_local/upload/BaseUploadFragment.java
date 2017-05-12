@@ -81,6 +81,16 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
     }
 
     /**
+     * 响应自动下拉刷新动作，并且开始请求接口获取整单缓存
+     */
+    @Override
+    public void onRefresh() {
+        mPresenter.readUploadData();
+    }
+
+
+
+    /**
      * 读取数据之前，必须情况所有的历史明细数据
      */
     @Override
@@ -167,6 +177,8 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
         if (mUploadDialog != null && mUploadDialog.isVisible()) {
             mUploadDialog.addMessage(info);
         }
+        //刷新界面
+        startAutoRefresh();
     }
 
     /**
@@ -181,6 +193,18 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
             mShowUploadDataAdapter.notifyDataSetChanged();
         }
         mPresenter.resetStateAfterUpload();
+    }
+
+
+    @Override
+    public void retry(String action) {
+        super.retry(action);
+        if (mUploadDialog != null) {
+            mUploadDialog.setOnEditLocalDataListener(null);
+            mUploadDialog.dismiss();
+            mUploadDialog = null;
+        }
+        startAutoRefresh();
     }
 
     @Override
@@ -212,6 +236,13 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
         mActivity.finish();
     }
 
+    /**
+     * 开始上传数据
+     */
+    @Override
+    public void saveCollectedData() {
+        mPresenter.uploadCollectedDataOffLine();
+    }
 
     @Override
     public void onDestroyView() {

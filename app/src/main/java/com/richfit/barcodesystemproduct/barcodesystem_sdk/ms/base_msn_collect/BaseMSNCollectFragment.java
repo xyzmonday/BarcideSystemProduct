@@ -190,7 +190,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
                     .subscribe(str -> etRecBatchFlag.setText(str));
         }
 
-        //库存地点。选择库存地点获取库存
+        //库存地点。选择库存地点获取发出仓位的库存
         RxAdapterView.itemSelections(spSendInv)
                 .filter(a -> spSendLoc.isEnabled())
                 .subscribeOn(AndroidSchedulers.mainThread())

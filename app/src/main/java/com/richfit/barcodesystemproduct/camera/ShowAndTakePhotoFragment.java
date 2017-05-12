@@ -93,20 +93,21 @@ public class ShowAndTakePhotoFragment extends BaseFragment<ShowAndTakePhotoPrese
             mRefLineId = bundle.getString(Global.EXTRA_REF_LINE_ID_KEY);
             //拍照类型
             mTakePhotoType = bundle.getInt(Global.EXTRA_TAKE_PHOTO_TYPE);
+            //是在线模式还是离线模式
             isLocal = bundle.getBoolean(Global.EXTRA_IS_LOCAL_KEY, false);
 
             //构建图片的SD卡的缓存路径，该路径是操作操作图片的唯一标识。需要考虑针对整单拍照和针对
             //整单拍照两种业务类型
             if (!TextUtils.isEmpty(mRefNum) && TextUtils.isEmpty(mRefLineNum) && mTakePhotoType >= 0) {
-                mImageDir = isLocal ? FileUtil.getImageCacheDir(mActivity.getApplicationContext(),mRefNum, mTakePhotoType,true).getAbsolutePath() :
-                        FileUtil.getImageCacheDir(mActivity.getApplicationContext(),mRefNum, mTakePhotoType,false).getAbsolutePath();
+                mImageDir = isLocal ? FileUtil.getImageCacheDir(mActivity.getApplicationContext(), mRefNum, mTakePhotoType, true).getAbsolutePath() :
+                        FileUtil.getImageCacheDir(mActivity.getApplicationContext(), mRefNum, mTakePhotoType, false).getAbsolutePath();
                 return;
             }
 
             //该单号+行号所有缓存图片的更目录
             if (!TextUtils.isEmpty(mRefNum) && !TextUtils.isEmpty(mRefLineNum) && mTakePhotoType >= 0) {
-                mImageDir = isLocal ? FileUtil.getImageCacheDir(mActivity.getApplicationContext(),mRefNum, mRefLineNum, mTakePhotoType,true).getAbsolutePath() :
-                        FileUtil.getImageCacheDir(mActivity.getApplicationContext(),mRefNum, mRefLineNum, mTakePhotoType,false).getAbsolutePath();
+                mImageDir = isLocal ? FileUtil.getImageCacheDir(mActivity.getApplicationContext(), mRefNum, mRefLineNum, mTakePhotoType, true).getAbsolutePath() :
+                        FileUtil.getImageCacheDir(mActivity.getApplicationContext(), mRefNum, mRefLineNum, mTakePhotoType, false).getAbsolutePath();
                 return;
             }
         }
@@ -121,12 +122,19 @@ public class ShowAndTakePhotoFragment extends BaseFragment<ShowAndTakePhotoPrese
     }
 
     @Override
+    public void initData() {
+        if (TextUtils.isEmpty(mImageDir))
+            return;
+        mPresenter.readImagesFromLocal(mRefNum, mRefLineNum, mRefLineId, mTakePhotoType,
+                mImageDir, mBizType, mRefType, isLocal);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
-        //注意这里，我们需要从拍照页面返回后，在此执行图片扫描
-        if(TextUtils.isEmpty(mImageDir)) {
+        //注意这里，我们需要从拍照页面返回后，再次去读取图片
+        if (TextUtils.isEmpty(mImageDir) || mPresenter == null)
             return;
-        }
         mPresenter.readImagesFromLocal(mRefNum, mRefLineNum, mRefLineId, mTakePhotoType,
                 mImageDir, mBizType, mRefType, isLocal);
     }

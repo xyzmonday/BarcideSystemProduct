@@ -13,8 +13,8 @@ import android.view.View;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
-import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.BaseScannerActivity;
 import com.richfit.common_lib.transformer.CubeTransformer;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.widget.NoScrollViewPager;
@@ -27,7 +27,7 @@ import butterknife.BindView;
  * Created by monday on 2017/3/10.
  */
 
-public class MainActivity extends BaseActivity<MainPresenterImp> implements
+public class MainActivity extends BaseScannerActivity<MainPresenterImp> implements
         MainContract.View, ViewPager.OnPageChangeListener {
 
     /*当前选中的页签下表，用于恢复*/
@@ -56,8 +56,6 @@ public class MainActivity extends BaseActivity<MainPresenterImp> implements
     @Override
     public void initInjector() {
         mActivityComponent.inject(this);
-        //默认是在线模式
-        mode = Global.ONLINE_MODE;
     }
 
     @Override
@@ -68,6 +66,7 @@ public class MainActivity extends BaseActivity<MainPresenterImp> implements
             if (bundle != null) {
                 mCompanyCode = bundle.getString(Global.EXTRA_COMPANY_CODE_KEY);
                 mCaption = bundle.getString(Global.EXTRA_CAPTION_KEY);
+                //默认给出的是在线模式
                 mode = bundle.getInt(Global.EXTRA_MODE_KEY, Global.ONLINE_MODE);
             }
         }
@@ -148,7 +147,6 @@ public class MainActivity extends BaseActivity<MainPresenterImp> implements
     @Override
     protected void onRestart() {
         super.onRestart();
-
         //当该Activity从后台再次进入前台的时候(也就是后台的Activity已经onStop了)，那么根据需求需要
         //Fragment再次执行懒加载
         BaseFragment fragment = getFragmentByPosition(mCurrentPage);

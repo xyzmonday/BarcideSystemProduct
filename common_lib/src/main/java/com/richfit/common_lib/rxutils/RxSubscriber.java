@@ -22,21 +22,29 @@ public abstract class RxSubscriber<T> extends ResourceSubscriber<T> {
 
     private WeakReference<Context> mWeakContext;
     private String msg;
+    private boolean isShowDialog;
 
     public RxSubscriber(Context context, String msg) {
         this.mWeakContext = new WeakReference<>(context);
         this.msg = msg;
+        //默认开启提示对话框
+        this.isShowDialog = true;
     }
 
     public RxSubscriber(Context context) {
-        this(context,"正在加载...");
+        this(context, "正在加载...");
+    }
+
+    public RxSubscriber(Context context, boolean isShowDialog) {
+        this(context);
+        this.isShowDialog = isShowDialog;
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         final Context context = mWeakContext.get();
-        if (context != null)
+        if (context != null && isShowDialog)
             LoadingLayoutHelper.showDialogForLoading(context, msg);
     }
 
@@ -47,7 +55,8 @@ public abstract class RxSubscriber<T> extends ResourceSubscriber<T> {
 
     @Override
     public void onError(Throwable throwable) {
-        LoadingLayoutHelper.cancelDialogForLoading();
+        if (isShowDialog)
+            LoadingLayoutHelper.cancelDialogForLoading();
         //网络异常
         if (throwable instanceof ConnectException || throwable instanceof SocketTimeoutException || throwable instanceof TimeoutException) {
             _onNetWorkConnectError(throwable.getMessage());

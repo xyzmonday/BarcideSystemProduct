@@ -13,6 +13,7 @@ import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.LocalFileUtil;
+import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
 
 import java.util.ArrayList;
@@ -38,48 +39,6 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
         super(context);
     }
 
-    /**
-     * 下载配置文件(包括了扩展字段的配置信息和所有业务的页面配置信息)，并保存到本地数据库
-     *
-     */
-//    @Override
-//    public void loadExtraConfig(String companyId) {
-//        mView = getView();
-//        if (TextUtils.isEmpty(companyId)) {
-//            mView.loadExtraConfigFail("未获取到公司id");
-//            return;
-//        }
-//        ResourceSubscriber<List<RowConfig>> subscriber =
-//                mRepository.loadExtraConfig(companyId)
-//                        .filter(configs -> configs != null && configs.size() > 0)
-//                        .doOnNext(configs -> mRepository.saveExtraConfigInfo(configs))
-//                        .doOnNext(configs -> updateExtraConfigTable(configs))
-//                        .retryWhen(new RetryWhenNetworkException(3, 2000))
-//                        .compose(TransformerHelper.io2main())
-//                        .subscribeWith(new ResourceSubscriber<List<RowConfig>>() {
-//                            @Override
-//                            public void onNext(List<RowConfig> rowConfigs) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onError(Throwable t) {
-//                                if (mView != null) {
-//                                    mView.loadExtraConfigFail(t.getMessage());
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onComplete() {
-//                                if (mView != null) {
-//                                    mView.loadExtraConfigSuccess();
-//                                }
-//                            }
-//                        });
-//        addSubscriber(subscriber);
-//
-//    }
-
     @Override
     public void loadFragmentConfig(String companyI, String configFileName) {
         mView = getView();
@@ -93,11 +52,17 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
             return;
         }
 
+        boolean initedFragmentConfig = (boolean) SPrefUtil.getData(Global.IS_INITED_FRAGMENT_CONFIG_KEY,false);
+        if(initedFragmentConfig && mView != null) {
+            mView.loadFragmentConfigSuccess();
+            return;
+        }
         ResourceSubscriber<Boolean> subscriber =
                 Flowable.just(configFileName)
                         .map(name -> LocalFileUtil.getStringFormAsset(mContext, name))
                         .map(json -> parseJson(json))
                         .flatMap(list -> mRepository.saveBizFragmentConfig(list))
+                        .doOnComplete(()->SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY,true))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new ResourceSubscriber<Boolean>() {
                             @Override
@@ -146,28 +111,4 @@ public class WelcomePresenterImp extends BasePresenter<WelcomeContract.View>
         activity.overridePendingTransition(0, 0);
         activity.finish();
     }
-
-//    private void updateExtraConfigTable(ArrayList<RowConfig> configs) {
-//        Map<String, Set<String>> map = new HashMap<>();
-//        Set<String> headerSet = new HashSet<>();
-//        Set<String> collectSet = new HashSet<>();
-//        Set<String> locationSet = new HashSet<>();
-//        for (RowConfig config : configs) {
-//            switch (config.configType) {
-//                case Global.HEADER_CONFIG_TYPE:
-//                    headerSet.add(config.propertyCode);
-//                    break;
-//                case Global.COLLECT_CONFIG_TYPE:
-//                    collectSet.add(config.propertyCode);
-//                    break;
-//                case Global.LOCATION_CONFIG_TYPE:
-//                    locationSet.add(config.propertyCode);
-//                    break;
-//            }
-//        }
-//        map.put(Global.HEADER_CONFIG_TYPE, headerSet);
-//        map.put(Global.COLLECT_CONFIG_TYPE, collectSet);
-//        map.put(Global.LOCATION_CONFIG_TYPE, locationSet);
-//        mRepository.updateExtraConfigTable(map);
-//    }
 }

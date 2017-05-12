@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.ResultEntity;
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter;
@@ -84,6 +83,8 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         String workId = mDatas.get(position).workId;
         String invId = mDatas.get(position).invId;
         String storageNum = mDatas.get(position).storageNum;
+        String recInvId = mDatas.get(position).recInvId;
+        String refNum = mDatas.get(position).refCode;
         if (TextUtils.isEmpty(businessType)) {
             return -1;
         }
@@ -96,8 +97,29 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
                 chars = !TextUtils.isEmpty(storageNum) ?
                         storageNum.toCharArray() : (businessType + workId + invId).toCharArray();
                 break;
+            case "16":// 其他入库-无参考
+            case "25":// 其他出库-无参考
+            case "26":// 无参考-201
+            case "27":// 无参考-221
+            case "32":// 301(无参考)
+            case "34":// 311(无参考)
+            case "44":// 其他退库-无参考
+            case "46":// 无参考-202
+            case "47":// 无参考-222
+            case "71":// 代管料入库
+            case "72":// 代管料出库
+            case "73":// 代管料退库
+            case "74":// 代管料调拨
+            case "91":// 代管料入库-HRM
+            case "92":// 代管料出库-HRM
+            case "93":// 代管料退库-HRM
+            case "94":// 代管料调拨-HRM
+                chars = TextUtils.isEmpty(recInvId) ? (businessType + workId + invId).toCharArray() :
+                        (businessType + workId + invId + recInvId).toCharArray();
+                break;
             default:
-                chars = businessType.toCharArray();
+                //对于有参考使用单据+业务类型
+                chars = (refNum + businessType).toCharArray();
         }
         if (chars == null)
             return -1;
@@ -134,7 +156,7 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
     @Override
     public void onBindHeaderViewHolder(UploadHeaderViewHolder holder, int position) {
         ResultEntity item = mDatas.get(position);
-        if(TextUtils.isEmpty(item.businessType))
+        if (TextUtils.isEmpty(item.businessType))
             return;
         switch (item.businessType) {
             case "C01":
@@ -160,6 +182,8 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
             case "311":// UB 101
             case "45":// UB 352
             case "51":// 采购退货
+            case "00"://验收结果录入
+            case "01"://SAP验收结果录入
                 holder.recordNum.setText(item.refCode);
                 holder.refType.setText(item.refTypeDesc);
                 holder.bizType.setText(item.businessTypeDesc);

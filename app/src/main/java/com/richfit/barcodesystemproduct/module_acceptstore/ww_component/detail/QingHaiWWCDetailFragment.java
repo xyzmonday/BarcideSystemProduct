@@ -102,7 +102,6 @@ public class QingHaiWWCDetailFragment extends BaseDetailFragment<QingHaiWWCDetai
         //获取缓存累计数量不对
         mRefDetail = null;
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
-        L.e("mSelectedRefLineNum = " + mSelectedRefLineNum);
         if (lineData != null) {
             mPresenter.getTransferInfo(mRefData.recordNum, refCodeId, mBizType, mRefType,
                     "", lineData.refLineId, Global.USER_ID);

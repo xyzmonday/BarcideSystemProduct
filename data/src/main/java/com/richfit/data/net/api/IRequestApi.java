@@ -42,6 +42,9 @@ public interface IRequestApi {
     @GET("getLoginInfo")
     Flowable<Response<UserEntity>> login(@Query("requestParam") String requestParam);
 
+    @GET
+    Flowable<Map<String,Object>> getConnectionStatus();
+
     @GET("getMenuTreeInfo")
     Flowable<Response<ArrayList<MenuNode>>> getMenuTreeInfo(@Query("requestParam") String requestParam);
 

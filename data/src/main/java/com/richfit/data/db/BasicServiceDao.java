@@ -24,10 +24,8 @@ import com.richfit.domain.repository.IBasicServiceDao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -44,57 +42,6 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         super(context);
     }
 
-    public void updateExtraConfigTable(Map<String, Set<String>> map) {
-        //尝试更新T_EXTRA_HEADER表
-        updateExtraHeader(map.get(Global.HEADER_CONFIG_TYPE), "T_EXTRA_HEADER");
-        updateExtraHeader(map.get(Global.COLLECT_CONFIG_TYPE), "T_EXTRA_LINE");
-        updateExtraHeader(map.get(Global.LOCATION_CONFIG_TYPE), "T_EXTRA_CW");
-        updateExtraHeader(map.get(Global.HEADER_CONFIG_TYPE), "T_TRANSACTION_EXTRA_HEADER");
-        updateExtraHeader(map.get(Global.COLLECT_CONFIG_TYPE), "T_TRANSACTION_EXTRA_LINE");
-        updateExtraHeader(map.get(Global.LOCATION_CONFIG_TYPE), "T_TRANSACTION_EXTRA_CW");
-    }
-
-    private void updateExtraHeader(Set<String> targetColumns, String tableName) {
-        if (targetColumns == null || targetColumns.size() == 0)
-            return;
-        SQLiteDatabase db = getWritableDB();
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT count(*) FROM sqlite_master WHERE type=");
-        sb.append("\"table\"");
-        sb.append(" AND name = ");
-        sb.append("\"");
-        sb.append(tableName);
-        sb.append(("\""));
-        Cursor cursor = db.rawQuery(sb.toString(), null);
-        int count = -1;
-        while (cursor.moveToNext()) {
-            count = cursor.getInt(0);
-        }
-        cursor.close();
-        sb.setLength(0);
-
-        if (count > 0) {
-            Set<String> columns = getTableInfo(db, tableName);
-            //需要插入的列减去已经存在的列
-            targetColumns.removeAll(columns);
-            if (targetColumns.size() == 0)
-                return;
-            if (targetColumns.size() > 0) {
-                //开始插入列
-                for (String column : targetColumns) {
-                    sb.append("ALTER TABLE ")
-                            .append(tableName)
-                            .append(" ADD COLUMN ")
-                            .append(column)
-                            .append(" TEXT");
-                    db.execSQL(sb.toString());
-                    sb.setLength(0);
-                }
-            }
-        }
-        db.close();
-    }
 
     /**
      * 保存用户的基本信息
@@ -211,90 +158,6 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
     }
 
     /**
-     * 保存配置信息
-     *
-     * @param configs：配置信息列表
-     */
-    @Override
-    public void saveExtraConfigInfo(List<RowConfig> configs) {
-        if (configs == null || configs.size() == 0)
-            return;
-        SQLiteDatabase db = getWritableDB();
-        //先删除数据
-        db.delete("T_CONFIG", null, null);
-        StringBuffer sb = new StringBuffer();
-        for (RowConfig config : configs) {
-            sb.append("INSERT INTO T_CONFIG(id,property_name,");
-            sb.append("property_code,display_flag,input_flag,");
-            sb.append("company_id,biz_type,");
-            sb.append("ref_type,config_type,ui_type,col_num,col_name,data_source)");
-            sb.append(" values(?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            db.execSQL(sb.toString(), new Object[]{config.id, config.propertyName,
-                    config.propertyCode, config.displayFlag, config.inputFlag,
-                    config.companyId, config.businessType, config.refType, config.configType, config.uiType,
-                    config.colNum, config.colName, config.dataSource});
-            sb.setLength(0);
-        }
-        db.close();
-    }
-
-
-    /**
-     * 读取配置文件
-     *
-     * @param companyId：地区公司Id
-     * @param bizType：子模块编码
-     * @param configType：配置类型
-     * @return
-     */
-    @Override
-    public ArrayList<RowConfig> readExtraConfigInfo(String companyId, String bizType, String refType,
-                                                    String configType) {
-        ArrayList<RowConfig> configs = new ArrayList<>();
-        if (TextUtils.isEmpty(bizType)) {
-            return configs;
-        }
-        SQLiteDatabase db = getWritableDB();
-        configs = readExtraConfigInfo(db, refType, companyId, bizType, configType);
-        db.close();
-        return configs;
-    }
-
-
-    /**
-     * 获取额外控件对应的字典数据
-     *
-     * @param dictionaryCode：需要查询的字典编码
-     * @return
-     */
-    @Override
-    public Map<String, Object> readExtraDataSourceByDictionary(String propertyCode, String dictionaryCode) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        SQLiteDatabase db = null;
-        Cursor cursor = null;
-        try {
-            if (TextUtils.isEmpty(dictionaryCode))
-                return map;
-            db = getWritableDB();
-            cursor = db.rawQuery("select val,name from T_EXTRA_DATA_SOURCE where code = ? order by sort asc",
-                    new String[]{dictionaryCode});
-
-            while (cursor.moveToNext()) {
-                map.put(cursor.getString(0), cursor.getString(1));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return map;
-        } finally {
-            if (cursor != null)
-                cursor.close();
-            db.close();
-        }
-        return map;
-    }
-
-
-    /**
      * 读取页面配置信息
      *
      * @param bizFragmentConfigs
@@ -305,6 +168,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         if (bizFragmentConfigs == null || bizFragmentConfigs.size() == 0) {
             return false;
         }
+
         SQLiteDatabase db = getWritableDB();
         db.delete("T_FRAGMENT_CONFIGS", null, null);
         ContentValues cv = new ContentValues();
@@ -361,7 +225,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
      * @param queryDate：查询日期
      */
     @Override
-    public void saveLoadBasicDataTaskDate(String queryDate,List<String> queryTypes) {
+    public void saveLoadBasicDataTaskDate(String queryDate, List<String> queryTypes) {
         SQLiteDatabase db = getWritableDB();
         for (String type : queryTypes) {
             db.delete("REQUEST_DATE", "query_type = ?", new String[]{type});
@@ -413,13 +277,14 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             tableIndex = 7;
         } else if ("XM".equals(queryType)) {
             tableIndex = 8;
-        } else if("WL".equals(queryType)) {
+        } else if ("WL".equals(queryType)) {
             tableIndex = 9;
         }
         boolean isCWFirst = "0001/01/01".equalsIgnoreCase(queryDate);
         insertData(maps, tableIndex, isFirstPage, isCWFirst);
         return taskId;
     }
+
 
     /**
      * 数据保存控制
@@ -683,7 +548,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         stmt.bindString(1, item.get(Global.ID_KEY).toString());
                         stmt.bindString(2, item.get(Global.CODE_KEY).toString());
                         stmt.bindString(3, item.get(Global.NAME_KEY).toString());
-                        stmt.bindString(4,item.get("materialGroup").toString());
+                        stmt.bindString(4, item.get("materialGroup").toString());
                         stmt.bindString(5, item.get("unit").toString());
                         stmt.execute();
                         stmt.clearBindings();
@@ -1145,6 +1010,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                 sb.append(" and org_level = ? ");
                 sb.append(")");
             }
+            L.e("读取StorageNum 列表的sql = " + sb.toString());
             cursor = db.rawQuery(sb.toString(), new String[]{"3", "2"});
             list.add("请选择");
             while (cursor.moveToNext()) {
@@ -1172,14 +1038,14 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
     public ArrayList<MenuNode> saveMenuInfo(ArrayList<MenuNode> menus, String loginId, int mode) {
         SQLiteDatabase db = getWritableDB();
         //先删除历史的菜单
-        db.delete("T_HOME_MENUS", "login_id = ?", new String[]{loginId});
+        db.delete("T_HOME_MENUS", null, null);
         clearStringBuffer();
         sb.append("insert or replace into T_HOME_MENUS(id,parent_id,biz_type,ref_type,")
                 .append("caption,functionCode,login_id,mode,tree_level) ")
                 .append("values(?,?,?,?,?,?,?,?,?)");
         for (MenuNode menu : menus) {
-            db.execSQL(sb.toString(),new Object[]{menu.getId(),menu.getParentId(),menu.getBusinessType(),
-            menu.getRefType(),menu.getCaption(),menu.getFunctionCode(),loginId,menu.getMode(),menu.getLevel()});
+            db.execSQL(sb.toString(), new Object[]{menu.getId(), menu.getParentId(), menu.getBusinessType(),
+                    menu.getRefType(), menu.getCaption(), menu.getFunctionCode(), loginId, menu.getMode(), menu.getLevel()});
         }
         db.close();
         return menus;

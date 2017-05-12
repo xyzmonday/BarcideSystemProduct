@@ -2,6 +2,7 @@ package com.richfit.data.net.http;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import com.richfit.common_lib.utils.Global;
@@ -9,8 +10,6 @@ import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.NetworkStateUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.data.net.api.IRequestApi;
-import com.richfit.data.net.api.IRetrofitDownloadApi;
-import com.richfit.data.net.api.IRetrofitUploadApi;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +53,7 @@ public class RetrofitModule {
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new RewriteCacheControllerInterceptor(context.getApplicationContext()))
                 .addInterceptor(logging)//添加打印拦截器
-                .connectTimeout(15, TimeUnit.SECONDS)//设置请求超时时间
+                .connectTimeout(25, TimeUnit.SECONDS)//设置请求超时时间
                 .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
                 .cache(cache).build();
 
@@ -118,7 +117,8 @@ public class RetrofitModule {
      * 一般网络请求 get/post/...
      */
     public static IRequestApi getRequestApi(Context context, String baseUrl) {
-        if (request == null) {
+        //注意这里为了增加baseUrl能够修改，不在将IRequestApi设置为单例
+//        if (request == null) {
             if (TextUtils.isEmpty(Global.MAC_ADDRESS)) {
                 Global.MAC_ADDRESS = UiUtil.getMacAddress();
             }
@@ -131,7 +131,7 @@ public class RetrofitModule {
                         .scheme(oldRequest.url().scheme())
                         .host(oldRequest.url().host())
                         .addQueryParameter("macAddress", Global.MAC_ADDRESS)
-                        .addQueryParameter("userId",Global.USER_ID);
+                        .addQueryParameter("userId", Global.USER_ID);
 
 
                 // 新的请求
@@ -144,15 +144,15 @@ public class RetrofitModule {
                 return chain.proceed(newRequest);
             };
             //打印拦截器
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> L.i(message));
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> Log.i("yff", message));
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
             OkHttpClient httpClient = new OkHttpClient.Builder()
                     .addInterceptor(interceptor)//添加拦截器
                     .addInterceptor(logging)//添加打印拦截器
-                    .connectTimeout(15, TimeUnit.SECONDS)//设置请求超时时间
-                    .readTimeout(20, TimeUnit.SECONDS)
-                    .writeTimeout(20, TimeUnit.SECONDS)
+                    .connectTimeout(25, TimeUnit.SECONDS)//设置请求超时时间
+                    .readTimeout(25, TimeUnit.SECONDS)
+                    .writeTimeout(25, TimeUnit.SECONDS)
                     .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
                     .build();
 
@@ -163,90 +163,92 @@ public class RetrofitModule {
                     .client(httpClient)
                     .build();
             request = retrofit.create(IRequestApi.class);
-        }
+//        }
         return request;
     }
 
-    /**
-     * 下载文件
-     */
-    public static IRetrofitDownloadApi getDownloadApi(String baseUrl,final ProgressResponseBody.ProgressListener progressListener) {
-        //打印拦截器
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addInterceptor(logging)
-                .addNetworkInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Response originalResponse = chain.proceed(chain.request());
-                        return originalResponse.newBuilder()
-                                .body(new ProgressResponseBody(originalResponse.body(),progressListener))
-                                .build();
-                    }
-                })
-                .readTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
-                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
-                .build();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(httpClient)
-                .build();
-        return retrofit.create(IRetrofitDownloadApi.class);
-    }
 
-    public static IRetrofitDownloadApi getDownloadApi(String baseUrl) {
-        //打印拦截器
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addInterceptor(logging)
-                .addNetworkInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Response originalResponse = chain.proceed(chain.request());
-                        return originalResponse.newBuilder()
-                                .body(new ProgressResponseBody(originalResponse.body()))
-                                .build();
-                    }
-                })
-                .readTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
-                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
-                .build();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(httpClient)
-                .build();
-        return retrofit.create(IRetrofitDownloadApi.class);
-    }
-
-    /**
-     * 上传文件/图片
-     */
-    public static IRetrofitUploadApi getUploadApi(String baseUrl) {
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .readTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
-                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
-                .build();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(httpClient)
-                .build();
-        return retrofit.create(IRetrofitUploadApi.class);
-    }
+//    /**
+//     * 下载文件
+//     */
+//    public static IRetrofitDownloadApi getDownloadApi(String baseUrl, final ProgressResponseBody.ProgressListener progressListener) {
+//        //打印拦截器
+//        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+//        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+//
+//        OkHttpClient httpClient = new OkHttpClient.Builder()
+//                .addInterceptor(logging)
+//                .addNetworkInterceptor(new Interceptor() {
+//                    @Override
+//                    public Response intercept(Chain chain) throws IOException {
+//                        Response originalResponse = chain.proceed(chain.request());
+//                        return originalResponse.newBuilder()
+//                                .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+//                                .build();
+//                    }
+//                })
+//                .readTimeout(20, TimeUnit.SECONDS)
+//                .writeTimeout(20, TimeUnit.SECONDS)
+//                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
+//                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
+//                .build();
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl(baseUrl)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//                .client(httpClient)
+//                .build();
+//        return retrofit.create(IRetrofitDownloadApi.class);
+//    }
+//
+//    public static IRetrofitDownloadApi getDownloadApi(String baseUrl) {
+//        //打印拦截器
+//        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+//        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+//
+//        OkHttpClient httpClient = new OkHttpClient.Builder()
+//                .addInterceptor(logging)
+//                .addNetworkInterceptor(new Interceptor() {
+//                    @Override
+//                    public Response intercept(Chain chain) throws IOException {
+//                        Response originalResponse = chain.proceed(chain.request());
+//                        return originalResponse.newBuilder()
+//                                .body(new ProgressResponseBody(originalResponse.body()))
+//                                .build();
+//                    }
+//                })
+//                .readTimeout(20, TimeUnit.SECONDS)
+//                .writeTimeout(20, TimeUnit.SECONDS)
+//                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
+//                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
+//                .build();
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl(baseUrl)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//                .client(httpClient)
+//                .build();
+//        return retrofit.create(IRetrofitDownloadApi.class);
+//    }
+//
+//    /**
+//     * 上传文件/图片
+//     */
+//    public static IRetrofitUploadApi getUploadApi(String baseUrl) {
+//        OkHttpClient httpClient = new OkHttpClient.Builder()
+//                .readTimeout(20, TimeUnit.SECONDS)
+//                .writeTimeout(20, TimeUnit.SECONDS)
+//                .connectTimeout(10, TimeUnit.SECONDS)//设置请求超时时间
+//                .retryOnConnectionFailure(true)//设置出现错误进行重新连接。
+//                .build();
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl(baseUrl)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//                .client(httpClient)
+//                .build();
+//        return retrofit.create(IRetrofitUploadApi.class);
+//    }
 }
 

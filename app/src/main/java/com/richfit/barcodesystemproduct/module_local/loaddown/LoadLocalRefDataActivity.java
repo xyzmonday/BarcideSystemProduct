@@ -7,7 +7,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseActivity;
+import com.richfit.barcodesystemproduct.base.BaseScannerActivity;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.widget.RichEditText;
@@ -25,7 +25,7 @@ import butterknife.BindView;
  * Created by monday on 2016/11/1.
  */
 
-public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPresenterImp>
+public class LoadLocalRefDataActivity extends BaseScannerActivity<LoadLocalRefDataPresenterImp>
         implements LoadLocalRefDataContract.View {
 
     @BindView(R.id.sp_ref_type)
@@ -112,7 +112,7 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
      */
     @Override
     public void getReferenceInfoSuccess(ReferenceEntity data) {
-
+        showMessage(data.recordNum + "下载成功!");
     }
 
 
@@ -121,7 +121,7 @@ public class LoadLocalRefDataActivity extends BaseActivity<LoadLocalRefDataPrese
      */
     @Override
     public void getReferenceInfoComplete() {
-        showMessage("下载成功");
+
     }
 
     /**

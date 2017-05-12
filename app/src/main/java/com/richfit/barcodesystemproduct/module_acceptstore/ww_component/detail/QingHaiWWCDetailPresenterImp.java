@@ -7,12 +7,11 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -219,13 +218,15 @@ public class QingHaiWWCDetailPresenterImp extends BaseDetailPresenterImp<QingHai
 
 
     /**
-     * 通过refDocItem将缓存和原始单据行关联起来
+     * 通过refDocItem将缓存和原始单据行关联起来。
+     * 通过产成品的RefNum返回所有的组件缓存，所以先需要通过refLineId将正在处理的该行的组件对应的
+     * 产成品信息全部查询出来，然后在这些产成品里面找到refDocItem相同的组件的缓存
      */
     @Override
     protected RefDetailEntity getLineDataByRefLineId(RefDetailEntity refLineData, ReferenceEntity cachedRefData) {
         //第一步先用refLineId找到成品对应的缓存
-        RefDetailEntity data = super.getLineDataByRefLineId(refLineData, cachedRefData);
-        if (data == null) {
+        List<RefDetailEntity> datas = getLineDatasByRefLineId(refLineData, cachedRefData);
+        if (datas == null || datas.size() == 0) {
             return null;
         }
         //第二步获取对应组件的缓存
@@ -233,9 +234,29 @@ public class QingHaiWWCDetailPresenterImp extends BaseDetailPresenterImp<QingHai
         if ("null".equals(refDocItem))
             return null;
         //通过refDocItem匹配出缓存中的明细行
-        if (refDocItem.equals(String.valueOf(data.refDocItem))) {
-            return data;
+        for (RefDetailEntity data : datas) {
+            if (refDocItem.equals(String.valueOf(data.refDocItem))) {
+                return data;
+            }
         }
         return null;
+    }
+
+    private List<RefDetailEntity> getLineDatasByRefLineId(RefDetailEntity refLineData,ReferenceEntity cachedRefData) {
+        List<RefDetailEntity> result = new ArrayList<>();
+        if (refLineData == null) {
+            return null;
+        }
+        final String refLineId = refLineData.refLineId;
+        if (TextUtils.isEmpty(refLineId))
+            return null;
+        //通过refLineId匹配出缓存中的明细行
+        List<RefDetailEntity> detail = cachedRefData.billDetailList;
+        for (RefDetailEntity entity : detail) {
+            if (refLineId.equals(entity.refLineId)) {
+                result.add(entity);
+            }
+        }
+        return result;
     }
 }

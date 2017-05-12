@@ -239,6 +239,7 @@
     <string name="open">打开</string>
     <string name="close">关闭</string>
     <string name="basic_material">物料主数据</string>
+    <string name="ip">设置服务器IP</string>
 
     //组织机构
     <integer name="orgNorm">0</integer>
@@ -295,4 +296,26 @@
         <item>SAP出入库单</item>
         <item>预留单</item>
     </string-array>
+
+
+
+    <string name="decode">Decode</string>
+    <string name="snap">Snapshot</string>
+    <string name="beep">beep</string>
+    <string name="getparam">Get</string>
+    <string name="setparam">Set</string>
+    <string name="dflparam">Defaults</string>
+    <string name="decoding">decoding</string>
+    <string name="snapping">taking snapshot</string>
+    <string name="pnum">Number</string>
+    <string name="pval">Value</string>
+    <string name="sdl">SDLtestApp</string>
+    <string name="stat">status</string>
+    <string name="blank"> </string>
+    <string name="data">data</string>
+    <string name="prop">Properties</string>
+    <string name="video">Video</string>
+    <string name="auto">Auto</string>
+    <string name="Params">Parameters</string>
+    <string name="none"> </string>
 </resources>

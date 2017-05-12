@@ -669,7 +669,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
         //行id
         bundle.putString(Global.EXTRA_REF_LINE_ID_KEY, lineData.refLineId);
         bundle.putInt(Global.EXTRA_POSITION_KEY, selectedLineNum);
-        bundle.putBoolean(Global.EXTRA_IS_LOCAL_KEY, false);
+        bundle.putBoolean(Global.EXTRA_IS_LOCAL_KEY, mPresenter.isLocal());
         intent.putExtras(bundle);
         mActivity.startActivity(intent);
     }
@@ -678,6 +678,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
     public void _onPause() {
         super._onPause();
         clearAllUI();
+        clearCommonUI(etMaterialNum);
     }
 
     @Override

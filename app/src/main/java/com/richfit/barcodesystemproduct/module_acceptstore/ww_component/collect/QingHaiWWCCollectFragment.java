@@ -15,7 +15,6 @@ import com.richfit.barcodesystemproduct.adapter.WWCInventoryAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -141,9 +140,9 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
 
     @Override
     public void bindCommonCollectUI() {
+        clearAll();
         mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
-        L.e("mSelectedRefLineNum = " + mSelectedRefLineNum);
         tvMaterialNum.setText(lineData.materialNum);
         etQuantity.setText("");
         //物资描述
@@ -156,6 +155,8 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
         tvActQuantity.setText(lineData.actQuantity);
         //库存标识
         tvSpecialInvFlag.setText("O");
+        //先将累计消耗数量置空
+        tvTotalQuantity.setText("0");
         //获取库存
         mPresenter.getInventoryInfo("01", lineData.workId,
                 "", lineData.workCode, "", "", getString(tvMaterialNum),
@@ -222,6 +223,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
         }
         final String refLineId = lineData.refLineId;
         final String batchFlag = mInventoryDatas.get(position).batchFlag;
+
         mPresenter.getTransferInfoSingle(mRefData.refCodeId, mRefType, mBizType, refLineId, batchFlag, "",
                 lineData.refDoc, UiUtil.convertToInt(lineData.refDocItem), Global.USER_ID);
     }
@@ -270,7 +272,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
      */
     private int getIndexByLineNum(int refDocItem) {
         int index = -1;
-        for (RefDetailEntity detailEntity :mRefDetail) {
+        for (RefDetailEntity detailEntity : mRefDetail) {
             index++;
             if (refDocItem == detailEntity.refDocItem)
                 break;
@@ -362,6 +364,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
             result.refCodeId = mRefData.refCodeId;
             result.refCode = mRefData.recordNum;
             result.refLineNum = lineData.lineNum;
+            result.refLineId = lineData.refLineId;
             result.voucherDate = mRefData.voucherDate;
             result.refType = mRefType;
             result.moveType = mRefData.moveType;
@@ -400,12 +403,15 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
 
     @Override
     public void _onPause() {
-        clearCommonUI(tvMaterialNum, tvMaterialDesc, tvSpecialInvFlag, tvWork, tvActQuantity, tvTotalQuantity);
+        clearAll();
         //清除下拉
         if (mRefLineAdapter != null) {
             spRefLine.setSelection(0);
         }
+    }
 
+    private void clearAll() {
+        clearCommonUI(tvMaterialNum, tvMaterialDesc, tvSpecialInvFlag, tvWork, tvActQuantity, tvTotalQuantity);
         if (mInventoryAdapter != null) {
             spBatchFlag.setSelection(0);
             mInventoryDatas.clear();

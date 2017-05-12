@@ -3,7 +3,6 @@ package com.richfit.data.repository.local;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.InvEntity;
@@ -25,10 +24,8 @@ import com.richfit.domain.repository.IReferenceServiceDao;
 import com.richfit.domain.repository.ITransferServiceDao;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -67,11 +64,11 @@ public class LocalRepositoryImp implements ILocalRepository {
     @Override
     public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel,
                                                   String checkSpecial, String storageNum, String workId,
-                                                  String invId, String checkNum,String checkDate) {
+                                                  String invId, String checkNum, String checkDate) {
         return Flowable.just(userId)
                 .flatMap(id -> {
                     ReferenceEntity refData = mCheckServiceDao.getCheckInfo(id, bizType, checkLevel, checkSpecial,
-                            storageNum, workId, invId, checkNum,checkDate);
+                            storageNum, workId, invId, checkNum, checkDate);
                     if (refData == null || TextUtils.isEmpty(refData.checkId)) {
                         return Flowable.error(new Throwable("盘点初始化失败"));
                     }
@@ -184,33 +181,6 @@ public class LocalRepositoryImp implements ILocalRepository {
         mBasicServiceDao.saveUserInfo(userEntity);
     }
 
-    @Override
-    public void saveExtraConfigInfo(List<RowConfig> configs) {
-        mBasicServiceDao.saveExtraConfigInfo(configs);
-    }
-
-    @Override
-    public Flowable<ArrayList<RowConfig>> readExtraConfigInfo(String companyId, String bizType, String refType,
-                                                              String configType) {
-        RowConfig config = new RowConfig();
-        config.companyId = companyId;
-        config.businessType = bizType;
-        config.refType = refType;
-        config.configType = configType;
-        return Flowable.just(config).flatMap(data ->
-                Flowable.just(mBasicServiceDao.readExtraConfigInfo(data.companyId,
-                        data.businessType, data.refType, data.configType)));
-    }
-
-    @Override
-    public Flowable<Map<String, Object>> readExtraDataSourceByDictionary(String propertyCode, String dictionaryCode) {
-        return Flowable.just(dictionaryCode).flatMap(code -> {
-            Map<String, Object> source = mBasicServiceDao.readExtraDataSourceByDictionary(propertyCode, code);
-            Map<String, Object> map = new HashMap<>();
-            map.put(UiUtil.MD5(propertyCode), source);
-            return Flowable.just(map);
-        });
-    }
 
     @Override
     public String getLoadBasicDataTaskDate(@NonNull String queryType) {
@@ -226,11 +196,6 @@ public class LocalRepositoryImp implements ILocalRepository {
     public Flowable<Integer> saveBasicData(List<Map<String, Object>> maps) {
         return Flowable.just(maps).flatMap(data ->
                 Flowable.just(mBasicServiceDao.saveBasicData(data)));
-    }
-
-    @Override
-    public void updateExtraConfigTable(Map<String, Set<String>> map) {
-        mBasicServiceDao.updateExtraConfigTable(map);
     }
 
     @Override
@@ -340,8 +305,8 @@ public class LocalRepositoryImp implements ILocalRepository {
     }
 
     @Override
-    public void saveTakedImages(ArrayList<ImageEntity> images, String refNum, String refLineId,
-                                int takePhotoType, String imageDir, boolean isLocal) {
+    public synchronized void saveTakedImages(ArrayList<ImageEntity> images, String refNum, String refLineId,
+                                             int takePhotoType, String imageDir, boolean isLocal) {
         mInspectionServiceDao.saveTakedImages(images, refNum, refLineId, takePhotoType, imageDir, isLocal);
     }
 
@@ -479,47 +444,58 @@ public class LocalRepositoryImp implements ILocalRepository {
     public Flowable<List<ReferenceEntity>> readTransferedData(int bizType) {
         return Flowable.just(bizType)
                 .flatMap(type -> {
-                    List<ReferenceEntity> datas = null;
+                    List<ReferenceEntity> results = new ArrayList<>();
+                    List<ReferenceEntity> tmp;
                     switch (type) {
                         case 0:
-                            datas = mBusinessServiceDao.readTransferedData();
-                            break;
                         case 1:
-                            datas = mInspectionServiceDao.readTransferedData();
+                            tmp = mInspectionServiceDao.readTransferedData();
+                            if (tmp != null && tmp.size() > 0) {
+                                results.addAll(tmp);
+                            }
+
+                            tmp = mBusinessServiceDao.readTransferedData();
+                            if (tmp != null && tmp.size() > 0) {
+                                results.addAll(tmp);
+                            }
+
                             break;
                         case 2:
-                            datas = mCheckServiceDao.readTransferedData();
+                            tmp = mCheckServiceDao.readTransferedData();
+                            if (tmp != null && tmp.size() > 0) {
+                                results.addAll(tmp);
+                            }
                             break;
                     }
-                    if (datas == null || datas.size() == 0) {
+                    if (results == null || results.size() == 0) {
                         return Flowable.error(new Throwable("您还未采集过数据"));
                     }
-                    return Flowable.just(datas);
+                    return Flowable.just(results);
                 });
     }
 
     @Override
     public void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId) {
-        if(TextUtils.isEmpty(bizType)) {
+        if (TextUtils.isEmpty(bizType)) {
             return;
         }
         switch (bizType) {
             //出入库
             case "0":
-                mBusinessServiceDao.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
-                break;
             //验收
             case "1":
-
+                mBusinessServiceDao.deleteOfflineDataAfterUploadSuccess(transId, bizType, refType, userId);
+                mInspectionServiceDao.deleteOfflineDataAfterUploadSuccess(transId,bizType,refType,userId);
                 break;
             //盘点
             case "2":
+                mCheckServiceDao.deleteOfflineDataAfterUploadSuccess(transId,bizType,refType,userId);
                 break;
         }
     }
 
     @Override
-    public Flowable<String> setTransFlag(String bizType, String transId) {
+    public Flowable<String> setTransFlag(String bizType, String transId,String transFlag) {
         if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transId)) {
             return Flowable.error(new Throwable("修改失败"));
         }
@@ -529,26 +505,26 @@ public class LocalRepositoryImp implements ILocalRepository {
             case "01":
                 //验收
                 flowable = Flowable.just(transId)
-                        .flatMap(id -> Flowable.just(mInspectionServiceDao.setTransFlag(id)));
+                        .flatMap(id -> Flowable.just(mInspectionServiceDao.setTransFlag(id,transFlag)));
                 break;
             case "C01":
             case "C02":
                 //盘点
                 flowable = Flowable.just(transId)
-                        .flatMap(id -> Flowable.just(mCheckServiceDao.setTransFlag(id)));
+                        .flatMap(id -> Flowable.just(mCheckServiceDao.setTransFlag(id,transFlag)));
                 break;
             default:
                 //出入库业务
                 flowable = Flowable.just(transId)
-                        .flatMap(id -> Flowable.just(mBusinessServiceDao.setTransFlag(id)));
+                        .flatMap(id -> Flowable.just(mBusinessServiceDao.setTransFlag(id,transFlag)));
                 break;
         }
         return flowable.flatMap(flag -> {
-                    if (flag) {
-                        return Flowable.just("修改成功");
-                    }
-                    return Flowable.error(new Throwable("修改失败"));
-                });
+            if (flag) {
+                return Flowable.just("修改成功");
+            }
+            return Flowable.error(new Throwable("修改失败"));
+        });
     }
 
     @Override

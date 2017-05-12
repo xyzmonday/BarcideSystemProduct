@@ -156,7 +156,7 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
                     .setMessage("您是否要结束本次操作?")
                     .setPositiveButton("结束本次操作", (dialog, which) -> {
                         dialog.dismiss();
-                        mPresenter.setTransFlag(mBizType, "3");
+                        mPresenter.setTransFlag(mBizType, mTransId, "2");
                     }).setNegativeButton("取消", (dialog, which) -> dialog.dismiss()).show();
         } else {
             View rootView = LayoutInflater.from(mActivity).inflate(R.layout.menu_bottom, null);
@@ -221,7 +221,8 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
 
     @Override
     public void setTransFlagsComplete() {
-        showMessage("结束本次操作!");
+        showMessage("结束本次操作成功!");
+        startAutoRefresh();
     }
 
     /**
@@ -239,7 +240,7 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
                 submit2SAP(mBottomMenus.get(1).transToSapFlag);
                 break;
             case Global.RETRY_SET_TRANS_FLAG_ACTION:
-                mPresenter.setTransFlag(mBizType, "3");
+                mPresenter.setTransFlag(mBizType, mTransId, "2");
                 break;
         }
         super.retry(retryAction);

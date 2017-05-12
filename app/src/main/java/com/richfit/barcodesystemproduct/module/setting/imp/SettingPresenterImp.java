@@ -3,7 +3,11 @@ package com.richfit.barcodesystemproduct.module.setting.imp;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
+import com.richfit.barcodesystemproduct.di.component.AppComponent;
+import com.richfit.barcodesystemproduct.di.component.DaggerAppComponent;
+import com.richfit.barcodesystemproduct.di.module.AppModule;
 import com.richfit.barcodesystemproduct.module.setting.ISettingPresenter;
 import com.richfit.barcodesystemproduct.module.setting.ISettingView;
 import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
@@ -11,15 +15,16 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
+import com.richfit.data.net.api.IRequestApi;
+import com.richfit.data.repository.Repository;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 import com.richfit.domain.bean.LoadDataTask;
 import com.richfit.domain.bean.UpdateEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -104,7 +109,6 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
 
                             @Override
                             public void onNext(Integer integer) {
-                                L.e("percent = " + integer + "; mTaskId = " + mTaskId);
                                 if (mView != null && mTaskId != 0) {
                                     float percent = (integer.intValue() * 100.0F) / (mTaskId * 1.0F);
                                     mView.loadBasicDataProgress(percent);
@@ -222,10 +226,42 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
     }
 
     @Override
-    public void pauseLoadApp() {
-        if (mUpdateDisposable != null && !mUpdateDisposable.isDisposed()) {
-            mUpdateDisposable.dispose();
-        }
+    public void setupUrl(String url) {
+        mView = getView();
+        Repository repository = BarcodeSystemApplication.getAppComponent().getRepository();
+        IRequestApi requstApi = BarcodeSystemApplication.getAppComponent().getRequestApi();
+        requstApi = null;
+        repository = null;
+        Flowable.just(url)
+                .map(baseUrl -> {
+                    AppComponent appComponent = DaggerAppComponent.builder()
+                            .appModule(new AppModule(BarcodeSystemApplication.getAppContext(), baseUrl))
+                            .build();
+                    BarcodeSystemApplication.baseUrl = baseUrl;
+                    SPrefUtil.saveData("base_url", baseUrl);
+                    SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, true);
+                    SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY, false);
+                    return appComponent;
+                })
+                .compose(TransformerHelper.io2main())
+                .subscribe(new ResourceSubscriber<AppComponent>() {
+                    @Override
+                    public void onNext(AppComponent appComponent) {
+                        BarcodeSystemApplication.setAppComponent(appComponent);
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if (mView != null) {
+                            mView.setupUrlComplete();
+                        }
+                    }
+                });
     }
 
     @Override

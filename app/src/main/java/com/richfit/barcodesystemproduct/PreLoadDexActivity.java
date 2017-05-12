@@ -8,11 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
 
-import net.grandcentrix.tray.AppPreferences;
-
 import java.util.List;
 
-import static com.richfit.barcodesystemproduct.BarcodeSystemApplication.getAppContext;
+import com.richfit.common_lib.multisp.SPHelper;
 
 /**
  * Created by monday on 2017/5/2.
@@ -31,8 +29,8 @@ public class PreLoadDexActivity extends AppCompatActivity {
                 super.run();
                 try {
                     MultiDex.install(getApplication());
-                    final AppPreferences sp = new AppPreferences(getAppContext());
-                    sp.put("dex_opt",true);
+                    SPHelper.init(PreLoadDexActivity.this.getApplicationContext());
+                    SPHelper.save("dex_opt",true);
                     killCurrentProcess(PreLoadDexActivity.this);
                 } catch (Exception e) {
                     killCurrentProcess(PreLoadDexActivity.this);

@@ -36,7 +36,7 @@ public interface IQingHaiAODetailPresenter extends IBaseDetailPresenter<IQingHai
      */
     void deleteNode(String lineDeleteFlag, String refNum, String refLineNum, String refLineId,
                     String refType, String bizType, String userId, int position,
-                    String companyCode);
+                    String companyCode,boolean isLocal);
 //
 //    /**
 //     * 修改子节点

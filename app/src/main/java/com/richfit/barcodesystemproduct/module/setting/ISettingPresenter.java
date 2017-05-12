@@ -29,6 +29,6 @@ public interface ISettingPresenter extends IPresenter<ISettingView> {
      * @param savePath：保存的路径
      */
     void loadLatestApp(String url, String saveName, String savePath);
-    //暂停下载app
-    void pauseLoadApp();
+
+    void setupUrl(String url);
 }

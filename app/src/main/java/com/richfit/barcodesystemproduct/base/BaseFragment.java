@@ -213,7 +213,8 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Observable.just(Global.QINGHAI)
+        //2017年5月优化成异步加载，解决注入慢的卡顿。也就是先渲染页面在延迟加载数据
+        Observable.just("start")
                 .map(areaName -> {
                     FragmentComponent component = DaggerFragmentComponent.builder()
                             .fragmentModule(new FragmentModule(this))

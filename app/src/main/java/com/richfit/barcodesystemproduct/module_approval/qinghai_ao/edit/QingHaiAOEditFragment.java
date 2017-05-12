@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.edit.imp.QingHaiAOEditPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
@@ -295,6 +294,7 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
             ResultEntity result = new ResultEntity();
             result.refCodeId = mRefData.refCodeId;
             result.refLineId = lineData.refLineId;
+            result.refLineNum = lineData.lineNum;
             result.materialId = lineData.materialId;
             result.businessType = mRefData.bizType;
             result.companyCode = Global.COMPANY_CODE;
@@ -302,6 +302,7 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
             result.moveType = mRefData.moveType;
             result.inspectionType = mRefData.inspectionType;
             result.inspectionPerson = Global.USER_ID;
+            result.workId = lineData.workId;
             result.userId = Global.USER_ID;
             result.invId = mInvs.get(spInv.getSelectedItemPosition()).invId;
             //制造商

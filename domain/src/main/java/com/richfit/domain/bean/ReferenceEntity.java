@@ -2,7 +2,6 @@ package com.richfit.domain.bean;
 
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 单据信息
@@ -52,6 +51,12 @@ public class ReferenceEntity {
 
     /*创建人*/
     public String recordCreator;
+    /*创建日期*/
+    public String creationDate;
+    /*更新人*/
+    public String lastUpdatedBy;
+    /*更新日期*/
+    public String lastUpdateDate;
     /*采购号*/
     public String poNum;
 

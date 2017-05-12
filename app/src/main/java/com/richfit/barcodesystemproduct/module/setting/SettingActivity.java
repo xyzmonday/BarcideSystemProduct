@@ -2,23 +2,33 @@ package com.richfit.barcodesystemproduct.module.setting;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bigkoo.alertview.AlertView;
+import com.bigkoo.alertview.OnItemClickListener;
 import com.jakewharton.rxbinding2.view.RxView;
+import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.module.setting.imp.SettingPresenterImp;
+import com.richfit.barcodesystemproduct.module.splash.SplashActivity;
 import com.richfit.common_lib.dialog.ProgressDialogFragment;
 import com.richfit.common_lib.utils.FileUtil;
+import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.ButtonCircleProgressBar;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
@@ -45,15 +55,13 @@ import zlc.season.rxdownload2.entity.DownloadStatus;
  */
 
 public class SettingActivity extends BaseActivity<SettingPresenterImp>
-        implements ISettingView {
+        implements ISettingView, OnItemClickListener {
 
     private static final String PROGRESS_DIALOG_TAG = "progress_dialog";
 
     private static final int LOAD_STATUS_START = 0;
     private static final int LOAD_STATUS_LADING = 1;
-    private static final int LOAD_STATUS_PAUSE = 2;
-    private static final int LOAD_STATUS_RESUME = 3;
-    private static final int LOAD_STATUS_END = 4;
+    private static final int LOAD_STATUS_END = 2;
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -71,17 +79,23 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     SwitchView sbProjectNum;
     @BindView(R.id.check_update_apk)
     TextView mCheckUpdateApk;
-    @BindView(R.id.reset_password)
-    LinearLayout mResetPwd;
     @BindView(R.id.floating_button)
     FloatingActionButton fabButton;
     @BindView(R.id.btn_circle_progress)
     ButtonCircleProgressBar mProgressBar;
+    @BindView(R.id.set_ip)
+    LinearLayout llSetIP;
 
     private UpdateEntity mUpdateInfo;
     private int mCurrentLoadStatus = LOAD_STATUS_START;
     private ProgressDialogFragment mProgressDialog;
     private String mMessage;
+    private AlertView mAlertView;
+    private EditText mIP1;
+    private EditText mIP2;
+    private EditText mIP3;
+    private EditText mIP4;
+    private EditText mEtPort;
 
     @Override
     protected int getContentId() {
@@ -101,12 +115,10 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
 
     @Override
     public void initEvent() {
-
         /*获取版本信息*/
         RxView.clicks(mCheckUpdateApk)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
-                .filter(a -> mCurrentLoadStatus != LOAD_STATUS_LADING
-                        && mCurrentLoadStatus != LOAD_STATUS_PAUSE)
+                .filter(a -> mCurrentLoadStatus != LOAD_STATUS_LADING)
                 .subscribe(a -> mPresenter.getAppVersion());
 
         /*下载基础数据*/
@@ -114,28 +126,39 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .filter(a -> mCurrentLoadStatus != LOAD_STATUS_LADING)
                 .subscribe(a -> startLoadBasicData());
-
-        RxView.clicks(mProgressBar)
-                .throttleFirst(500, TimeUnit.MILLISECONDS)
-                .subscribe(a -> {
-                    if (mProgressBar.getStatus() == ButtonCircleProgressBar.Status.Starting) {
-                        //如果正在下载，那么暂停
-                        mProgressBar.setStatus(ButtonCircleProgressBar.Status.End);
-                        pause();
-                    } else {
-                        mProgressBar.setStatus(ButtonCircleProgressBar.Status.Starting);
-                        if (mUpdateInfo != null)
-                            resume(mUpdateInfo.appDownloadUrl, mUpdateInfo.appName);
-                    }
-                });
+        /*IP设置*/
+        RxView.clicks(llSetIP)
+                .subscribe(a -> startSetupIP());
     }
 
+
+    @Override
+    public void initData(Bundle savedInstanceState) {
+        mCheckUpdateApk.setText(mCheckUpdateApk.getText() + "(" + String.valueOf(UiUtil.getCurrentVersionName(this)) + ")");
+    }
+
+    /**
+     * 启动IP设置界面
+     */
+    private void startSetupIP() {
+        if (mAlertView == null) {
+            mAlertView = new AlertView("提示", "请输入服务器地址", "取消", null, new String[]{"完成"}, this, AlertView.Style.Alert, this);
+            ViewGroup extView = (ViewGroup) LayoutInflater.from(this).inflate(R.layout.ip_manager_dialog, null);
+            mIP1 = (EditText) extView.findViewById(R.id.ip1);
+            mIP2 = (EditText) extView.findViewById(R.id.ip2);
+            mIP3 = (EditText) extView.findViewById(R.id.ip3);
+            mIP4 = (EditText) extView.findViewById(R.id.ip4);
+            mEtPort = (EditText) extView.findViewById(R.id.et_port);
+            mAlertView.addExtView(extView);
+        }
+        mAlertView.show();
+    }
 
     private void startLoadBasicData() {
         ArrayList<LoadBasicDataWrapper> requestParams = new ArrayList<>();
         LoadBasicDataWrapper task = new LoadBasicDataWrapper();
         mMessage = "";
-        if(sbMaterial.isOpened()) {
+        if (sbMaterial.isOpened()) {
             task.isByPage = true;
             task.queryType = "WL";
             requestParams.add(task);
@@ -220,7 +243,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             dialog.setTitle("检测到最新的版本:" + info.appVersion);
             dialog.setMessage(info.appUpdateDesc);
-            dialog.setPositiveButton("现在更新", (dialogInterface, i) -> start(info.appDownloadUrl, info.appName));
+            dialog.setPositiveButton("现在下载", (dialogInterface, i) -> start(info.appDownloadUrl, info.appName));
             dialog.setNegativeButton("以后再说", (dialogInterface, i) -> dialogInterface.dismiss());
             dialog.show();
         } else {
@@ -263,7 +286,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
         //自动安装
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("温馨提示")
-                .setMessage("下载成功,是否现在安装?")
+                .setMessage("下载成功,是否现在安装?在安装新版本之前请确认你是否有离线的业务数据未上传!")
                 .setPositiveButton("现在安装", (dialog1, which) -> {
                     dialog1.dismiss();
                     autoInstall();
@@ -274,6 +297,9 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     }
 
     private void autoInstall() {
+        //如果新版本不能覆盖旧版本的数据，那么必须让它从新下载
+        SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, true);
+        SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY, false);
         String apkCacheDir = FileUtil.getApkCacheDir(this.getApplicationContext());
         String appName = mUpdateInfo.appName;
         File file = new File(apkCacheDir, appName);
@@ -300,22 +326,18 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
         file.delete();
     }
 
+    /**
+     * 开始下载app
+     *
+     * @param url
+     * @param saveName
+     */
     private void start(String url, String saveName) {
         mCurrentLoadStatus = LOAD_STATUS_START;
         String apkCacheDir = FileUtil.getApkCacheDir(this.getApplicationContext());
         mPresenter.loadLatestApp(url, saveName, apkCacheDir);
     }
 
-    private void resume(String url, String saveName) {
-        mCurrentLoadStatus = LOAD_STATUS_RESUME;
-        String apkCacheDir = FileUtil.getApkCacheDir(this.getApplicationContext());
-        mPresenter.loadLatestApp(url, saveName, apkCacheDir);
-    }
-
-    private void pause() {
-        mCurrentLoadStatus = LOAD_STATUS_PAUSE;
-        mPresenter.pauseLoadApp();
-    }
 
     @Override
     public void onStartLoadBasicData(int maxProgress) {
@@ -351,6 +373,70 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
         if (mProgressDialog != null) {
             mProgressDialog.dismiss();
         }
+    }
+
+    @Override
+    public void onItemClick(Object o, int position) {
+        hideKeyboard(mIP1);
+        //判断是否是拓展窗口View，而且点击的是非取消按钮
+        if (o == mAlertView && position != AlertView.CANCELPOSITION) {
+            if (!checkIP(mIP1, mIP2, mIP3, mIP4)) {
+                showMessage("您输入的IP不合理");
+                return;
+            }
+
+            final String port = mEtPort.getText().toString();
+            if (TextUtils.isEmpty(port)) {
+                showMessage("请输入端口号");
+                return;
+            }
+            //1. 先拿到当前服务器地址的资源名
+            final String url = BarcodeSystemApplication.baseUrl;
+            final StringBuffer sb = new StringBuffer();
+            if (!TextUtils.isEmpty(url)) {
+                int indexOf = url.indexOf("/", 7);//这里去除http://
+                if (indexOf > 0) {
+                    String webURI = url.substring(indexOf);
+                    sb.append("http://")
+                            .append(mIP1.getText())
+                            .append(".")
+                            .append(mIP2.getText())
+                            .append(".")
+                            .append(mIP3.getText())
+                            .append(".")
+                            .append(mIP4.getText())
+                            .append(":")
+                            .append(port)
+                            .append(webURI);
+                }
+            }
+            final String newUrl = sb.toString();
+            if (TextUtils.isEmpty(newUrl)) {
+                showMessage("服务为空");
+                return;
+            }
+            mPresenter.setupUrl(newUrl);
+            return;
+        }
+    }
+
+
+    @Override
+    public void setupUrlComplete() {
+        //启动SplashActivity
+        Intent intent = new Intent(this, SplashActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private boolean checkIP(EditText... ets) {
+        for (EditText et : ets) {
+            int ip = UiUtil.convertToInt(et.getText(), 0);
+            if (ip <= 0 || ip > 255) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

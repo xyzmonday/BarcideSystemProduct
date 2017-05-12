@@ -6,14 +6,22 @@ import android.util.SparseArray;
 
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
 import com.richfit.barcodesystemproduct.module_local.upload.UploadContract;
+import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.common_lib.utils.CommonUtil;
+import com.richfit.common_lib.utils.FileUtil;
+import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
+import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.UploadMsgEntity;
 
+import org.reactivestreams.Publisher;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +29,17 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.Flowable;
+import io.reactivex.functions.Function;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
+ * 出入库(包括验收)业务的离线上传:
+ * 1. 先从本地数据库将需要的数据读取出来，由于读取出来是单据的三层结构，所以先对数据进行加工.
+ * 注意需要保存每一个单据的抬头信息，这样有利于用户点击错误明细直接修改;
+ * 2. 数据加工成List<ResultEntity>的形式时候开始上服务器传输;
+ * 3. 直接调用transCollectedDataOffLine接口上传数据,成功返回后，通过业务类型进行上下架处理(验收需要
+ * 上传图片).
+ * 4. transCollectedDataOffLine成功后，直接调用setTransFlag将缓存标识设置成3，不允许在删除；
  * Created by monday on 2017/4/17.
  */
 
@@ -33,8 +49,8 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     protected static final String BIZTYPE_DESC_KEY = "bizTypeDesc";
     protected static final String REFTYPE_DESC_KEY = "refTypeDesc";
     protected static final String TRANSTOSAPFLAG_KEY = "transTosapFlag";
-    protected int mTaskNum = -1;
 
+    protected int mTaskNum = -1;
     UploadContract.View mView;
     List<ReferenceEntity> mRefDatas;
     /*返回给用户的信息*/
@@ -58,47 +74,52 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     }
 
     @Override
-    public void readUploadData(int bizType) {
+    public void readUploadData() {
         mView = getView();
         mRefDatas.clear();
-        addSubscriber(mRepository.readTransferedData(bizType)
-                .filter(list -> list != null && list.size() > 0)
-                .flatMap(list -> Flowable.fromIterable(list))
-                .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
-                .map(refData -> wrapper2Results(refData, true))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new ResourceSubscriber<ArrayList<ResultEntity>>() {
+        mMessageArray.clear();
+        mExtraTransMap.clear();
+        mTotalUploadDataNum = 0;
+        ResourceSubscriber<ArrayList<ResultEntity>> subscriber =
+                mRepository.readTransferedData(1)
+                        .filter(list -> list != null && list.size() > 0)
+                        .map(list -> calcTotalNum(list))
+                        .flatMap(list -> Flowable.fromIterable(list))
+                        .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
+                        .map(refData -> wrapper2Results(refData, true))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<ArrayList<ResultEntity>>() {
 
-                    @Override
-                    protected void onStart() {
-                        super.onStart();
-                        if(mView != null) {
-                            mView.startReadUploadData();
-                        }
-                    }
+                            @Override
+                            protected void onStart() {
+                                super.onStart();
+                                if (mView != null) {
+                                    mView.startReadUploadData();
+                                }
+                            }
 
-                    @Override
-                    public void onNext(ArrayList<ResultEntity> results) {
-                        if (mView != null) {
-                            mView.showUploadData(results);
-                        }
-                    }
+                            @Override
+                            public void onNext(ArrayList<ResultEntity> results) {
+                                if (mView != null) {
+                                    mView.showUploadData(results);
+                                }
+                            }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        if (mView != null) {
-                            mView.readUploadDataFail(t.getMessage());
-                        }
-                    }
+                            @Override
+                            public void onError(Throwable t) {
+                                if (mView != null) {
+                                    mView.readUploadDataFail(t.getMessage());
+                                }
+                            }
 
-                    @Override
-                    public void onComplete() {
-                        if (mView != null) {
-                            mView.readUploadDataComplete();
-                        }
-                    }
-                }));
-
+                            @Override
+                            public void onComplete() {
+                                if (mView != null) {
+                                    mView.readUploadDataComplete();
+                                }
+                            }
+                        });
+        addSubscriber(subscriber);
     }
 
     /**
@@ -125,11 +146,9 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                         .flatMap(message -> submitData2SAPInner(message))
                         .doOnComplete(() -> mRepository.deleteOfflineDataAfterUploadSuccess("", "0", "", ""))
                         .compose(TransformerHelper.io2main())
-                        .subscribeWith(new ResourceSubscriber<String>() {
-
+                        .subscribeWith(new RxSubscriber<String>(mContext, false) {
                             @Override
                             protected void onStart() {
-                                //注意这里必须回到supper.onStart方法
                                 super.onStart();
                                 if (mView != null) {
                                     mView.startUploadData(mTotalUploadDataNum);
@@ -137,28 +156,46 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                             }
 
                             @Override
-                            public void onNext(String transNum) {
-                                L.e("onNext mTaskNum = " + mTaskNum + ";info = " + info);
+                            public void _onNext(String transNum) {
                                 UploadMsgEntity info = mMessageArray.get(mTaskNum);
                                 if (mView != null && info != null) {
                                     info.transNum = transNum;
                                     mView.uploadCollectDataSuccess(info);
+                                    L.e("onNext mTaskNum = " + mTaskNum + ";info = " + info);
                                 }
                             }
 
                             @Override
-                            public void onError(Throwable t) {
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_UPLOAD_LOCAL_DATE_ACTION);
+                                }
+                            }
+
+                            @Override
+                            public void _onCommonError(String message) {
                                 UploadMsgEntity info = mMessageArray.get(mTaskNum);
-                                L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
                                 if (mView != null && info != null) {
-                                    info.errorMsg = t.getMessage();
+                                    info.errorMsg = message;
                                     info.isEror = true;
+                                    L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
                                     mView.uploadCollectDataFail(mMessageArray.get(mTaskNum));
                                 }
                             }
 
                             @Override
-                            public void onComplete() {
+                            public void _onServerError(String code, String message) {
+                                UploadMsgEntity info = mMessageArray.get(mTaskNum);
+                                if (mView != null && info != null) {
+                                    info.errorMsg = message;
+                                    info.isEror = true;
+                                    L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
+                                    mView.uploadCollectDataFail(mMessageArray.get(mTaskNum));
+                                }
+                            }
+
+                            @Override
+                            public void _onComplete() {
                                 L.e("onComplete");
                                 if (mView != null) {
                                     mView.uploadCollectDataComplete();
@@ -171,9 +208,24 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     @Override
     public void resetStateAfterUpload() {
         mRefDatas.clear();
+        mMessageArray.clear();
+        mExtraTransMap.clear();
         mTaskNum = -1;
         info = null;
-        mMessageArray.clear();
+    }
+
+    /**
+     * 计算需要上传的总数
+     *
+     * @param list
+     * @return
+     */
+    private List<ReferenceEntity> calcTotalNum(List<ReferenceEntity> list) {
+        int size = list.size();
+        for (ReferenceEntity referenceEntity : list) {
+            referenceEntity.totalCount = size;
+        }
+        return list;
     }
 
     /**
@@ -196,20 +248,99 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
         final String userId = refData.recordCreator;
         final String centerCost = refData.costCenter;
         final String projectNum = refData.projectNum;
+        final String refNum = refData.recordNum;
+        final String refCodeId = refData.refCodeId;
         final int inspectionType = refData.inspectionType;
         mExtraTransMap.clear();
         mExtraTransMap.put("centerCost", centerCost);
         mExtraTransMap.put("projectNum", projectNum);
-        mExtraTransMap.put("inspectionType",inspectionType);
+        mExtraTransMap.put("inspectionType", inspectionType);
         HashMap<String, String> map = getDescByCode(bizType, refType);
         String transToSapFlag = map.get(TRANSTOSAPFLAG_KEY);
         mMessageArray.get(mTaskNum).materialDoc = materialDoc;
+
+        //如果是验收，那么此时需要上传照片
+        if ("00".equals(bizType) || "01".equals(bizType)) {
+            if (!TextUtils.isEmpty(refNum) && !TextUtils.isEmpty(refCodeId)) {
+                //第一步是读取图片
+                return Flowable.just(refNum)
+                        .flatMap(num -> {
+                            ArrayList<ImageEntity> images = mRepository.readImagesByRefNum(num, true);
+                            if (images == null || images.size() == 0) {
+                                return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"));
+                            }
+                            return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"))
+                                    .zipWith(uploadInspectedImages(images, refCodeId, transId, userId, "01"), (s, s2) -> s2)
+                                    .zipWith(uploadInspectedImages(images, refCodeId, transId, userId, "02")
+                                            , (s, s2) -> s + s2)
+                                    .doOnComplete(() -> mRepository.deleteInspectionImages(refNum, refCodeId, true))
+                                    .doOnComplete(() -> FileUtil.deleteDir(FileUtil.getImageCacheDir(mContext.getApplicationContext(), refNum, true)));
+                        });
+            } else {
+                return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"));
+            }
+        }
+
         if (TextUtils.isEmpty(transToSapFlag)) {
             //表示该业务不需要转储
-            return mRepository.setTransFlag(bizType, transId).flatMap(a -> Flowable.just("完成!"));
+            return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"));
         }
-        return mRepository.setTransFlag(bizType, transId).flatMap(a -> Flowable.just("完成!")).zipWith(mRepository.transferCollectionData(transId, bizType, refType,
-                userId, voucherDate, transToSapFlag, mExtraTransMap), (s1, s2) -> s2);
+        //01/05
+        return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"))
+                .zipWith(mRepository.transferCollectionData(transId, bizType, refType,
+                        userId, voucherDate, transToSapFlag, mExtraTransMap)
+                        .onErrorResumeNext(new Function<Throwable, Publisher<? extends String>>() {
+                            @Override
+                            public Publisher<? extends String> apply(Throwable e) throws Exception {
+                                return mRepository.setTransFlag(bizType, transId, "2")
+                                        .flatMap(s -> Flowable.error(e));
+                            }
+                        }), (s, s2) -> s2);
+    }
+
+
+    private Flowable<String> uploadInspectedImages(List<ImageEntity> images, String refCodeId, String transId,
+                                                   String userId, String transFileToServer) {
+        return Flowable.just(images)
+                .flatMap(imgs -> Flowable.fromIterable(wrapperImage(imgs, refCodeId, transId, userId, transFileToServer)))
+                .buffer(3)
+                .flatMap(results -> mRepository.uploadMultiFiles(results));
+    }
+
+    private ArrayList<ResultEntity> wrapperImage(List<ImageEntity> images, String refCodeId, String transId, String userId,
+                                                 String transFileToServer) {
+        ArrayList<ResultEntity> results = new ArrayList<>();
+        int pos = -1;
+        for (ImageEntity image : images) {
+            ResultEntity result = wrapperImageInternal(image, refCodeId, transId, userId, transFileToServer);
+            result.taskId = ++pos;
+            results.add(result);
+        }
+        return results;
+    }
+
+    /**
+     * 图片上传。将imageEntity装换成上传ResultEntity实体类
+     *
+     * @return
+     */
+    private ResultEntity wrapperImageInternal(ImageEntity image, String refCodeId, String transId,
+                                              String userId, String transFileToServer) {
+        ResultEntity result = new ResultEntity();
+        result.suffix = Global.IMAGE_DEFAULT_FORMAT;
+        result.bizHeadId = transId;
+        result.bizLineId = image.refLineId;
+        result.imageName = image.imageName;
+        result.refType = image.refType;
+        result.businessType = image.bizType;
+        result.bizPart = "1";
+        result.imagePath = image.imageDir + File.separator + result.imageName;
+        result.createdBy = image.createBy;
+        result.imageDate = image.createDate;
+        result.userId = userId;
+        result.transFileToServer = transFileToServer;
+        result.fileType = image.takePhotoType;
+        return result;
     }
 
     /**
@@ -236,11 +367,10 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
             info.invId = refData.invId;
             info.recWorkId = refData.recWorkId;
             info.recInvId = refData.recWorkId;
-
             info.bizTypeDesc = map.get(BIZTYPE_DESC_KEY);
             info.refTypeDesc = map.get(REFTYPE_DESC_KEY);
+            info.totalTaskNum = refData.totalCount;
             mMessageArray.put(mTotalUploadDataNum++, info);
-            info.totalTaskNum = mTotalUploadDataNum;
         }
 
         ArrayList<ResultEntity> results = new ArrayList<>();
@@ -261,8 +391,15 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
             result.supplierId = refData.supplierId;
             result.supplierNum = refData.supplierNum;
             result.userId = refData.recordCreator;
+            result.insId = refData.transId;
+            result.inspectionType = refData.inspectionType;
+            result.createdBy = refData.recordCreator;
+            result.creationDate = refData.creationDate;
+            result.lastUpdatedBy = refData.lastUpdatedBy;
+            result.lastUpdateDate = refData.lastUpdateDate;
             //明细
             result.transLineId = item.transLineId;
+            result.insLineId = item.transLineId;
             result.locationId = item.locationId;
             result.transLineSplitId = item.transLineSplitId;
             result.refLineId = item.refLineId;
@@ -282,16 +419,50 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
             result.projectText = item.projectText;
             result.quantity = item.quantity;
             result.recQuantity = item.recQuantity;
-            result.location = item.location;
-            result.recLocation = item.recLocation;
-            result.batchFlag = item.batchFlag;
-            result.recBatchFlag = item.recBatchFlag;
+            result.location = CommonUtil.toUpperCase(item.location);
+            result.recLocation = CommonUtil.toUpperCase(item.recLocation);
+            result.batchFlag = CommonUtil.toUpperCase(item.batchFlag);
+            result.recBatchFlag = CommonUtil.toUpperCase(item.recBatchFlag);
             result.specialConvert = item.specialConvert;
             result.materialNum = item.materialNum;
             result.materialDesc = item.materialDesc;
             result.materialGroup = item.materialGroup;
             result.workCode = item.workCode;
             result.invCode = item.invCode;
+            //验收数据
+            //制造商
+            result.manufacturer = item.manufacturer;
+            //实收数量
+            result.quantity = item.quantity;
+            //抽检数量
+            result.randomQuantity = item.randomQuantity;
+            //完好数量
+            result.qualifiedQuantity = item.qualifiedQuantity;
+            //损坏数量
+            result.damagedQuantity = item.damagedQuantity;
+            //送检数量
+            result.inspectionQuantity = item.inspectionQuantity;
+            //锈蚀数量
+            result.rustQuantity = item.rustQuantity;
+            //变质
+            result.badQuantity = item.badQuantity;
+            //其他数量
+            result.otherQuantity = item.otherQuantity;
+            //包装情况
+            result.sapPackage = item.sapPackage;
+            //质检单号
+            result.qmNum = item.qmNum;
+            //索赔单号
+            result.claimNum = item.claimNum;
+            //合格证
+            result.certificate = item.certificate;
+            //说明书
+            result.instructions = item.instructions;
+            //质检证书
+            result.qmCertificate = item.qmCertificate;
+            //检验结果
+            result.inspectionResult = item.inspectionResult;
+
             result.modifyFlag = "N";
 
             result.businessTypeDesc = map.get(BIZTYPE_DESC_KEY);

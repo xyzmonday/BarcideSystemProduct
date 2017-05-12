@@ -5,6 +5,7 @@ import android.content.Context;
 import com.richfit.barcodesystemproduct.di.module.AppModule;
 import com.richfit.common_lib.rxutils.SimpleRxBus;
 import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.data.net.api.IRequestApi;
 import com.richfit.data.repository.Repository;
 
 import javax.inject.Singleton;
@@ -25,4 +26,5 @@ public interface AppComponent {
 
     SimpleRxBus getSimpleRxBus();
 
+    IRequestApi getRequestApi();
 }

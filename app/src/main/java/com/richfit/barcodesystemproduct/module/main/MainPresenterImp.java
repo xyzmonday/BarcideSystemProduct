@@ -34,7 +34,7 @@ public class MainPresenterImp extends BasePresenter<MainContract.View>
 
     @Override
     public void setupMainContent(FragmentManager fragmentManager, final Bundle bundle,
-                                 int currentPageIndex,int mode) {
+                                 int currentPageIndex, int mode) {
 
         mView = getView();
         final String bizType = bundle.getString(Global.EXTRA_BIZ_TYPE_KEY);
@@ -53,17 +53,17 @@ public class MainPresenterImp extends BasePresenter<MainContract.View>
                         .filter(bizFragmentConfigs -> bizFragmentConfigs != null && bizFragmentConfigs.size() > 0)
                         .flatMap(bizFragmentConfigs -> Flowable.fromIterable(bizFragmentConfigs))
                         .map(config -> {
-                            Bundle argument  = new Bundle();
-                            argument.putString(Global.EXTRA_COMPANY_CODE_KEY,companyCode);
-                            argument.putString(Global.EXTRA_MODULE_CODE_KEY,moduleCode);
-                            argument.putString(Global.EXTRA_BIZ_TYPE_KEY,config.bizType);
-                            argument.putString(Global.EXTRA_REF_TYPE_KEY,config.refType);
+                            Bundle argument = new Bundle();
+                            argument.putString(Global.EXTRA_COMPANY_CODE_KEY, companyCode);
+                            argument.putString(Global.EXTRA_MODULE_CODE_KEY, moduleCode);
+                            argument.putString(Global.EXTRA_BIZ_TYPE_KEY, config.bizType);
+                            argument.putString(Global.EXTRA_REF_TYPE_KEY, config.refType);
                             argument.putString(Global.EXTRA_TITLE_KEY, config.tabTitle);
                             argument.putInt(Global.EXTRA_FRAGMENT_TYPE_KEY, config.fragmentType);
                             //外委入库组件使用该字段
-                            argument.putString(Global.EXTRA_REF_LINE_NUM_KEY,refLineNum);
-                            if(uploadMsgEntity != null)
-                            argument.putParcelable(Global.EXTRA_UPLOAD_MSG_KEY,uploadMsgEntity);
+                            argument.putString(Global.EXTRA_REF_LINE_NUM_KEY, refLineNum);
+                            if (uploadMsgEntity != null)
+                                argument.putParcelable(Global.EXTRA_UPLOAD_MSG_KEY, uploadMsgEntity);
                             return BaseFragment.findFragment(fragmentManager, config.fragmentTag, argument, config.className);
                         })
                         .buffer(3)
@@ -82,7 +82,7 @@ public class MainPresenterImp extends BasePresenter<MainContract.View>
 
                             @Override
                             public void onError(Throwable t) {
-                                if(mView != null) {
+                                if (mView != null) {
                                     mView.setupMainContentFail(t.getMessage());
                                 }
                             }

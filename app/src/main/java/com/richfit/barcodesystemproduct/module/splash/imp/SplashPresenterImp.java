@@ -11,6 +11,7 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.data.db.BCSSQLiteHelper;
@@ -206,6 +207,7 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
             SPrefUtil.initSharePreference(mContext.getApplicationContext());
         }
         boolean isAppFist = (boolean) SPrefUtil.getData(Global.IS_APP_FIRST_KEY, true);
+        L.e("isAppFist = " + isAppFist);
         if (!isAppFist) {
             //如果不是第一次启动,那么直接同步基础数据
             mView.downDBComplete();
@@ -216,12 +218,18 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
             Global.MAC_ADDRESS = UiUtil.getMacAddress();
         }
         final String dbName = BCSSQLiteHelper.DB_NAME;
-        String parent = mContext.getDatabasePath(dbName).getParent();
-        File file = new File(parent);
-        if (!file.exists())
+        File  fileDB = mContext.getDatabasePath(dbName);
+        String dirDB = fileDB.getParent();
+        if(fileDB.exists()) {
+            fileDB.delete();
+        }
+        File file = new File(dirDB);
+        if (!file.exists()) {
             file.mkdir();
+        }
         final String savePath = file.getAbsolutePath();
         final String url = BarcodeSystemApplication.baseUrl + "/downloadInitialDB?macAddress=" + Global.MAC_ADDRESS;
+        L.e("下载基础数据库的url = " + url);
         ResourceObserver<DownloadStatus> observer = mRxDownload.download(url, dbName, savePath)
                 .doOnComplete(() -> SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, false))
                 .doOnComplete(() -> saveLoadBasicDataTaskDate())

@@ -160,7 +160,7 @@ public class ViewServer implements Runnable {
      * the same code in debug and release versions of your application.
      *
      * @param context A Context used to check whether the application is
-     *                debuggable, this can be the application context
+     *                debuggable, this can be the application mContext
      */
     public static ViewServer get(Context context) {
         ApplicationInfo info = context.getApplicationInfo();

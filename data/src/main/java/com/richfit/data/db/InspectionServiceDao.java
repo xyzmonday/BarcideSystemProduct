@@ -199,12 +199,15 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             }
         }
         db.close();
-        return false;
+        return true;
     }
 
     @Override
     public ArrayList<ImageEntity> readImagesByRefNum(String refNum, boolean isLocal) {
         ArrayList<ImageEntity> images = new ArrayList<>();
+        if (TextUtils.isEmpty(refNum)) {
+            return images;
+        }
         SQLiteDatabase db = getWritableDB();
         Cursor cursor;
         cursor = db.rawQuery("select ref_line_id,image_dir,image_name,created_by,creation_date,take_photo_type,biz_type,ref_type from MTL_IMAGES where ref_num = ? and local_flag = ?",
@@ -274,9 +277,9 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         clearStringBuffer();
         StringBuffer sql = new StringBuffer();
         sql.append("select H.id,H.inspection_date,H.po_id,H.ref_code,H.approval_flag,H.edit_flag, ")
-                .append("H.inspection_type,H.created_by ")
+                .append("H.inspection_type,H.created_by,H.creation_date,H.last_updated_by,H.last_update_date ")
                 .append("from MTL_INSPECTION_HEADERS H ")
-                .append(" where H.ins_flag = '1'")
+                .append(" where (H.ins_flag = '0' or H.ins_flag = '2') ")
                 .append(" order by H.creation_date");
         ReferenceEntity header = null;
         int index;
@@ -293,6 +296,9 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             header.refType = cursor.getString(++index);
             header.inspectionType = cursor.getInt(++index);
             header.recordCreator = cursor.getString(++index);
+            header.creationDate = UiUtil.transferLongToDate("yyyyMMddHHmmss", cursor.getLong(++index));
+            header.lastUpdatedBy = cursor.getString(++index);
+            header.lastUpdateDate = UiUtil.transferLongToDate("yyyyMMddHHmmss", cursor.getLong(++index));
             datas.add(header);
         }
         cursor.close();
@@ -376,10 +382,10 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
     }
 
     @Override
-    public boolean setTransFlag(String transId) {
+    public boolean setTransFlag(String transId, String transFlag) {
         SQLiteDatabase db = getWritableDB();
         ContentValues cv = new ContentValues();
-        cv.put("ins_flag", "3");
+        cv.put("ins_flag", transFlag);
         int iResult = db.update("MTL_INSPECTION_HEADERS", cv, "id = ?", new String[]{transId});
         db.close();
         return iResult > 0;
@@ -397,6 +403,9 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         db.delete("MTL_INSPECTION_HEADERS", null, null);
         db.delete("MTL_INSPECTION_LINES", null, null);
         db.delete("MTL_INSPECTION_LINES_CUSTOM", null, null);
+        //删除单据
+        db.delete("MTL_PO_HEADERS", null, null);
+        db.delete("MTL_PO_LINES", null, null);
         db.close();
     }
 
@@ -408,8 +417,8 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
     private String saveInspectionHeader(SQLiteDatabase db, ResultEntity param) {
         clearStringBuffer();
         String insId = null;
-        sb.append("select distinct id from MTL_INSPECTION_HEADERS H where H.po_id = ? and H.ins_flag = ? ");
-        Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.refCodeId, "1"});
+        sb.append("select distinct id from MTL_INSPECTION_HEADERS H where H.po_id = ? and H.ins_flag = ?" );
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{param.refCodeId, "0"});
 
         while (cursor.moveToNext()) {
             insId = cursor.getString(0);
@@ -428,7 +437,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             cv.put("po_id", param.refCodeId);
             cv.put("ref_code", param.refCode);
             //缓存标识
-            cv.put("ins_flag", "1");
+            cv.put("ins_flag", "0");
             //过账日期
             cv.put("inspection_date", param.voucherDate);
             cv.put("inspection_type", param.inspectionType);
@@ -501,7 +510,9 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             }
             db.insert("MTL_INSPECTION_LINES", null, cv);
         } else {
-            sb.append("update MTL_INSPECTION_LINES set inspection_result = ?,last_updated_by = ?,last_update_date = ?,inspection_date = ?");
+            sb.append("update MTL_INSPECTION_LINES set po_line_id = ?,material_id = ?,inspection_person = ?,line_num = ?,")
+                    .append("inspection_result = ?,work_id = ?,inv_id = ?,")
+                    .append("last_updated_by = ?,last_update_date = ?,inspection_date = ?");
             if ("Y".equalsIgnoreCase(param.modifyFlag)) {
                 // 修改
                 sb.append(",quantity = ?");
@@ -511,13 +522,13 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                         //青海
                         sb.append(",qualified_quantity = ?");
                         sb.append(" where id = ?");
-                        db.execSQL(sb.toString(), new Object[]{param.inspectionResult, param.userId, currentDate, currentDate,
+                        db.execSQL(sb.toString(), new Object[]{param.refLineId, param.materialId,
+                                param.userId, param.refLineNum, param.inspectionResult,
+                                param.workId, param.invId, param.userId, currentDate, currentDate,
                                 param.quantity, param.qualifiedQuantity, insLineId});
                         break;
                     case "8200":
                         //庆阳
-                    default:
-                        break;
                 }
             } else {
                 // 累加
@@ -527,13 +538,14 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                         //青海
                         sb.append(",quantity = quantity + ? , qualified_quantity = qualified_quantity + ?")
                                 .append(" where id = ?");
-                        db.execSQL(sb.toString(), new Object[]{param.inspectionResult, param.userId, currentDate, currentDate,
+                        db.execSQL(sb.toString(), new Object[]{
+                                param.refLineId, param.materialId,
+                                param.userId, param.refLineNum, param.inspectionResult,
+                                param.workId, param.invId, param.userId, currentDate, currentDate,
                                 param.quantity, param.qualifiedQuantity, insLineId});
                         break;
                     case "8200":
                         //庆阳
-                    default:
-                        break;
                 }
             }
         }

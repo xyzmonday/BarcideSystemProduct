@@ -44,5 +44,4 @@ public interface ActivityComponent {
     void inject(MainActivity activity);
 
     void inject(UploadActivity activity);
-
 }

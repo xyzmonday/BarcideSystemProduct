@@ -28,10 +28,13 @@ public class QingHaiMSN311EditFragment extends BaseMSNEditFragment<MSNEditPresen
         mFragmentComponent.inject(this);
     }
 
+
+    /**
+     * 加载发出库存完毕
+     */
     @Override
-    public void initData() {
-        autoRecLoc.setEnabled(false);
-        super.initData();
+    public void loadInventoryComplete() {
+       //do nothing
     }
 
     @Override

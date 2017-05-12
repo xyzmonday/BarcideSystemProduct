@@ -17,7 +17,7 @@ import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
 
 /**
- * 工厂内311移库，不需要接收批次。接收仓位默认与发出仓位一致，而且不允许修改
+ * 工厂内311移库，不需要接收批次。接收仓位默认与发出仓位一直，允许修改，但是不提供拉下选择和搜索
  * Created by monday on 2017/2/16.
  */
 
@@ -35,8 +35,6 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNColl
     protected void initView() {
         //工厂内移库不需要接收批次
         setVisibility(View.GONE, llRecBatch);
-        //青海的接收仓位默认与发出仓位一致，而且不允许修改
-        setVisibility(View.GONE, llRecLocation);
         super.initView();
     }
 
@@ -91,6 +89,15 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNColl
         }
         return true;
     }
+
+    /**
+     * 加载发出库存完毕,不需要加载接收仓位的库存和历史
+     */
+    @Override
+    public void loadInventoryComplete() {
+        //do nothing
+    }
+
 
     @Override
     protected void loadLocationQuantity(int position) {
@@ -148,6 +155,12 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNColl
 
         if (spSendLoc.getSelectedItemPosition() <= 0) {
             showMessage("请先选择发出仓位");
+            return false;
+        }
+        //检查接收仓位
+        final String recLocation = getString(autoRecLoc);
+        if(TextUtils.isEmpty(recLocation) || recLocation.length() > 10) {
+            showMessage("您输入的接收仓位不合理");
             return false;
         }
         return super.checkCollectedDataBeforeSave();

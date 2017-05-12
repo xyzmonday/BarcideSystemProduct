@@ -84,9 +84,6 @@ public class UploadActivity extends AppCompatActivity implements ViewPager.OnPag
         fragment = BaseFragment.findFragment(getSupportFragmentManager(),
                 "Buzi_Upload_Fragment", "", "", "", "", -1, "出入库业务", BuziUploadFragment.class);
         mFragments.add(fragment);
-        fragment = BaseFragment.findFragment(getSupportFragmentManager(),
-                "Inspect_Upload_Fragment", "", "", "", "", -1, "验收业务", InspectUploadFragment.class);
-        mFragments.add(fragment);
 
         fragment = BaseFragment.findFragment(getSupportFragmentManager(),
                 "Check_Upload_Fragment", "", "", "", "", -1, "盘点业务", CheckUploadFragment.class);

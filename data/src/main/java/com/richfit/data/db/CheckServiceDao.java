@@ -19,6 +19,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
+ * 注意盘点在抬头界面先拿到了缓存的checkId，所以可以不用使用transFlag
  * Created by monday on 2017/3/29.
  */
 
@@ -143,7 +144,9 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
                 .append(" on t.work_id = worg.org_id ")
                 .append(" left join p_auth_org iorg")
                 .append(" on t.inv_id = iorg.org_id, base_material_code m ")
-                .append("   where t.material_id = m.id ");
+                .append(" left join MTL_CHECK_LINES H ")
+                .append(" on L.check_id = H.id ")
+                .append("   where t.material_id = m.id and H.trans_flag = '0'");
         if (!TextUtils.isEmpty(checkId)) {
             sb.append(" and T.check_id = ?");
             selectionList.add(checkId);
@@ -421,7 +424,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
         sb.append("select id,storage_num,work_id,inv_id,check_special,check_num,created_by,")
                 .append("check_level,check_type,sap_check_num ")
                 .append("from MTL_CHECK_HEADER ")
-                .append(" where trans_flag = '0' or trans_flag = '1'")
+                .append(" where (trans_flag = '0' or trans_flag = '2') ")
                 .append(" order by creation_date");
         ReferenceEntity header = null;
         int index;
@@ -517,10 +520,10 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
     }
 
     @Override
-    public boolean setTransFlag(String checkId) {
+    public boolean setTransFlag(String checkId,String transFlag) {
         SQLiteDatabase db = getWritableDB();
         ContentValues cv = new ContentValues();
-        cv.put("trans_flag", "3");
+        cv.put("trans_flag", transFlag);
         int iResult = db.update("MTL_CHECK_HEADER", cv, "id = ?", new String[]{checkId});
         db.close();
         return iResult > 0;

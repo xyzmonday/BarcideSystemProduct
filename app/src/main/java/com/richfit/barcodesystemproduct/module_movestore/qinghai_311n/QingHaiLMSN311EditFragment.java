@@ -56,6 +56,9 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
         });
     }
 
+    /**
+     * 离线不在去加载发出库存信息
+     */
     @Override
     public void loadTransferSingleInfoComplete() {
         //获取缓存成功后不再获取库存，直接加载仓位数量
@@ -64,12 +67,10 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
 
     @Override
     public void initData() {
-        autoRecLoc.setEnabled(false);
         super.initData();
         etSpecialInvFlag.setText(mSpecialInvFlag);
         etSpecialInvNum.setText(mSpecialInvNum);
         etSendLocation.setText(mSendLocation);
-
     }
 
     /**
@@ -199,7 +200,6 @@ public class QingHaiLMSN311EditFragment extends BaseMSNEditFragment<MSNEditPrese
             showMessage("您输入的接收仓位不合理,请重新输入");
             return false;
         }
-
         return true;
     }
 

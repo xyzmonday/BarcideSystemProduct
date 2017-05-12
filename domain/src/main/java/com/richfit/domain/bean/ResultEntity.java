@@ -143,4 +143,7 @@ public class ResultEntity extends TreeNode{
     public String materialDoc;
     public String transNum;
     public String checkNum;
+    public String creationDate;
+    public String lastUpdatedBy;
+    public String lastUpdateDate;
 }

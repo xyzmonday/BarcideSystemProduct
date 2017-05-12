@@ -840,9 +840,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
 
         clearStringBuffer();
         sb.append("select id,voucher_date,ref_code_id,ref_code,biz_type,ref_type,move_type,inv_type,")
-                .append("supplier_id,supplier_code,created_by ")
+                .append("supplier_id,supplier_code,created_by,creation_date,last_updated_by,last_update_date ")
                 .append("from MTL_TRANSACTION_HEADERS ")
-                .append(" where trans_flag = '0' or trans_flag = '1'")
+                .append(" where (trans_flag = '0' or trans_flag = '2') ")
                 .append(" order by creation_date");
         ReferenceEntity header = null;
         int index;
@@ -862,6 +862,9 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
             header.supplierId = cursor.getString(++index);
             header.supplierNum = cursor.getString(++index);
             header.recordCreator = cursor.getString(++index);
+            header.creationDate = UiUtil.transferLongToDate("yyyyMMddHHmmss", cursor.getLong(++index));
+            header.lastUpdatedBy = cursor.getString(++index);
+            header.lastUpdateDate = UiUtil.transferLongToDate("yyyyMMddHHmmss", cursor.getLong(++index));
             datas.add(header);
         }
         cursor.close();
@@ -961,8 +964,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         db.delete("MTL_TRANSACTION_LINES_LOCATION", null, null);
         db.delete("MTL_TRANSACTION_LINES_SPLIT", null, null);
         //删除单据
-//        db.delete("MTL_PO_HEADERS", null, null);
-//        db.delete("MTL_PO_LINES", null, null);
+        db.delete("MTL_PO_HEADERS", null, null);
+        db.delete("MTL_PO_LINES", null, null);
         db.close();
     }
 
@@ -973,10 +976,10 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
      * @return
      */
     @Override
-    public boolean setTransFlag(String transId) {
+    public boolean setTransFlag(String transId, String transFlag) {
         SQLiteDatabase db = getWritableDB();
         ContentValues cv = new ContentValues();
-        cv.put("trans_flag", "3");
+        cv.put("trans_flag", transFlag);
         int iResult = db.update("MTL_TRANSACTION_HEADERS", cv, "id = ?", new String[]{transId});
         db.close();
         return iResult > 0;

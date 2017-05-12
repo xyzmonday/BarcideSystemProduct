@@ -165,6 +165,9 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
     @Override
     public void initModelsFail(String message) {
         showMessage(message);
+        if(mAdapter != null) {
+            mAdapter.removeAll();
+        }
     }
 
     @Override
@@ -335,8 +338,6 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
         return super.onKeyDown(keyCode, event);
     }
 
-
-
     /**
      * 左侧菜单点击监听
      *
@@ -389,6 +390,10 @@ public class HomeActivity extends BaseActivity<HomePresenterImp> implements Home
 
     @Override
     public void retry(String action) {
+        //必须情况所有的历史菜单
+        if(mAdapter != null) {
+            mAdapter.removeAll();
+        }
         switch (action) {
             case Global.RETRY_SETUP_MENUS_ACTION:
                 mPresenter.setupModule(Global.LOGIN_ID);

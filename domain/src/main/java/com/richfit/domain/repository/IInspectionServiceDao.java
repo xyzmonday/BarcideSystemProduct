@@ -76,7 +76,7 @@ public interface IInspectionServiceDao {
 
     List<ReferenceEntity> readTransferedData();
 
-    boolean setTransFlag(String transId);
+    boolean setTransFlag(String transId,String insFlag);
 
     boolean uploadEditedHeadData(ResultEntity resultEntity);
     void deleteOfflineDataAfterUploadSuccess(String transId, String bizType, String refType, String userId);

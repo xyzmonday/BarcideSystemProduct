@@ -20,6 +20,7 @@ import com.richfit.domain.bean.ReferenceEntity;
 import butterknife.BindView;
 
 /**
+ * 发出
  * Created by monday on 2017/2/9.
  */
 

@@ -1,7 +1,5 @@
 package com.richfit.domain.repository;
 
-import android.support.annotation.NonNull;
-
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.MaterialEntity;
@@ -14,7 +12,6 @@ import com.richfit.domain.bean.WorkEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 本地数据Dao需要实现的接口。该接口描述的是基础数据，用户登陆，
@@ -51,34 +48,6 @@ public interface IBasicServiceDao {
     void saveUserInfo(UserEntity userEntity);
 
     /**
-     * 保存扩展字段配置信息
-     *
-     * @param configs
-     */
-    void saveExtraConfigInfo(List<RowConfig> configs);
-
-    /**
-     * 读取扩展字段配置信息
-     *
-     * @param companyCode
-     * @param bizType
-     * @param refType
-     * @param configType
-     * @return
-     */
-    ArrayList<RowConfig> readExtraConfigInfo(String companyCode, String bizType, String refType,
-                                             String configType);
-
-    /**
-     * 读取扩展字段字典数据
-     *
-     * @param propertyCode
-     * @param dictionaryCode
-     * @return
-     */
-    Map<String, Object> readExtraDataSourceByDictionary(@NonNull String propertyCode, @NonNull String dictionaryCode);
-
-    /**
      * 获取该类基础数据上一次下载的日期
      *
      * @param queryType
@@ -101,13 +70,6 @@ public interface IBasicServiceDao {
      * @return
      */
     int saveBasicData(List<Map<String, Object>> maps);
-
-    /**
-     * 跟新扩展字段基础数据表字段
-     *
-     * @param map
-     */
-    void updateExtraConfigTable(Map<String, Set<String>> map);
 
     /**
      * 获取该工厂下的所有库存地点

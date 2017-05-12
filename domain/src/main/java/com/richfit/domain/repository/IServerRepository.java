@@ -23,7 +23,7 @@ import io.reactivex.Flowable;
 
 public interface IServerRepository extends IRepository {
 
-
+    Flowable<String> getConnectionStatus();
 
     Flowable<ArrayList<BizFragmentConfig>> loadBizFragmentConfig(String companyId, int mode);
 
@@ -131,8 +131,6 @@ public interface IServerRepository extends IRepository {
                                                      String materialGroup, String materialDesc, String batchFlag,
                                                      String location, String specialInvFlag, String specialInvNum,
                                                      String invType,String deviceId);
-
-
 
     /**
      * 获取最新的App的版本信息，用于更新

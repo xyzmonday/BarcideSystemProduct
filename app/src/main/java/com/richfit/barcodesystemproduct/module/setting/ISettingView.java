@@ -30,4 +30,6 @@ public interface ISettingView extends BaseView {
     void loadBasicDataFail(String message);
     void loadBasicDataComplete();
 
+    void setupUrlComplete();
+
 }
