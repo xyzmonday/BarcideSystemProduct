@@ -167,6 +167,9 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
         etMoveCauseDesc.setText(lineData.moveCauseDesc);
         etProjectText.setText(lineData.projectText);
         tvInsLostQuantity.setText(lineData.insLotQuantity);
+        if (spStrategyCode.getAdapter() != null) {
+            spStrategyCode.setSelection(1);
+        }
         super.bindCommonCollectUI();
     }
 
@@ -203,9 +206,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
     /**
      * 检查数量是否合理。需要满足
      * 1. 退货交货数量 <= 不不合格量
-     * <p>
      * 2. 退货交货数量 + 实收数量 = 检验批数量
-     * <p>
      * 3. 实收数量 <= 合格数量
      *
      * @param quantity
@@ -267,6 +268,10 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
                 return false;
             }
         }
+        if (spStrategyCode.getAdapter() != null && spStrategyCode.getSelectedItemPosition() <= 0) {
+            showMessage("请先选择使用决策代码");
+            return false;
+        }
         return super.checkCollectedDataBeforeSave();
     }
 
@@ -293,6 +298,8 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
             result.location = CommonUtil.toUpperCase(isNLocation ? "barcode" : getString(etLocation));
             result.batchFlag = CommonUtil.toUpperCase(getString(etBatchFlag));
             result.quantity = getString(etQuantity);
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             result.modifyFlag = "N";
             //物料凭证
             result.refDoc = lineData.refDoc;
@@ -333,7 +340,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
 
     @Override
     public void _onPause() {
-        clearCommonUI(etProjectText, etMoveCauseDesc);
+        clearCommonUI(etReturnQuantity,etProjectText, etMoveCauseDesc);
         if (spStrategyCode.getAdapter() != null) {
             spStrategyCode.setSelection(0);
         }

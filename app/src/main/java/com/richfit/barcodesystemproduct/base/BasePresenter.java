@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.richfit.common_lib.IInterface.IPresenter;
 import com.richfit.common_lib.basetreerv.RecycleTreeViewHelper;
+import com.richfit.common_lib.rxutils.RxBus;
 import com.richfit.common_lib.rxutils.SimpleRxBus;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.data.repository.Repository;
@@ -48,7 +49,8 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
     protected Repository mRepository;
     @Inject
     protected SimpleRxBus mSimpleRxBus;
-
+    @Inject
+    protected RxBus mRxBus;
 
     @Inject
     public BasePresenter(Context context) {
@@ -153,6 +155,73 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
     protected ReferenceEntity addTreeInfo(final ReferenceEntity refData) {
         addTreeInfo(refData.billDetailList);
         return refData;
+    }
+
+    /**
+     * 将缓存的二级节点的数据赋值到原始单据上（这里赋值的字段需要根据采集界面确定）
+     * @param parentNode
+     * @param cachedNode
+     */
+    protected void copyCache2Refdetail(RefDetailEntity parentNode,RefDetailEntity cachedNode) {
+        //先将缓存的数据相关字段保存到父节点中
+        parentNode.invId = cachedNode.invId;
+        parentNode.invCode = cachedNode.invCode;
+        parentNode.invName = cachedNode.invName;
+        parentNode.recInvId = cachedNode.recInvId;
+        parentNode.recInvCode = cachedNode.recInvCode;
+        parentNode.recInvName = cachedNode.recInvName;
+        parentNode.totalQuantity = cachedNode.totalQuantity;
+        //105必检
+        parentNode.returnQuantity = cachedNode.returnQuantity;
+        parentNode.projectText = cachedNode.returnQuantity;
+        parentNode.moveCauseDesc = cachedNode.moveCauseDesc;
+        parentNode.decisionCode = cachedNode.decisionCode;
+        parentNode.moveCause = cachedNode.moveCause;
+    }
+
+    protected void copy(RefDetailEntity targetNode,RefDetailEntity sourceNode) {
+        if(targetNode == null || sourceNode == null)
+            return;
+        targetNode.refLineId = sourceNode.refLineId;
+        targetNode.lineNum = sourceNode.lineNum;
+        targetNode.lineNum105 = sourceNode.lineNum105;
+        targetNode.materialId = sourceNode.materialId;
+        targetNode.materialNum = sourceNode.materialNum;
+        targetNode.materialDesc = sourceNode.materialDesc;
+        targetNode.materialGroup = sourceNode.materialGroup;
+        targetNode.materialUnit = sourceNode.materialUnit;
+        targetNode.unit = sourceNode.unit;
+        targetNode.materialUnit = sourceNode.materialUnit;
+        targetNode.recordUnit = sourceNode.recordUnit;
+        targetNode.unitRate = sourceNode.unitRate;
+        targetNode.actQuantity = sourceNode.actQuantity;
+        targetNode.arrivalQuantity = sourceNode.arrivalQuantity;
+        targetNode.batchFlag = sourceNode.batchFlag;
+        targetNode.inspectionDate = sourceNode.inspectionDate;
+        targetNode.inspectionResult = sourceNode.inspectionResult;
+        targetNode.inspectionStandard = sourceNode.inspectionStandard;
+        targetNode.specialInvFlag = sourceNode.specialInvFlag;
+        targetNode.specialInvNum = sourceNode.specialInvNum;
+        targetNode.orderQuantity = sourceNode.orderQuantity;
+        targetNode.workId = sourceNode.workId;
+        targetNode.workName = sourceNode.workName;
+        targetNode.workCode = sourceNode.workCode;
+        targetNode.invId = sourceNode.invId;
+        targetNode.invName = sourceNode.invName;
+        targetNode.invCode = sourceNode.invCode;
+        targetNode.qmFlag = sourceNode.qmFlag;
+        targetNode.recWorkId = sourceNode.recWorkId;
+        targetNode.recWorkName = sourceNode.recWorkName;
+        targetNode.recWorkCode = sourceNode.recWorkName;
+        targetNode.recInvId = sourceNode.recInvId;
+        targetNode.recInvName = sourceNode.recInvName;
+        targetNode.recInvCode = sourceNode.recInvCode;
+        targetNode.totalQuantity = sourceNode.totalQuantity;
+        targetNode.insLot = sourceNode.insLot;
+        targetNode.refDoc = sourceNode.refDoc;
+        targetNode.refDocItem = sourceNode.refDocItem;
+        targetNode.insLotQuantity = sourceNode.insLotQuantity;
+        targetNode.returnQuantity = sourceNode.returnQuantity;
     }
 
     /**

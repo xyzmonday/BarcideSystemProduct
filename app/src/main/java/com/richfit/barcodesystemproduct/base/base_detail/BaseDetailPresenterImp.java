@@ -73,8 +73,11 @@ public class BaseDetailPresenterImp<V extends IBaseDetailView> extends BasePrese
         if (MainActivity.class.isInstance(mContext)) {
             MainActivity activity = (MainActivity) mContext;
             activity.showFragmentByPosition(position);
-            if (mSimpleRxBus.hasSubscribers()) {
+            if (mRxBus != null && mSimpleRxBus.hasSubscribers()) {
                 mSimpleRxBus.post(true);
+            }
+            if(mRxBus != null && mRxBus.hasSubscribers()) {
+                mRxBus.post(true);
             }
         }
     }

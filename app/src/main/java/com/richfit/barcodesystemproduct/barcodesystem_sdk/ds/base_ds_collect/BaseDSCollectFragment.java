@@ -97,6 +97,8 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
     protected String mSelectedRefLineNum;
     /*批次一致性检查*/
     protected boolean isBatchValidate = true;
+    /*校验仓位是否存在，如果false表示校验该仓位不存在或者没有校验该仓位，不允许保存数据*/
+    protected boolean isLocationChecked = false;
 
     @Override
     protected int getContentId() {
@@ -167,7 +169,11 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
                 .filter(position -> (mInventoryDatas != null && mInventoryDatas.size() > 0 &&
                         position.intValue() <= mInventoryDatas.size() - 1))
                 .subscribe(position -> {
-                    tvInvQuantity.setText(mInventoryDatas.get(position).invQuantity);
+                    RefDetailEntity data = getLineData(mSelectedRefLineNum);
+                    InventoryEntity invData = mInventoryDatas.get(position);
+                    String invQuantity = calQuantityByUnitRate(invData.invQuantity, data.recordUnit, data.unitRate);
+                    invData.invQuantity = invQuantity;
+                    tvInvQuantity.setText(invData.invQuantity);
                     getTransferSingle(position);
                 });
 
@@ -404,7 +410,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         final String refType = mRefData.refType;
         final String bizType = mRefData.bizType;
         final String refLineId = lineData.refLineId;
-        isBatchValidate = false;
+        isBatchValidate = true;
         mPresenter.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
                 getString(etMaterialNum), batchFlag, location, lineData.refDoc,
                 UiUtil.convertToInt(lineData.refDocItem),
@@ -497,9 +503,9 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
 
     @Override
     public void loadCacheFail(String message) {
+        showMessage(message);
         spInv.setEnabled(true);
         isBatchValidate = true;
-        showMessage(message);
         //如果没有获取到任何缓存
         tvLocQuantity.setText("0");
         tvTotalQuantity.setText("0");
@@ -562,8 +568,6 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
 
     /**
      * 检查数量是否合理。第一：实发数量+累计数量<=应发数量;第二：该仓位已经录入的数量 + 实发数量 <= 库存数量
-     *
-     * @param quantity:本次出库录入数量
      */
     protected boolean refreshQuantity(final String quantity) {
         if (Float.valueOf(quantity) <= 0.0f) {
@@ -586,7 +590,8 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         //该仓位的历史出库数量
         final float historyQuantityV = UiUtil.convertToFloat(getString(tvLocQuantity), 0.0f);
         //该仓位的库存数量
-        final float inventoryQuantity = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+        float inventoryQuantity = UiUtil.convertToFloat(getString(tvInvQuantity), 0.0f);
+
         if (Float.compare(quantityV + historyQuantityV, inventoryQuantity) > 0.0f) {
             showMessage("输入数量有误，请重新输入");
             etQuantity.setText("");
@@ -676,7 +681,8 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             result.materialId = lineData.materialId;
             result.batchFlag = getString(etBatchFlag);
             result.quantity = getString(etQuantity);
-
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             //库存相关的字段回传
             int locationPos = spLocation.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;

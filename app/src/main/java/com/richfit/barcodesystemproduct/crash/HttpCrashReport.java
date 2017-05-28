@@ -14,6 +14,6 @@ public class HttpCrashReport extends BaseCrashReport {
 
     @Override
     public void sendLogFileToTarget(final File logFile) {
-
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }

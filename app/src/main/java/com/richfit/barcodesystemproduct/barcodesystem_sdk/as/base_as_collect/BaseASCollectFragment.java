@@ -53,7 +53,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 public abstract class BaseASCollectFragment<P extends IASCollectPresenter> extends BaseFragment<P>
         implements IASCollectView {
 
-    @BindView(R.id.ref_line_num_spinner)
+    @BindView(R.id.sp_ref_line_num)
     protected Spinner spRefLine;
     @BindView(R.id.et_material_num)
     protected RichEditText etMaterialNum;
@@ -75,7 +75,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     protected LinearLayout llBatchFlag;
     @BindView(R.id.et_batch_flag)
     protected EditText etBatchFlag;
-    @BindView(R.id.inv_spinner)
+    @BindView(R.id.sp_inv)
     protected Spinner spInv;
     @BindView(R.id.tv_location_name)
     protected TextView tvLocationName;
@@ -109,7 +109,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     protected ArrayList<InvEntity> mInvDatas;
     /*库存地点适配器*/
     private InvAdapter mInvAdapter;
-    /*累计数量*/
+    /*当前选中的单据行*/
     protected String mSelectedRefLineNum;
     /*校验仓位是否存在，如果false表示校验该仓位不存在或者没有校验该仓位，不允许保存数据*/
     protected boolean isLocationChecked = false;
@@ -418,7 +418,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
      */
     private void clearAllUI() {
         clearCommonUI(tvMaterialDesc, tvWork, tvActQuantity, etLocation, tvLocQuantity, etQuantity, tvLocQuantity,
-                tvTotalQuantity, cbSingle,tvInsLostQuantity);
+                tvTotalQuantity, cbSingle, tvInsLostQuantity);
 
         //单据行
         if (mRefLineAdapter != null) {
@@ -453,7 +453,6 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
                 tvTotalQuantity.setText(cache.totalQuantity);
                 //锁定库存地点
                 lockInv(cache.invId);
-
                 //匹配缓存
                 List<LocationInfoEntity> locationInfos = cache.locationList;
                 if (locationInfos == null || locationInfos.size() == 0) {
@@ -529,9 +528,9 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
 
     @Override
     public void loadCacheFail(String message) {
+        showMessage(message);
         spInv.setEnabled(true);
         isBatchValidate = true;
-        showMessage(message);
         if (!isNLocation)
             tvLocQuantity.setText("0");
         tvTotalQuantity.setText("0");
@@ -661,6 +660,8 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             result.userId = Global.USER_ID;
             result.refLineId = lineData.refLineId;
             result.workId = lineData.workId;
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             result.invId = mInvDatas.get(spInv.getSelectedItemPosition()).invId;
             result.materialId = lineData.materialId;
             result.location = isNLocation ? "barcode" : getString(etLocation);

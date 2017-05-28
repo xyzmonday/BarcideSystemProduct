@@ -16,7 +16,7 @@ import com.richfit.domain.bean.ReferenceEntity;
 import butterknife.BindView;
 
 /**
- * 料签查询抬头界面
+ * 物资料签信息查询
  * Created by monday on 2017/3/16.
  */
 

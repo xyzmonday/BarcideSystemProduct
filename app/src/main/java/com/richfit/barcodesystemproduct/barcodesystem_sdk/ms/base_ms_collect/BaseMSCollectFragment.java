@@ -134,7 +134,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             if (spSendLoc.getAdapter() != null) {
                 final int size = mInventoryDatas.size();
                 for (int i = 0; i < size; i++) {
-                    if (mInventoryDatas.get(i).location.equalsIgnoreCase(location)) {
+                    if (!TextUtils.isEmpty(location) && location.equals(mInventoryDatas.get(i).location)) {
                         spSendLoc.setSelection(i);
                         break;
                     }
@@ -438,6 +438,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         final String bizType = mRefData.bizType;
         final String refLineId = lineData.refLineId;
         mCachedBatchFlag = "";
+        isBatchValidate = true;
         mPresenter.getTransferInfoSingle(refCodeId, refType, bizType, refLineId,
                 batchFlag, locationCombine, lineData.refDoc, UiUtil.convertToInt(lineData.refDocItem), Global.USER_ID);
     }
@@ -537,6 +538,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         tvLocQuantity.setText("0");
         tvTotalQuantity.setText("0");
         mCachedBatchFlag = "";
+        isBatchValidate = true;
         if (cbSingle.isChecked() && checkCollectedDataBeforeSave()) {
             saveCollectedData();
         }
@@ -701,6 +703,8 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             result.batchFlag = CommonUtil.toUpperCase(getString(etSendBatchFlag));
             result.recBatchFlag = CommonUtil.toUpperCase(getString(etRecBatchFlag));
             result.recLocation = CommonUtil.toUpperCase(getString(etRecLoc));
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             result.quantity = getString(etQuantity);
             int locationPos = spSendLoc.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;

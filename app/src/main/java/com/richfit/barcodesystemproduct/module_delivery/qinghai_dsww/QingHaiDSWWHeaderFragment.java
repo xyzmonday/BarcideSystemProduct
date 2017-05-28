@@ -26,12 +26,6 @@ public class QingHaiDSWWHeaderFragment extends BaseDSHeaderFragment<DSHeaderPres
 
     @NonNull
     @Override
-    protected String getBizType() {
-        return "23";
-    }
-
-    @NonNull
-    @Override
     protected String getMoveType() {
         return "2";
     }

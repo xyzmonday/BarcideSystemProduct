@@ -53,7 +53,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
             selectionList.add(storageNum);
         }
 
-        sb.append(" and check_type = ?")
+        sb.append(" and biz_type = ?")
                 .append(" and check_level = ?")
                 .append(" and check_special = ?");
         selectionList.add(bizType);
@@ -91,7 +91,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
             cv.put("creation_date", creationDate);
             cv.put("created_by", userId);
             cv.put("check_level", checkLevel);
-            cv.put("check_type",bizType);
+            cv.put("biz_type",bizType);
             cv.put("trans_flag", "0");
             db.insert("MTL_CHECK_HEADER", null, cv);
             cv.clear();
@@ -130,7 +130,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
         clearStringBuffer();
         String[] selections;
         ArrayList<String> selectionList = new ArrayList<>();
-        sb.append(" select t.id,")
+        sb.append(" select t.id,t.check_id,")
                 .append(" t.work_id,t.inv_id,t.special_flag,t.special_num,")
                 .append(" t.line_num,t.material_id,t.location,t.inv_type,t.quantity,")
                 .append(" t.new_flag,t.inv_quantity,m.material_num,")
@@ -175,6 +175,8 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
             index = -1;
             item = new InventoryEntity();
             item.id = cursor.getString(++index);
+            item.checkLineId = item.id;
+            item.checkId = cursor.getString(++index);
             item.workId = cursor.getString(++index);
             item.invId = cursor.getString(++index);
             item.specialInvFlag = cursor.getString(++index);
@@ -227,7 +229,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
         clearStringBuffer();
         String[] selections;
         ArrayList<String> selectionList = new ArrayList<>();
-        sb.append("select t.id,")
+        sb.append("select t.id,t.check_id,")
                 .append(" t.work_id,t.inv_id,t.special_flag,t.special_num,")
                 .append(" t.line_num,t.material_id,t.location,t.inv_type,t.quantity,")
                 .append(" t.new_flag,t.inv_quantity,m.material_num,")
@@ -273,6 +275,8 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
             index = -1;
             item = new InventoryEntity();
             item.id = cursor.getString(++index);
+            item.checkLineId = item.id;
+            item.checkId = cursor.getString(++index);
             item.workId = cursor.getString(++index);
             item.invId = cursor.getString(++index);
             item.specialInvFlag = cursor.getString(++index);
@@ -340,7 +344,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
 
         if (!TextUtils.isEmpty(result.workId)) {
             sb.append(" and work_id = ?");
-            selectionList.add(" and work_id = ?");
+            selectionList.add(result.workId);
         }
 
         if (!TextUtils.isEmpty(result.invId)) {
@@ -422,7 +426,7 @@ public class CheckServiceDao extends BaseDao implements ICheckServiceDao {
         clearStringBuffer();
 
         sb.append("select id,storage_num,work_id,inv_id,check_special,check_num,created_by,")
-                .append("check_level,check_type,sap_check_num ")
+                .append("check_level,biz_type,sap_check_num ")
                 .append("from MTL_CHECK_HEADER ")
                 .append(" where (trans_flag = '0' or trans_flag = '2') ")
                 .append(" order by creation_date");

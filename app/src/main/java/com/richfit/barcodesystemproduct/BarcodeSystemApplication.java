@@ -86,8 +86,9 @@ public class BarcodeSystemApplication extends Application {
                     baseUrl = "http://11.11.177.100:8092/lhbk_middleware/MobileProcess/";
                     break;
                 case Global.QINGHAI:
-                    //青海测试地址(Q)
+                    //青海测试地址(D)
                     baseUrl = "http://11.11.47.29:8087/ktbk_middleware/MobileProcess/";
+//                    baseUrl = "http://10.82.60.100:8080/ktbk_middleware/MobileProcess/";
                     break;
             }
         } else {

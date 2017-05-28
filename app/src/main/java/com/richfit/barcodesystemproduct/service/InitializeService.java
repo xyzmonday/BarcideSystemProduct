@@ -39,7 +39,7 @@ public class InitializeService extends IntentService {
     private void performInit() {
         initSPrefUtils();
         initCrashManage();
-        loadScanLibrary();
+//        loadScanLibrary();
     }
 
     private void initSPrefUtils() {
@@ -53,9 +53,9 @@ public class InitializeService extends IntentService {
     }
 
 
-    private void loadScanLibrary() {
-        System.loadLibrary("IAL");
-        System.loadLibrary("SDL");
-        System.loadLibrary("barcodereader44");
-    }
+//    private void loadScanLibrary() {
+//        System.loadLibrary("IAL");
+//        System.loadLibrary("SDL");
+//        System.loadLibrary("barcodereader44");
+//    }
 }

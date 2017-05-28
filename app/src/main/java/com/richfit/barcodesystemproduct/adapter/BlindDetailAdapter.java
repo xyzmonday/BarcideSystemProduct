@@ -32,14 +32,4 @@ public class BlindDetailAdapter extends CommonTreeAdapter<InventoryEntity> {
                 .setText(R.id.checkQuantity, item.totalQuantity);
     }
 
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
-
-    }
-
-    @Override
-    public void notifyNodeChanged(int position) {
-
-    }
-
 }

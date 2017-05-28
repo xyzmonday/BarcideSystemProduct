@@ -66,7 +66,9 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
                         .subscribeWith(new RxSubscriber<String>(mContext, "正在检查是否已经注册...") {
                             @Override
                             public void _onNext(String s) {
-
+                                if(mView != null) {
+                                    mView.updateDbSource(s);
+                                }
                             }
 
                             @Override

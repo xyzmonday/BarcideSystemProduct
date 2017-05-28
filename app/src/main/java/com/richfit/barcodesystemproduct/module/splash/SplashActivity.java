@@ -2,23 +2,23 @@ package com.richfit.barcodesystemproduct.module.splash;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.BuildConfig;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
 import com.richfit.barcodesystemproduct.module.login.LoginActivity;
 import com.richfit.barcodesystemproduct.module.splash.imp.SplashPresenterImp;
-import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.NetworkStateUtil;
+import com.richfit.common_lib.utils.SPrefUtil;
+import com.richfit.common_lib.utils.SysProp;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Flowable;
 
 /**
  * 在启动app的时候，如果一个Activity所属的Application还没运行，系统会为这个Activity创建一个
@@ -41,12 +41,6 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
 
     ArrayList<LoadBasicDataWrapper> mRequestParam;
 
-    static {
-        System.loadLibrary("IAL");
-        System.loadLibrary("SDL");
-        System.loadLibrary("barcodereader44");
-    }
-
     @Override
     protected int getContentId() {
         return 0;
@@ -61,23 +55,50 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setStatusBar(false);
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
     public void initData(Bundle savedInstanceState) {
         super.initData(savedInstanceState);
+        if (judgeProperty()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("扫描设置")
+                    .setMessage("您已经打开\"了使能上报扫描键值\",请先关闭它")
+                    .setPositiveButton("现在去关闭", (dialog, which) -> {
+                        Intent intent = new Intent(
+                                Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                        startActivity(intent);
+                        finish();
+                    }).setNegativeButton("下次再说", (dialog, which) -> finish()).show();
+            return;
+        }
         //1. 检查是否有网络；2.检查是否是第一次登陆
-        if (!NetworkStateUtil.isNetConnected(this.getApplicationContext())) {
+        if (!NetworkStateUtil.isNetConnected(this.getApplicationContext()) && mPresenter != null) {
             mPresenter.setLocal(true);
             toLogin();
             return;
         }
+        mPresenter.setLocal(false);
         toRegister();
     }
 
+    /**
+     * 判断快捷扫描是否勾选   不勾选跳转到系统设置中进行设置
+     */
+    private boolean judgeProperty() {
+        if (!BuildConfig.ISSERVICEDL) {
+            String result = SysProp.get("persist.sys.keyreport", "false");
+            return result.equals("true");
+        }
+        return false;
+    }
+
     private void toRegister() {
-        Global.MAC_ADDRESS = UiUtil.getMacAddress();
-        mPresenter.register();
+        if (mPresenter != null) {
+            Global.MAC_ADDRESS = UiUtil.getMacAddress();
+            mPresenter.register();
+        }
     }
 
     /**
@@ -85,13 +106,21 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
      */
     @Override
     public void toLogin() {
-        Flowable.timer(1000, TimeUnit.MILLISECONDS)
-                .compose(TransformerHelper.io2main())
-                .subscribe(a -> {
-                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-                    overridePendingTransition(0, android.R.anim.fade_out);
-                    finish();
-                });
+        if (TextUtils.isEmpty(Global.dbSource)) {
+            //可能是离线或者注册失败过。从缓存得到数据
+            Global.dbSource = (String) SPrefUtil.getData(Global.DBSOURCE_KEY, "");
+            if (TextUtils.isEmpty(Global.dbSource)) {
+                //如果还是为空那么，说明一定没有注册过
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("提示")
+                        .setMessage("该手持未注册，请将提供的手持MAC地址联系条码项目组进行注册。MAC地址为" + UiUtil.getMacAddress())
+                        .show();
+                return;
+            }
+        }
+        startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+        overridePendingTransition(0, android.R.anim.fade_out);
+        finish();
     }
 
     /**
@@ -122,10 +151,17 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
      */
     @Override
     public void unRegister(String message) {
+        Global.dbSource = "";
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("提示")
                 .setMessage("该手持未注册，请将提供的手持MAC地址联系条码项目组进行注册。MAC地址为" + Global.MAC_ADDRESS)
                 .show();
+    }
+
+    @Override
+    public void updateDbSource(String dbSource) {
+        SPrefUtil.getData(Global.DBSOURCE_KEY, dbSource);
+        Global.dbSource = dbSource;
     }
 
     /**

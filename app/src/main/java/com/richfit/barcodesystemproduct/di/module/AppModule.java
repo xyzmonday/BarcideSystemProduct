@@ -3,6 +3,7 @@ package com.richfit.barcodesystemproduct.di.module;
 import android.app.Application;
 import android.content.Context;
 
+import com.richfit.common_lib.rxutils.RxBus;
 import com.richfit.common_lib.rxutils.SimpleRxBus;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.data.repository.Repository;
@@ -45,6 +46,12 @@ public class AppModule {
     @Singleton
     public SimpleRxBus provideSimpleRxBus() {
         return SimpleRxBus.getInstance();
+    }
+
+    @Provides
+    @Singleton
+    public RxBus procideRxBus() {
+        return RxBus.get();
     }
 
     @Provides

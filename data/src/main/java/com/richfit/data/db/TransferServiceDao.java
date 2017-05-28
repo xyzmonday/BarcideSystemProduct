@@ -94,7 +94,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         clearStringBuffer();
         String[] lineSelections;
         selectionList.clear();
-        sb.append("SELECT T.ID, T.REF_LINE_ID, T.WORK_ID,")
+        sb.append("SELECT T.ID, T.REF_LINE_ID,T.REF_LINE_NUM, T.WORK_ID,")
                 .append("T.INV_ID,T.REC_WORK_ID,T.REC_INV_ID,")
                 .append("T.MATERIAL_ID,T.QUANTITY,")
                 .append("M.MATERIAL_NUM,M.MATERIAL_DESC,M.MATERIAL_GROUP,")
@@ -129,6 +129,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item = new RefDetailEntity();
             item.transLineId = cursor.getString(++index);
             item.refLineId = cursor.getString(++index);
+            item.lineNum = cursor.getString(++index);
             item.workId = cursor.getString(++index);
             item.invId = cursor.getString(++index);
             item.recWorkId = cursor.getString(++index);
@@ -280,7 +281,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
         //查询行缓存
         clearStringBuffer();
         selectionList.clear();
-        sb.append(" SELECT T.ID,T.REF_LINE_ID,T.WORK_ID,T.INV_ID,")
+        sb.append(" SELECT T.ID,T.REF_LINE_ID,T.REF_LINE_NUM,T.WORK_ID,T.INV_ID,")
                 .append("T.REC_WORK_ID,T.REC_INV_ID,T.MATERIAL_ID,")
                 .append("T.QUANTITY,")
                 .append("W.ORG_CODE AS WORK_CODE,")
@@ -314,6 +315,7 @@ public class TransferServiceDao extends BaseDao implements ITransferServiceDao {
             item = new RefDetailEntity();
             item.transLineId = cursor.getString(++index);
             item.refLineId = cursor.getString(++index);
+            item.lineNum = cursor.getString(++index);
             item.workId = cursor.getString(++index);
             item.invId = cursor.getString(++index);
             item.recWorkId = cursor.getString(++index);

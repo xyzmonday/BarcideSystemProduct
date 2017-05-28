@@ -18,12 +18,6 @@ public class QingYangDSYHeaderFragment extends BaseDSHeaderFragment<DSHeaderPres
 
     @NonNull
     @Override
-    protected String getBizType() {
-        return mBizType;
-    }
-
-    @NonNull
-    @Override
     protected String getMoveType() {
         return "1";
     }

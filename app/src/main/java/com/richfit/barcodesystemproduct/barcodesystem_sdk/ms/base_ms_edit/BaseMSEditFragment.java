@@ -331,6 +331,8 @@ public abstract class BaseMSEditFragment extends BaseEditFragment<MSEditPresente
                     "Y" : "N";
             result.batchFlag = getString(tvBatchFlag);
             result.quantity = getString(etQuantity);
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             result.modifyFlag = "Y";
             emitter.onNext(result);
             emitter.onComplete();

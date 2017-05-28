@@ -5,6 +5,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.AutoSwipeRefreshLayout;
 import com.richfit.domain.bean.BottomMenuEntity;
+import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.TreeNode;
 
 import java.util.HashMap;
@@ -113,6 +115,18 @@ public abstract class BaseDetailFragment<P extends IBaseDetailPresenter, T exten
         //都调用的是同一个接口，所以在具体的业务时，子类必须检验响应的参数。
         mPresenter.getTransferInfo(mRefData, refCodeId, bizType, refType,
                 Global.USER_ID, mRefData.workId, mRefData.invId, mRefData.recWorkId, mRefData.recInvId);
+    }
+
+    /**
+     * 保存明细节点的TransId
+     */
+    protected void saveTransId(List<RefDetailEntity> allNodes) {
+        for (RefDetailEntity node : allNodes) {
+            if (!TextUtils.isEmpty(node.transId)) {
+                mTransId = node.transId;
+                break;
+            }
+        }
     }
 
     /**

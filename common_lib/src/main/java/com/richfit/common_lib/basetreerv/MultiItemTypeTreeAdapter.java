@@ -56,17 +56,12 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
         ItemViewDelegate itemViewDelegate = mItemViewDelegateManager.getItemViewDelegate(viewType);
         int layoutId = itemViewDelegate.getItemViewLayoutId();
         ViewHolder holder = ViewHolder.createViewHolder(mContext, parent, layoutId);
+        //设置子节点的margin
+        if (viewType == Global.CHILD_NODE_ITEM_TYPE || viewType == Global.CHILD_NODE_HEADER_TYPE) {
+            setChildNodeMargin(holder.getConvertView());
+        }
         setListener(parent, holder, viewType);
         return holder;
-    }
-
-
-    public void convert(ViewHolder holder, T item) {
-        mItemViewDelegateManager.convert(holder, item, holder.getAdapterPosition());
-    }
-
-    protected boolean isEnabled(int viewType) {
-        return true;
     }
 
     /**
@@ -76,11 +71,11 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
      * @param viewHolder
      * @param viewType
      */
-    protected void setListener(final ViewGroup parent, final ViewHolder viewHolder, int viewType) {
-        if (!isEnabled(viewType)) return;
+    protected void setListener(final ViewGroup parent, final ViewHolder viewHolder, final int viewType) {
+
         viewHolder.getConvertView().setOnClickListener(v -> {
+            final int position = viewHolder.getAdapterPosition();
             if (mOnItemClickListener != null) {
-                int position = viewHolder.getAdapterPosition();
                 mOnItemClickListener.onItemClick(v, viewHolder, position);
             }
         });
@@ -92,19 +87,30 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
             }
             return false;
         });
+        //注意这里不需要判断viewType类型，因为这里是先通过findViewById针对某一个view设置setOnClickListener
         setItemNodeEditAndDeleteListener(viewHolder);
     }
 
     /**
      * 绑定该ViewHolder的数据，由ItemDelegate去实现
      *
-     * @param holder
+     * @param viewHolder
      * @param position
      */
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        onViewHolderBindInternal(holder, getItemViewType(position));
-        convert(holder, mVisibleNodes.get(position));
+    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+        onViewHolderBindInternal(viewHolder, getItemViewType(position));
+        convert(viewHolder, mVisibleNodes.get(position));
+        viewHolder.getConvertView().setOnClickListener(v -> {
+            if (getItemViewType(position) == Global.PARENT_NODE_HEADER_TYPE) {
+                expandOrCollapse(position);
+            }
+        });
+    }
+
+
+    public void convert(ViewHolder holder, T item) {
+        mItemViewDelegateManager.convert(holder, item, holder.getAdapterPosition());
     }
 
     protected void onViewHolderBindInternal(ViewHolder holder, int viewType) {
@@ -270,22 +276,17 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
      *                                                   第二类是修改该节点的某些字段(比如说验收)。
      */
     public void removeNodeByPosition(final int position) {
-
         final TreeNode node = mVisibleNodes.get(position);
         final TreeNode parentNode = node.getParent();
         if (parentNode != null) {
-            int parentPos = mVisibleNodes.indexOf(parentNode);
-            //修改父节点的相关数据(注意这里需要先刷新父节点的某些数据，因为如果先删除子节点，那么子节点的数据再也不能拿到)
-            notifyParentNodeChanged(position, parentPos);
-            //移除子节点的抬头节点
+//            int parentPos = mVisibleNodes.indexOf(parentNode);
             if (parentNode.getChildren().size() == 2 && parentNode.getChildren().get(0).getViewType() == Global.CHILD_NODE_HEADER_TYPE) {
-
                 TreeNode childNode = parentNode.getChildren().get(0);
                 int indexOf = mVisibleNodes.indexOf(childNode);
-
                 mAllNodes.remove(childNode);
                 mVisibleNodes.remove(childNode);
                 notifyItemRemoved(indexOf);
+
             }
             //移除需要删除的节点
             mAllNodes.remove(node);
@@ -293,24 +294,24 @@ public abstract class MultiItemTypeTreeAdapter<T extends TreeNode> extends Recyc
             //刷新子节点删除
             notifyItemRemoved(position);
         }
-        //修改本节点
-        notifyNodeChanged(position);
     }
 
-    /**
-     * 子类需要根据具体的业务修改父节点的字段数据。比如常见的就是
-     * 修改累计数量。
-     *
-     * @param childNodePosition:子节点在明细列表的位置
-     * @param parentNodePosition:父节点在明细列表的位置
-     */
-    public abstract void notifyParentNodeChanged(int childNodePosition, int parentNodePosition);
-
-    /**
-     * 对于无参考或者验收等没有父子节点结构明细界面，直接删除该节点
-     *
-     * @param position
-     */
-    public abstract void notifyNodeChanged(int position);
+//    /**
+//     * 子类需要根据具体的业务修改父节点的字段数据。比如常见的就是
+//     * 修改累计数量。
+//     *
+//     * @param childNodePosition:子节点在明细列表的位置
+//     * @param parentNodePosition:父节点在明细列表的位置
+//     */
+//    public abstract void notifyParentNodeChanged(int childNodePosition, int parentNodePosition);
+//
+//
+//
+//    /**
+//     * 对于无参考或者验收等没有父子节点结构明细界面，直接删除该节点
+//     *
+//     * @param position
+//     */
+//    public abstract void notifyNodeChanged(int position);
 
 }

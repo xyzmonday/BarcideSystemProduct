@@ -21,7 +21,6 @@ public class BaseHeaderPresenterImp<V extends IBaseHeaderView> extends BasePrese
 
     protected V mView;
 
-
     @Inject
     public BaseHeaderPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
@@ -31,6 +30,13 @@ public class BaseHeaderPresenterImp<V extends IBaseHeaderView> extends BasePrese
     protected void onStart() {
         mView = getView();
         mSimpleRxBus.register(Boolean.class)
+                .subscribe(aBoolean -> {
+                    L.e("接收到信号");
+                    if (mView != null) {
+                        mView.clearAllUIAfterSubmitSuccess();
+                    }
+                });
+        mRxBus.toFlowable(Boolean.class)
                 .subscribe(aBoolean -> {
                     L.e("接收到信号");
                     if (mView != null) {

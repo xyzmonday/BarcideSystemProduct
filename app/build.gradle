@@ -76,6 +76,7 @@ android {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingYang.json"'
             buildConfigField "String","APP_NAME",'"qingyang"'
+            buildConfigField "boolean","ISSERVICEDL",'false'
             versionCode 2
             versionName "1.1"
             signingConfig signingConfigs.sign_qingyang
@@ -85,6 +86,7 @@ android {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingHai.json"'
             buildConfigField "String","APP_NAME",'"qinghai"'
+            buildConfigField "boolean","ISSERVICEDL",'false'
             versionCode 1
             versionName "1.0"
             signingConfig signingConfigs.sign_qinghai
@@ -119,8 +121,6 @@ android {
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
     }
-
-
 }
 
 
@@ -139,6 +139,7 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'com.google.dagger:dagger:2.5'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.5'
+    //    compile 'com.umeng.analytics:analytics:latest.integration'
     compile project(':data')
     //use to test multiDex
     //    compile group: 'com.google.guava', name: 'guava', version: '19.0'
@@ -148,60 +149,61 @@ dependencies {
     //    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
     //    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
     //    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
+
 }
 tasks.whenTaskAdded { task ->
     if (task.name.contains("AndroidTest")) {
         task.enabled = false
     }
 }
-
-public class BuildTimeListener implements TaskExecutionListener, BuildListener {
-
-    private Clock mClock;
-    private mTimes = [];
-
-    @Override
-    void buildStarted(Gradle gradle) {
-
-    }
-
-    @Override
-    void settingsEvaluated(Settings settings) {
-
-    }
-
-    @Override
-    void projectsLoaded(Gradle gradle) {
-
-    }
-
-    @Override
-    void projectsEvaluated(Gradle gradle) {
-
-    }
-
-    @Override
-    void buildFinished(BuildResult result) {
-        println "Task spend time"
-        mTimes.each { time ->
-            if (time[0] >= 50) {
-                printf "%7sms  %s\n", time
-            }
-        }
-    }
-
-    @Override
-    void beforeExecute(Task task) {
-        //初始化时钟
-        mClock = new Clock();
-    }
-
-    @Override
-    void afterExecute(Task task, TaskState state) {
-        def time = mClock.timeInMs;
-        mTimes.add([time, task.path])
-    }
-}
-
-
-project.gradle.addListener(new BuildTimeListener())
+//
+//public class BuildTimeListener implements TaskExecutionListener, BuildListener {
+//
+//    private Clock mClock;
+//    private mTimes = [];
+//
+//    @Override
+//    void buildStarted(Gradle gradle) {
+//
+//    }
+//
+//    @Override
+//    void settingsEvaluated(Settings settings) {
+//
+//    }
+//
+//    @Override
+//    void projectsLoaded(Gradle gradle) {
+//
+//    }
+//
+//    @Override
+//    void projectsEvaluated(Gradle gradle) {
+//
+//    }
+//
+//    @Override
+//    void buildFinished(BuildResult result) {
+//        println "Task spend time"
+//        mTimes.each { time ->
+//            if (time[0] >= 50) {
+//                printf "%7sms  %s\n", time
+//            }
+//        }
+//    }
+//
+//    @Override
+//    void beforeExecute(Task task) {
+//        //初始化时钟
+//        mClock = new Clock();
+//    }
+//
+//    @Override
+//    void afterExecute(Task task, TaskState state) {
+//        def time = mClock.timeInMs;
+//        mTimes.add([time, task.path])
+//    }
+//}
+//
+//
+//project.gradle.addListener(new BuildTimeListener())

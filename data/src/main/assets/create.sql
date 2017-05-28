@@ -259,6 +259,7 @@ create table MTL_CHECK_HEADER
   upload_by        VARCHAR2(32),
   upload_date      INTEGER,
   check_level      VARCHAR2(2),
+  biz_type         TEXT,
   trans_flag       VARCHAR2(2)
 );
 
@@ -418,6 +419,9 @@ create table IF not exists MTL_PO_LINES
   return_quantity      TEXT,
   order_quantity       TEXT,
   act_quantity         TEXT,
+  material_unit        TEXT,
+  record_unit          TEXT,
+  unit_rate            REAL,
   qm_flag              VARCHAR2(10),
   unit                 VARCHAR2(32),
   status               VARCHAR2(10),
@@ -517,8 +521,8 @@ create table IF not exists  MTL_TRANSACTION_LINES
   quantity            NUMBER(13,3),
   order_unit_quantity NUMBER(13,3),
   act_quantity        NUMBER(13,3),
-  unit                VARCHAR2(32),
-  unit_rate           NUMBER(13,3),
+  unit                TEXT,
+  unit_rate           REAL,
   device_location     VARCHAR2(300),
   equi_location       VARCHAR2(300),
   detail_location     VARCHAR2(300),

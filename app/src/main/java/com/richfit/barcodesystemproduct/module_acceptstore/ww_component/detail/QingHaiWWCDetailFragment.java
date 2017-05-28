@@ -8,7 +8,6 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.QingHaiWWCAdapter;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.RefDetailEntity;
 
 import java.util.List;
@@ -175,6 +174,7 @@ public class QingHaiWWCDetailFragment extends BaseDetailFragment<QingHaiWWCDetai
         if (mAdapter != null) {
             mAdapter.removeNodeByPosition(position);
         }
+        startAutoRefresh();
     }
 
     /**

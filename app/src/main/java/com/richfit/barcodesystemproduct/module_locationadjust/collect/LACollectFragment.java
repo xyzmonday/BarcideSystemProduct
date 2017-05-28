@@ -3,9 +3,12 @@ package com.richfit.barcodesystemproduct.module_locationadjust.collect;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.richfit.barcodesystemproduct.R;
+import com.richfit.barcodesystemproduct.adapter.SpecialInvAdapter;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.module_locationadjust.collect.imp.LACollectPresenterImp;
 import com.richfit.common_lib.rxutils.TransformerHelper;
@@ -16,6 +19,9 @@ import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.MaterialEntity;
 import com.richfit.domain.bean.ResultEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -49,6 +55,11 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
     EditText etRecLocation;
     @BindView(R.id.et_adjust_quantity)
     EditText etRecQuantity;
+    //增加特殊库存
+    @BindView(R.id.sp_special_inv)
+    Spinner spSpecialInv;
+    SpecialInvAdapter mAdapter;
+    List<InventoryEntity> mInventoryDatas;
 
     @Override
     public void handleBarCodeScanResult(String type, String[] list) {
@@ -80,6 +91,7 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
     public void initInjector() {
         mFragmentComponent.inject(this);
     }
+
 
     @Override
     public void initDataLazily() {
@@ -114,6 +126,10 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
         etMaterialNum.setOnRichEditTouchListener((view, materialNum) -> loadMaterialInfo(materialNum, getString(etBatchFlag)));
         //获取仓位的库存
         etSendLocation.setOnRichEditTouchListener((view, location) -> loadInventoryInfo(location));
+        //选择下拉
+        RxAdapterView.itemSelections(spSpecialInv)
+                .filter(pos -> pos > 0)
+                .subscribe(pos -> tvSendInvQuantity.setText(mInventoryDatas.get(pos).invQuantity));
     }
 
     /**
@@ -128,7 +144,6 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
             return;
         }
         clearAllUI();
-
         mPresenter.getMaterialInfo("01", materialNum);
     }
 
@@ -177,8 +192,22 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
     }
 
     @Override
-    public void getInventorySuccess(InventoryEntity inventoryEntity) {
-        tvSendInvQuantity.setText(inventoryEntity.invQuantity);
+    public void getInventorySuccess(List<InventoryEntity> invs) {
+        if (mInventoryDatas == null) {
+            mInventoryDatas = new ArrayList<>();
+        }
+        mInventoryDatas.clear();
+        InventoryEntity tmp = new InventoryEntity();
+        tmp.location = "请选择";
+        mInventoryDatas.add(tmp);
+        mInventoryDatas.addAll(invs);
+        //初始化特殊库存标识下拉列表
+        if (mAdapter == null) {
+            mAdapter = new SpecialInvAdapter(mActivity, R.layout.item_simple_sp, mInventoryDatas);
+            spSpecialInv.setAdapter(mAdapter);
+        } else {
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -201,6 +230,10 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
     private void clearAllUI() {
         clearCommonUI(tvMaterialDesc, tvMaterialGroup, tvMaterialUnit, etSendLocation,
                 tvSendInvQuantity, etRecLocation, etRecQuantity);
+        if (mAdapter != null) {
+            mInventoryDatas.clear();
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -237,6 +270,12 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
             showMessage("请先在抬头界面选择库存地点");
             return false;
         }
+
+        if (spSpecialInv.getSelectedItemPosition() <= 0) {
+            showMessage("请先选择特殊库存标识");
+            return false;
+        }
+
         Object tag = etMaterialNum.getTag();
         if (tag == null || TextUtils.isEmpty(tag.toString())) {
             showMessage("请先获取物料信息");
@@ -284,6 +323,8 @@ public class LACollectFragment extends BaseFragment<LACollectPresenterImp>
             result.quantity = getString(etRecQuantity);
             result.userId = Global.USER_ID;
             result.invType = "01";
+            result.specialInvFlag = mInventoryDatas.get(spSpecialInv.getSelectedItemPosition()).specialInvFlag;
+            result.specialInvNum = mInventoryDatas.get(spSpecialInv.getSelectedItemPosition()).specialInvNum;
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())

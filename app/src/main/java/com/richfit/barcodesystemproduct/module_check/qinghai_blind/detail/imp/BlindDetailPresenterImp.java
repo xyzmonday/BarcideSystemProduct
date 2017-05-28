@@ -73,6 +73,10 @@ public class BlindDetailPresenterImp extends BasePresenter<IBlindDetailView>
     @Override
     public void deleteNode(String checkId, String checkLineId, String userId, int position, String bizType) {
         mView = getView();
+        if (mView != null && TextUtils.isEmpty(checkLineId)) {
+            mView.deleteNodeFail("目标明细ID为空");
+            return;
+        }
         mRepository.deleteCheckDataSingle(checkId, checkLineId, userId, bizType)
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在删除...") {
@@ -217,12 +221,12 @@ public class BlindDetailPresenterImp extends BasePresenter<IBlindDetailView>
     }
 
     @Override
-    public void setTransFlag(String bizType,String transId,String transFlag) {
+    public void setTransFlag(String bizType, String transId, String transFlag) {
         mView = getView();
-        if(TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transFlag) || TextUtils.isEmpty(transId)) {
+        if (TextUtils.isEmpty(bizType) || TextUtils.isEmpty(transFlag) || TextUtils.isEmpty(transId)) {
             return;
         }
-        RxSubscriber<String> subscriber = mRepository.setTransFlag(bizType,transId, transFlag)
+        RxSubscriber<String> subscriber = mRepository.setTransFlag(bizType, transId, transFlag)
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在结束本次操作") {
                     @Override
@@ -239,21 +243,21 @@ public class BlindDetailPresenterImp extends BasePresenter<IBlindDetailView>
 
                     @Override
                     public void _onCommonError(String message) {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.setTransFlagFail(message);
                         }
                     }
 
                     @Override
                     public void _onServerError(String code, String message) {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.setTransFlagFail(message);
                         }
                     }
 
                     @Override
                     public void _onComplete() {
-                        if(mView != null) {
+                        if (mView != null) {
                             mView.setTransFlagsComplete();
                         }
                     }

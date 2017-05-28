@@ -206,6 +206,8 @@ public class QingHaiUbSto351LCollectFragment extends BaseMSCollectFragment {
             result.location = getString(etSendLocation);
             result.specialInvFlag = getString(etSpecialInvFlag);
             result.specialInvNum = getString(etSpecialInvNum);
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : 0.f;
             result.modifyFlag = "N";
             emitter.onNext(result);
             emitter.onComplete();

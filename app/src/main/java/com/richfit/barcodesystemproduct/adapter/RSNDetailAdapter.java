@@ -54,14 +54,4 @@ public class RSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
         return locations;
     }
 
-
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
-
-    }
-
-    @Override
-    public void notifyNodeChanged(int position) {
-
-    }
 }

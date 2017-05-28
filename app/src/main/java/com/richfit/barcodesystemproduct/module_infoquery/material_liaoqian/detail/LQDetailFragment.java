@@ -1,31 +1,24 @@
 package com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detail;
 
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.LQDetailAdapter;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailFragment;
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detail.imp.LQDetailPresenterImp;
 import com.richfit.domain.bean.InventoryEntity;
 
 import java.util.List;
-
-import butterknife.BindView;
 
 /**
  * 有仓位queryType 04 ；没有仓位 01
  * Created by monday on 2017/3/16.
  */
 
-public class LQDetailFragment extends BaseFragment<LQDetailPresenterImp>
+public class LQDetailFragment extends BaseDetailFragment<LQDetailPresenterImp, InventoryEntity>
         implements ILQDetailView {
 
-    LQDetailAdapter mAdapter;
-
-    @BindView(R.id.recycle_view)
-    RecyclerView recycleView;
+    private LQDetailAdapter mLQDetailAdapter;
 
     @Override
     protected int getContentId() {
@@ -37,13 +30,6 @@ public class LQDetailFragment extends BaseFragment<LQDetailPresenterImp>
         mFragmentComponent.inject(this);
     }
 
-
-    @Override
-    protected void initView() {
-        super.initView();
-        recycleView.setLayoutManager(new LinearLayoutManager(mActivity, LinearLayoutManager.VERTICAL, false));
-        recycleView.setHasFixedSize(true);
-    }
 
     /**
      * 检查抬头界面的必要的字段是否已经赋值
@@ -64,34 +50,113 @@ public class LQDetailFragment extends BaseFragment<LQDetailPresenterImp>
             showMessage("扫描料签中未含有库存地点信息");
             return;
         }
-        startQueryInventoryInfo();
-    }
-
-    private void startQueryInventoryInfo() {
-        String queryType = isEmpty(mRefData.location) ? "01" : "04";
-        mPresenter.getInventoryInfo(queryType, "", "", mRefData.workCode,
-                mRefData.invCode, "", mRefData.materialNum, "", mRefData.location,
-                mRefData.batchFlag, "", "", "1","");
+        //开始刷新
+        startAutoRefresh();
     }
 
     @Override
-    public void showInventory(List<InventoryEntity> list) {
-        if (mAdapter == null) {
-            mAdapter = new LQDetailAdapter(mActivity, R.layout.item_lq_detail, list);
-            recycleView.setAdapter(mAdapter);
+    public void onRefresh() {
+        String queryType = isEmpty(mRefData.location) ? "01" : "04";
+        mPresenter.getInventoryInfo(queryType, "", "", mRefData.workCode,
+                mRefData.invCode, "", mRefData.materialNum, "", mRefData.location,
+                mRefData.batchFlag, "", "", "1", "");
+    }
+
+    @Override
+    public void showInventory(List<InventoryEntity> allNodes) {
+        if (mLQDetailAdapter == null) {
+            mLQDetailAdapter = new LQDetailAdapter(mActivity, R.layout.item_lq_detail, allNodes);
+            mRecyclerView.setAdapter(mLQDetailAdapter);
         } else {
-            mAdapter.addAll(list);
+            mLQDetailAdapter.addAll(allNodes);
         }
+    }
+
+
+    @Override
+    public void loadInventoryFail(String message) {
+        showMessage(message);
+    }
+
+    @Override
+    protected boolean checkTransStateBeforeRefresh() {
+        return false;
+    }
+
+    @Override
+    protected void submit2BarcodeSystem(String tranToSapFlag) {
+
+    }
+
+    @Override
+    protected void submit2SAP(String tranToSapFlag) {
+
+    }
+
+    @Override
+    protected void sapUpAndDownLocation(String transToSapFlag) {
+
+    }
+
+
+    @Override
+    public void deleteNode(InventoryEntity node, int position) {
+
+    }
+
+    @Override
+    public void editNode(InventoryEntity node, int position) {
+
+    }
+
+    @Override
+    public void showNodes(List<InventoryEntity> allNodes) {
+
+    }
+
+    @Override
+    public void refreshComplete() {
+
+    }
+
+    @Override
+    public void deleteNodeSuccess(int position) {
+
+    }
+
+    @Override
+    public void submitBarcodeSystemSuccess() {
+
+    }
+
+    @Override
+    public void submitBarcodeSystemFail(String message) {
+
+    }
+
+    @Override
+    public void submitSAPSuccess() {
+
+    }
+
+    @Override
+    public void submitSAPFail(String[] messages) {
+
+    }
+
+    @Override
+    public void upAndDownLocationFail(String[] messages) {
+
+    }
+
+    @Override
+    public void upAndDownLocationSuccess() {
+
     }
 
     @Override
     public void _onPause() {
         super._onPause();
-    }
-
-    @Override
-    public void loadInventoryFail(String message) {
-        showMessage(message);
     }
 
 }

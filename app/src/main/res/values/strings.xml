@@ -318,4 +318,11 @@
     <string name="auto">Auto</string>
     <string name="Params">Parameters</string>
     <string name="none"> </string>
+    <string name="act_loc_quantity">允许进行上下架的数量</string>
+    <string name="total_loc_quantity">累计上下架数量</string>
+    <string name="loc_quantity">上下架数量</string>
+    <string name="total_inspection_quantity">全检数量</string>
+    <string name="inspection_condition">检验状况</string>
+    <string name="inspection_method">检验方法</string>
+    <string name="process_condition">处理情况</string>
 </resources>

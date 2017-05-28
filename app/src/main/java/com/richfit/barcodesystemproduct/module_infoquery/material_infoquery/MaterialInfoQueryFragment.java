@@ -13,6 +13,7 @@ import com.richfit.domain.bean.MaterialEntity;
 import butterknife.BindView;
 
 /**
+ * 物资条码信息查询
  * Created by monday on 2017/3/16.
  */
 

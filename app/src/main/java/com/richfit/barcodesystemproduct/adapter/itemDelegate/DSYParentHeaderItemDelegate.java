@@ -24,7 +24,6 @@ public class DSYParentHeaderItemDelegate implements ItemViewDelegate<RefDetailEn
 
     @Override
     public void convert(ViewHolder holder, RefDetailEntity item, int position) {
-        holder.setText(R.id.rowNum,(position + 1) + "");
         holder.setText(R.id.refLineNum,item.lineNum);
         holder.setText(R.id.materialNum,item.materialNum);
         holder.setText(R.id.materialDesc,item.materialDesc);

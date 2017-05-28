@@ -139,6 +139,7 @@ public class QingHaiAODetailFragment extends BaseDetailFragment<QingHaiAODetailP
         if (mAdapter != null) {
             mAdapter.removeNodeByPosition(position);
         }
+        startAutoRefresh();
     }
 
     @Override

@@ -1,13 +1,12 @@
 package com.richfit.domain.bean;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 单据明细实体类
  */
 
-public class RefDetailEntity extends TreeNode {
+public class RefDetailEntity extends TreeNode implements Cloneable {
 
     /*单据号*/
     public String recordNum;
@@ -71,7 +70,6 @@ public class RefDetailEntity extends TreeNode {
     public String invId;
     public String invCode;
     public String invName;
-
     /*接收工厂*/
     public String recWorkId;
     public String recWorkCode;
@@ -80,33 +78,30 @@ public class RefDetailEntity extends TreeNode {
     public String recInvId;
     public String recInvCode;
     public String recInvName;
-
     public String photoFlag;
-
     /*累计数量*/
     public String totalQuantity;
-
     /*仓位*/
     public String location;
-
     /*用户录入的数量*/
     public String quantity;
-
     /*仓位级别缓存的id*/
     public String locationId;
-
     /*供应商*/
     public String supplierCode;
     public String supplierName;
-
     /*单价*/
     public String price;
-
     /*接收仓位*/
     public String recLocation;
-
     /*接收批次*/
     public String recBatchFlag;
+    /*单据中的计量单位*/
+    public String recordUnit;
+    /*物料的计量单位*/
+    public String materialUnit;
+    /*基本计量单位之间的转换率*/
+    public float unitRate = 0.0f;
 
     public String inspectionQuantity;// 送检数
     public String manufacturer;//制造商
@@ -149,6 +144,17 @@ public class RefDetailEntity extends TreeNode {
     public String deviceId;
     public String inspectionPerson;
     public String userId;
+
+
+    @Override
+    public RefDetailEntity clone() {
+        try {
+            return (RefDetailEntity) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     @Override
     public String toString() {

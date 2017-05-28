@@ -487,7 +487,7 @@
         "mode": 0,
         "refType": "0",
         "fragmentType": 0,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.header.QingHaiRSNHeaderFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNHeaderFragment"
     },
     {
         "id": "52",
@@ -497,7 +497,7 @@
         "refType": "0",
         "mode": 0,
         "fragmentType": 1,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.detail.QingHaiRSNDetailFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNDetailFragment"
     },
     {
         "id": "53",
@@ -507,7 +507,7 @@
         "mode": 0,
         "refType": "0",
         "fragmentType": 2,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.collect.QingHaiRSNCollectFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNCollectFragment"
     },
     {
         "id": "54",
@@ -517,7 +517,7 @@
         "refType": "0",
         "mode": 0,
         "fragmentType": -1,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.QingHaiRSNEditFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNEditFragment"
     },
     {
         "id": "55",
@@ -697,7 +697,7 @@
         "refType": "0",
         "mode": 0,
         "fragmentType": 0,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.header.QingHaiRSNHeaderFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNHeaderFragment"
     },
     {
         "id": "73",
@@ -707,7 +707,7 @@
         "refType": "0",
         "mode": 0,
         "fragmentType": 1,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.detail.QingHaiRSNDetailFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNDetailFragment"
     },
     {
         "id": "74",
@@ -717,7 +717,7 @@
         "refType": "0",
         "mode": 0,
         "fragmentType": 2,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.collect.QingHaiRSNCollectFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNCollectFragment"
     },
     {
         "id": "75",
@@ -727,7 +727,7 @@
         "refType": "0",
         "mode": 0,
         "fragmentType": -1,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.QingHaiRSNEditFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNEditFragment"
     },
     {
         "id": "76",
@@ -1067,7 +1067,7 @@
         "mode": 1,
         "refType": "0",
         "fragmentType": 0,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.header.QingHaiRSNHeaderFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNHeaderFragment"
     },
     {
         "id": "110",
@@ -1077,7 +1077,7 @@
         "refType": "0",
         "mode": 1,
         "fragmentType": 1,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.detail.QingHaiRSNDetailFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNDetailFragment"
     },
     {
         "id": "111",
@@ -1087,7 +1087,7 @@
         "mode": 1,
         "refType": "0",
         "fragmentType": 2,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.collect.QingHaiRSNCollectFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNCollectFragment"
     },
     {
         "id": "112",
@@ -1097,7 +1097,7 @@
         "refType": "0",
         "mode": 1,
         "fragmentType": -1,
-        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.edit.QingHaiRSNEditFragment"
+        "className": "com.richfit.barcodesystemproduct.module_returnstore.qinghai_rsn.QingHaiRSNEditFragment"
     },
     {
         "id": "113",

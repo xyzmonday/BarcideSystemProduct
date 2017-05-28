@@ -46,17 +46,6 @@ public class MSNDetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
                 .setText(R.id.specialInvNum, item.specialInvNum);
     }
 
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
-
-    }
-
-    @Override
-    public void notifyNodeChanged(int position) {
-
-    }
-
-
     /**
      * 获取发出仓位和接收仓位列表
      *

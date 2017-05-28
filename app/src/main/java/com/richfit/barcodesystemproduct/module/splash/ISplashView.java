@@ -12,6 +12,7 @@ public interface ISplashView extends BaseView{
     void syncDataError(String message);
 
     void unRegister(String message);
+    void updateDbSource(String dbSource);
     void registered();
 
     void downDBComplete();

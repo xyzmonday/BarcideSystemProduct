@@ -94,7 +94,7 @@ public class LACollectPresenterImp extends BasePresenter<ILACollectView>
                             @Override
                             public void _onNext(List<InventoryEntity> inventoryEntities) {
                                 if (mView != null) {
-                                    mView.getInventorySuccess(inventoryEntities.get(0));
+                                    mView.getInventorySuccess(inventoryEntities);
                                 }
                             }
 

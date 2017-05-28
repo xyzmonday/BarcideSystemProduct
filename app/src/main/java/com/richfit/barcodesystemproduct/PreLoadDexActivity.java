@@ -8,9 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
 
-import java.util.List;
-
 import com.richfit.common_lib.multisp.SPHelper;
+
+import java.util.List;
 
 /**
  * Created by monday on 2017/5/2.

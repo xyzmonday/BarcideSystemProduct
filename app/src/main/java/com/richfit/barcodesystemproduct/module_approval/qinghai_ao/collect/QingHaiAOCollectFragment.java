@@ -79,8 +79,6 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
     CheckBox cbQmCertificate;
     @BindView(R.id.et_sample_quantity)
     EditText etSampleQuantity;
-    //    @BindView(R.id.et_sample_ratio)
-//    EditText etSampleRatio;
     @BindView(R.id.et_qualified_quantity)
     EditText etQualifiedQuantity;
     @BindView(R.id.et_corrosion)

@@ -12,7 +12,6 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.imp.
 import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderFragment;
 import com.richfit.common_lib.utils.DateChooseHelper;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.common_lib.widget.RichEditText;
@@ -225,13 +224,12 @@ public abstract class BaseASHeaderFragment extends BaseHeaderFragment<ASHeaderPr
 
     @Override
     public void clearAllUI() {
-        clearCommonUI(tvRefNum, tvSupplier, tvSendWork);
+        clearCommonUI(etRefNum,tvRefNum, tvSupplier, tvSendWork);
     }
 
     @Override
     public void clearAllUIAfterSubmitSuccess() {
-        L.e("非必检105 clearAllUIAfterSubmitSuccess");
-        clearCommonUI(etRefNum, tvRefNum, tvSendWork, tvSupplier);
+        clearCommonUI(tvRefNum, tvSendWork, tvSupplier);
         mRefData = null;
     }
 

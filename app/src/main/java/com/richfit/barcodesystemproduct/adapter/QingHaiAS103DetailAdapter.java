@@ -7,11 +7,9 @@ import com.richfit.barcodesystemproduct.R;
 import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.basetreerv.CommonTreeAdapter;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class QingHaiAS103DetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
@@ -22,9 +20,7 @@ public class QingHaiAS103DetailAdapter extends CommonTreeAdapter<RefDetailEntity
 
     @Override
     protected void convert(ViewHolder holder, RefDetailEntity data, int position) {
-        holder.setText(R.id.rowNum, (position + 1) + "")
-                //单据行号
-                .setText(R.id.lineNum, data.lineNum)
+        holder.setText(R.id.lineNum, data.lineNum)
                 //检验批
                 .setText(R.id.insLot, data.insLot)
                 //参考单据
@@ -53,8 +49,8 @@ public class QingHaiAS103DetailAdapter extends CommonTreeAdapter<RefDetailEntity
                 .setText(R.id.inv, data.invCode);
     }
 
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
+//    @Override
+//    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
 //        RefDetailEntity childNode = mVisibleNodes.get(childNodePosition);
 //        RefDetailEntity parentNode = mVisibleNodes.get(parentNodePosition);
 //        final float parentTotalQuantityV = UiUtil.convertToFloat(parentNode.totalQuantity, 0.0f);
@@ -62,23 +58,23 @@ public class QingHaiAS103DetailAdapter extends CommonTreeAdapter<RefDetailEntity
 //        final String newTotalQuantity = String.valueOf(parentTotalQuantityV - childTotalQuantityV);
 //        parentNode.totalQuantity = newTotalQuantity;
 //        notifyItemChanged(parentNodePosition);
-    }
+//    }
 
     /**
      * 由于103不具有父子节点的结构所以仅仅刷新本节点即可
      * @param position
      */
-    @Override
-    public void notifyNodeChanged(int position) {
-        if (position >= 0 && position < mVisibleNodes.size()) {
-            RefDetailEntity node = mVisibleNodes.get(position);
-            node.invCode = "";
-            node.invId = "";
-            node.invName = "";
-            node.totalQuantity = "";
-            notifyItemChanged(position);
-        }
-    }
+//    @Override
+//    public void notifyNodeChanged(int position) {
+//        if (position >= 0 && position < mVisibleNodes.size()) {
+//            RefDetailEntity node = mVisibleNodes.get(position);
+//            node.invCode = "";
+//            node.invId = "";
+//            node.invName = "";
+//            node.totalQuantity = "";
+//            notifyItemChanged(position);
+//        }
+//    }
 
     /**
      * 给出同一级别的其他节点中所有的仓位信息

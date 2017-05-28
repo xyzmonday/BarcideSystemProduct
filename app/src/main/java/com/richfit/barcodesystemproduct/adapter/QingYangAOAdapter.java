@@ -10,10 +10,8 @@ import com.richfit.common_lib.baseadapterrv.base.ViewHolder;
 import com.richfit.common_lib.basetreerv.CommonTreeAdapter;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.RefDetailEntity;
-import com.richfit.domain.bean.RowConfig;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by monday on 2016/11/25.
@@ -54,16 +52,16 @@ public class QingYangAOAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
     }
 
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
-
-    }
-
-    @Override
-    public void notifyNodeChanged(int position) {
-        RefDetailEntity deleteNode = mVisibleNodes.get(position);
-        deleteNode.invCode = "";
-        deleteNode.totalQuantity = "";
-        notifyItemChanged(position);
-    }
+//    @Override
+//    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
+//
+//    }
+//
+//    @Override
+//    public void notifyNodeChanged(int position) {
+//        RefDetailEntity deleteNode = mVisibleNodes.get(position);
+//        deleteNode.invCode = "";
+//        deleteNode.totalQuantity = "";
+//        notifyItemChanged(position);
+//    }
 }

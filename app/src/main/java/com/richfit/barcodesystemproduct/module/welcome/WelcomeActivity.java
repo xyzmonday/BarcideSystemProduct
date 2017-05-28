@@ -49,14 +49,12 @@ public class WelcomeActivity extends BaseActivity<WelcomePresenterImp> implement
                 break;
         }
         RxView.clicks(btnOnlineMode)
-//                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.ONLINE_MODE;
                     mPresenter.loadFragmentConfig(Global.COMPANY_ID, BuildConfig.CONFIG_FILE_NAME);
                 });
 
         RxView.clicks(btnOfflineMode)
-//                .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(a -> {
                     mode = Global.OFFLINE_MODE;
                     mPresenter.loadFragmentConfig(Global.COMPANY_ID, BuildConfig.CONFIG_FILE_NAME);

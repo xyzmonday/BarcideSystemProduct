@@ -115,17 +115,6 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
 
     }
 
-    /**
-     * 保存明细节点的TransId
-     */
-    protected void saveTransId(List<RefDetailEntity> allNodes) {
-        for (RefDetailEntity node : allNodes) {
-            if (!TextUtils.isEmpty(node.transId)) {
-                mTransId = node.transId;
-                break;
-            }
-        }
-    }
 
     /**
      * 修改明细里面的子节点。注意如果该明细界面不具有父子节点结构那么需要重写该方法。
@@ -179,6 +168,7 @@ public abstract class BaseASDetailFragment<P extends IASDetailPresenter> extends
         if (mAdapter != null) {
             mAdapter.removeNodeByPosition(position);
         }
+        startAutoRefresh();
     }
 
     /**

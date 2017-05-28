@@ -31,12 +31,15 @@ import com.richfit.common_lib.dialog.NetConnectErrorDialogFragment;
 import com.richfit.common_lib.dialog.ShowErrorMessageDialog;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BottomMenuEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.squareup.leakcanary.RefWatcher;
 
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -651,5 +654,25 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
                     sp.setSelection(0);
             }
         }
+    }
+
+    /**
+     * 通过单据单位计算库存数量
+     * @param quantity
+     * @param recordUnit
+     * @param unitRate
+     * @return
+     */
+    protected String calQuantityByUnitRate(String quantity,String recordUnit,float unitRate) {
+        if(TextUtils.isEmpty(quantity)) {
+            return "0";
+        }
+        float q = UiUtil.convertToFloat(quantity,0.0f);
+        if(!TextUtils.isEmpty(recordUnit) && unitRate != 0) {
+            q  /= unitRate;
+        }
+        L.e("q = " + q);
+        DecimalFormat df = new DecimalFormat("#.###");
+        return df.format(q);
     }
 }

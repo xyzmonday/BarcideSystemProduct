@@ -1,8 +1,6 @@
 package com.richfit.data.net.http;
 
 
-import com.richfit.common_lib.rxutils.RxManager;
-
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -25,7 +23,6 @@ public class ProgressResponseBody extends ResponseBody {
     private ResponseBody responseBody;
     private ProgressListener mProgressListener;
     private BufferedSource bufferedSource;
-    private  RxManager mRxManager;
 
     public ProgressResponseBody(ResponseBody responseBody, ProgressListener progressListener) {
         this.responseBody = responseBody;
@@ -34,7 +31,6 @@ public class ProgressResponseBody extends ResponseBody {
 
     public ProgressResponseBody(ResponseBody responseBody) {
         this.responseBody = responseBody;
-        this.mRxManager = RxManager.getInstance();
     }
 
     @Override
@@ -65,7 +61,6 @@ public class ProgressResponseBody extends ResponseBody {
                 bytesReaded += bytesRead != -1 ? bytesRead : 0;
                 if(mProgressListener != null)
                     mProgressListener.update(bytesReaded, responseBody.contentLength(), bytesRead == -1);
-                mRxManager.post("download_event", new ProgressWrapper(contentLength(), bytesReaded));
                 return bytesRead;
             }
         };

@@ -136,6 +136,8 @@ public class QingHaiAS105EditFragment extends BaseASEditFragment<ASEditPresenter
             result.projectText = getString(etProjectText);
             //移动原因说明
             result.moveCauseDesc = getString(etMoveCauseDesc);
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : 0.f;
             result.modifyFlag = "Y";
             emitter.onNext(result);
             emitter.onComplete();

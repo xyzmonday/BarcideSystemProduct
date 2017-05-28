@@ -1,15 +1,12 @@
 package com.richfit.domain.bean;
 
-import java.util.Map;
-
 /**
  * 仓位相关的实体类
  *
  * @author HM
  */
 
-public class LocationInfoEntity {
-
+public class LocationInfoEntity implements Cloneable{
 
     /*保存的id*/
     public String id;
@@ -36,6 +33,16 @@ public class LocationInfoEntity {
 
     public String specialConvert;
     public String deviceId;
+
+    @Override
+    public LocationInfoEntity clone() {
+        try {
+            return (LocationInfoEntity) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     @Override
     public String toString() {

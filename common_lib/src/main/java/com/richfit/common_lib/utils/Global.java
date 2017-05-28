@@ -17,6 +17,7 @@ public class Global {
     public static String COMPANY_CODE;
     public static String MAC_ADDRESS;
     public static String AUTH_ORG;
+    public static String dbSource;
     //是否打开批次管理Y表示打开
     public static boolean BATCH_FLAG;
 
@@ -214,6 +215,8 @@ public class Global {
     public static final String EXTRA_CAPTION_KEY = "extra_caption";
     public static final String EXTRA_UPLOAD_MSG_KEY = "extra_upload_msg";
     public static final String EXTRA_MODE_KEY = "extra_mode";
+    public static final String DBSOURCE_KEY = "dbSource";
+
 
     /*扫描物料和批次位置*/
     public static final int MATERIAL_POS = 2;

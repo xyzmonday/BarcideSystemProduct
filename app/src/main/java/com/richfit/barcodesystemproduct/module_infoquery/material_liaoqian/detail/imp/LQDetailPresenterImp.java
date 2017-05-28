@@ -3,12 +3,12 @@ package com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.deta
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.BasePresenter;
-import com.richfit.common_lib.scope.ContextLife;
+import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detail.ILQDetailPresenter;
 import com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detail.ILQDetailView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.InventoryEntity;
 
@@ -20,7 +20,7 @@ import javax.inject.Inject;
  * Created by monday on 2017/3/16.
  */
 
-public class LQDetailPresenterImp extends BasePresenter<ILQDetailView>
+public class LQDetailPresenterImp extends BaseDetailPresenterImp<ILQDetailView>
         implements ILQDetailPresenter {
 
     ILQDetailView mView;
@@ -94,7 +94,9 @@ public class LQDetailPresenterImp extends BasePresenter<ILQDetailView>
 
         @Override
         public void _onComplete() {
-
+            if (mView != null) {
+                mView.setRefreshing(true, "获取库存成功");
+            }
         }
     }
 }

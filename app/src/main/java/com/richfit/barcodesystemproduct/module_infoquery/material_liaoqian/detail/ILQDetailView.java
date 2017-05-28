@@ -1,6 +1,6 @@
 package com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detail;
 
-import com.richfit.barcodesystemproduct.base.BaseView;
+import com.richfit.barcodesystemproduct.base.base_detail.IBaseDetailView;
 import com.richfit.domain.bean.InventoryEntity;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
  * Created by monday on 2017/3/16.
  */
 
-public interface ILQDetailView extends BaseView {
+public interface ILQDetailView extends IBaseDetailView<InventoryEntity> {
 
     /**
      * 显示库存

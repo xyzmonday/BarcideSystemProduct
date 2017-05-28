@@ -108,6 +108,11 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
     @Override
     public void initDataLazily() {
         if (mRefDetail == null) {
+            clearAll();
+            if(mRefLineAdapter != null) {
+                mRefLines.clear();
+                mRefLineAdapter.notifyDataSetChanged();
+            }
             showMessage("请现在明细界面获取明细数据");
             return;
         }
@@ -115,7 +120,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
     }
 
     /**
-     * 这里显示的组件明细的RefdocItem
+     * 这里显示的组件明细的RefDocItem
      */
     @Override
     public void setupRefLineAdapter() {
@@ -310,13 +315,12 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
     @Override
     public boolean checkCollectedDataBeforeSave() {
 
-
         if (mRefData == null) {
             showMessage("请先在抬头界面获取单据数据");
             return false;
         }
 
-        if (TextUtils.isEmpty(mSelectedRefLineNum)) {
+        if (TextUtils.isEmpty(mSelectedRefLineNum) || "请选择".equals(mSelectedRefLineNum)) {
             showMessage("请先获取物料信息");
             return false;
         }
@@ -369,7 +373,6 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
             result.refType = mRefType;
             result.moveType = mRefData.moveType;
             result.userId = Global.USER_ID;
-            result.refLineId = lineData.refLineId;
             result.workId = lineData.workId;
             result.materialId = lineData.materialId;
             result.location = "barcode";
@@ -381,6 +384,8 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
             result.supplierNum = mRefData.supplierNum;
             result.specialInvFlag = getString(tvSpecialInvFlag);
             result.specialInvNum = mRefData.supplierNum;
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : 0.f;
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -412,6 +417,7 @@ public class QingHaiWWCCollectFragment extends BaseFragment<QingHaiWWCCollectPre
 
     private void clearAll() {
         clearCommonUI(tvMaterialNum, tvMaterialDesc, tvSpecialInvFlag, tvWork, tvActQuantity, tvTotalQuantity);
+
         if (mInventoryAdapter != null) {
             spBatchFlag.setSelection(0);
             mInventoryDatas.clear();

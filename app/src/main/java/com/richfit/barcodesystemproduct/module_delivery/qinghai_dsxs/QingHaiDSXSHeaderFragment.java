@@ -17,11 +17,12 @@ public class QingHaiDSXSHeaderFragment extends BaseDSHeaderFragment<DSHeaderPres
         mFragmentComponent.inject(this);
     }
 
-    @NonNull
     @Override
-    protected String getBizType() {
-        return mBizType;
+    public void initView() {
+        llCustomer.setVisibility(View.VISIBLE);
+        super.initView();
     }
+
 
     @NonNull
     @Override
@@ -29,10 +30,6 @@ public class QingHaiDSXSHeaderFragment extends BaseDSHeaderFragment<DSHeaderPres
         return "1";
     }
 
-    @Override
-    public void initView() {
-        llCustomer.setVisibility(View.VISIBLE);
-        super.initView();
-    }
+
 
 }

@@ -10,19 +10,16 @@ import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.IDSD
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.ds.base_ds_detail.IDSDetailView;
 import com.richfit.barcodesystemproduct.base.base_detail.BaseDetailPresenterImp;
 import com.richfit.barcodesystemproduct.module.edit.EditActivity;
-import com.richfit.common_lib.rxutils.RetryWhenNetworkException;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.SPrefUtil;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.TreeNode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -198,7 +195,7 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
         mView = getView();
         RxSubscriber<String> subscriber = Flowable.concat(mRepository.uploadCollectionData("", transId, bizType, refType, -1, voucherDate, "", userId),
                 mRepository.transferCollectionData(transId, bizType, refType, userId, voucherDate, transToSap, extraHeaderMap))
-                .retryWhen(new RetryWhenNetworkException(3, 3000))
+//                .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .doOnError(str -> SPrefUtil.saveData(bizType + refType, "0"))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "1"))
                 .compose(TransformerHelper.io2main())
@@ -247,7 +244,7 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
         mView = getView();
         RxSubscriber<String> subscriber = mRepository.transferCollectionData(transId, bizType, refType,
                 userId, voucherDate, transToSap, extraHeaderMap)
-                .retryWhen(new RetryWhenNetworkException(3, 3000))
+//                .retryWhen(new RetryWhenNetworkException(3, 3000))
                 .doOnComplete(() -> SPrefUtil.saveData(bizType + refType, "0"))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<String>(mContext, "正在上传数据...") {
@@ -347,61 +344,66 @@ public class DSDetailPresenterImp extends BaseDetailPresenterImp<IDSDetailView>
      */
     protected ArrayList<RefDetailEntity> createNodesByCache(ReferenceEntity refData, ReferenceEntity cache) {
         ArrayList<RefDetailEntity> nodes = new ArrayList<>();
-        //第一步，将原始单据中的行明细赋值新的父节点中
         List<RefDetailEntity> list = refData.billDetailList;
-        for (RefDetailEntity node : list) {
-            //获取缓存中的明细，如果该行明细没有缓存，那么该行明细仅仅赋值原始单据信息
-            RefDetailEntity cachedEntity = getLineDataByRefLineId(node, cache);
-            if (cachedEntity == null)
-                cachedEntity = new RefDetailEntity();
-            //将原始单据的物料信息赋值给缓存
-            cachedEntity.lineNum = node.lineNum;
-            cachedEntity.materialNum = node.materialNum;
-            cachedEntity.materialId = node.materialId;
-            cachedEntity.materialDesc = node.materialDesc;
-            cachedEntity.materialGroup = node.materialGroup;
-            cachedEntity.unit = node.unit;
-            cachedEntity.actQuantity = node.actQuantity;
-            cachedEntity.workCode = node.workCode;
-            nodes.add(cachedEntity);
+        //1.形成父节点数据集合
+        for (RefDetailEntity data : list) {
+            RefDetailEntity cachedData = getLineDataByRefLineId(data, cache);
+            if (cachedData == null) {
+                //说明该还没有缓存
+                nodes.add(data);
+            } else {
+                //如果有缓存，那么将缓存作为父节点，注意注意此时应当将原始单据的部分字段信息赋值给缓存。
+                //这里我们不适用原始单据信息作为缓存这是因为单据信息是全局的,另外就是修改等针对该节点的操作需要缓存数据
+                //将原始单据的物料信息赋值给缓存
+                cachedData.lineNum = data.lineNum;
+                cachedData.materialNum = data.materialNum;
+                cachedData.materialId = data.materialId;
+                cachedData.materialDesc = data.materialDesc;
+                cachedData.materialGroup = data.materialGroup;
+                cachedData.unit = data.unit;
+                cachedData.actQuantity = data.actQuantity;
+                cachedData.refDoc = data.refDoc;
+                cachedData.refDocItem = data.refDocItem;
+                //注意单据中有lineNum105
+                cachedData.lineNum105 = data.lineNum105;
+                cachedData.insLot = data.insLot;
+                nodes.add(cachedData);
+            }
         }
-
-        //生成父节点
+        //2.形成父节点结构
         addTreeInfo(nodes);
-
-        //第二步，利用缓存生成新的子节点
-        //生成父子节点
-        List<RefDetailEntity> details = cache.billDetailList;
-        for (RefDetailEntity parentNode : details) {
+        ArrayList<RefDetailEntity> result = new ArrayList<>();
+        result.addAll(nodes);
+        //3.生成子节点
+        for (RefDetailEntity parentNode : nodes) {
+            List<LocationInfoEntity> locationList = parentNode.locationList;
+            if (locationList == null || locationList.size() == 0) {
+                //说明是原始单据的父节点
+                continue;
+            }
             //首先去除之前所有父节点的子节点
             parentNode.getChildren().clear();
             parentNode.setHasChild(false);
 
-            //生成子结点
-            List<LocationInfoEntity> locations = parentNode.locationList;
-            if (locations != null && locations.size() > 0) {
-                for (LocationInfoEntity location : locations) {
-                    RefDetailEntity childNode = new RefDetailEntity();
-                    childNode.refLineId = parentNode.refLineId;
-                    childNode.invId = parentNode.invId;
-                    childNode.invCode = parentNode.invCode;
-                    childNode.totalQuantity = parentNode.totalQuantity;
-                    //赋值子节点的缓存数据
-                    childNode.location = location.location;
-                    childNode.batchFlag = location.batchFlag;
-                    childNode.quantity = location.quantity;
-                    childNode.transId = location.transId;
-                    childNode.transLineId = location.transLineId;
-                    //LocationId
-                    childNode.locationId = location.id;
-                    childNode.specialInvFlag = location.specialInvFlag;
-                    childNode.specialInvNum = location.specialInvNum;
-                    childNode.specialConvert = location.specialConvert;
-                    addTreeInfo(parentNode, childNode, nodes);
-                }
+            for (LocationInfoEntity location : locationList) {
+                RefDetailEntity childNode = new RefDetailEntity();
+                childNode.refLineId = parentNode.refLineId;
+                childNode.invId = parentNode.invId;
+                childNode.invCode = parentNode.invCode;
+                childNode.totalQuantity = parentNode.totalQuantity;
+                childNode.location = location.location;
+                childNode.batchFlag = location.batchFlag;
+                childNode.quantity = location.quantity;
+                childNode.transId = location.transId;
+                childNode.transLineId = location.transLineId;
+                childNode.locationId = location.id;
+                childNode.specialInvFlag = location.specialInvFlag;
+                childNode.specialInvNum = location.specialInvNum;
+                childNode.specialConvert = location.specialConvert;
+                addTreeInfo(parentNode, childNode, result);
             }
         }
-        return nodes;
+        return result;
     }
 
 

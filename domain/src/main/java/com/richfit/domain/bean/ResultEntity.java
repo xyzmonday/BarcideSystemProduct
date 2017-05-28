@@ -146,4 +146,5 @@ public class ResultEntity extends TreeNode{
     public String creationDate;
     public String lastUpdatedBy;
     public String lastUpdateDate;
+    public float unitRate;
 }

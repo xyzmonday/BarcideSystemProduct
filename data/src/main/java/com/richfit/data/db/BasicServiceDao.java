@@ -140,7 +140,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         sb.append("select user_id,login_id,user_name,company_id,company_code,auth_orgs,batch_flag ")
                 .append("from T_USER where login_id = ? ");
         UserEntity user = null;
-        Cursor cursor = db.rawQuery(sb.toString(), new String[]{userName});
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{CommonUtil.toUpperCase(userName)});
 
         while (cursor.moveToNext()) {
             user = new UserEntity();
@@ -1014,7 +1014,10 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             cursor = db.rawQuery(sb.toString(), new String[]{"3", "2"});
             list.add("请选择");
             while (cursor.moveToNext()) {
-                list.add(cursor.getString(0));
+                String storageNum = cursor.getString(0);
+                if(TextUtils.isEmpty(storageNum))
+                    continue;
+                list.add(storageNum);
             }
             sb.setLength(0);
         } catch (Exception e) {

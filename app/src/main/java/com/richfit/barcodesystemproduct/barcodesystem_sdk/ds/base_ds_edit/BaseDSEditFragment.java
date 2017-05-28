@@ -316,6 +316,8 @@ public abstract class BaseDSEditFragment<P extends IDSEditPresenter> extends Bas
             result.refLineNum = lineData.lineNum;
             result.invId = tvInv.getTag().toString();
             result.materialId = lineData.materialId;
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             //库存相关的字段回传
             int locationPos = spLocation.getSelectedItemPosition();
             result.location = mInventoryDatas.get(locationPos).location;

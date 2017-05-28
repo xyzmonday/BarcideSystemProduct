@@ -25,9 +25,7 @@ public class ASYParentHeaderItemDelegate implements ItemViewDelegate<RefDetailEn
 
     @Override
     public void convert(ViewHolder holder, RefDetailEntity data, int position) {
-        holder.setText(R.id.rowNum, (position + 1) + "")
-                //单据行号
-                .setText(R.id.lineNum, data.lineNum)
+        holder.setText(R.id.lineNum, data.lineNum)
                 //检验批
                 .setText(R.id.insLot, data.insLot)
                 //参考单据

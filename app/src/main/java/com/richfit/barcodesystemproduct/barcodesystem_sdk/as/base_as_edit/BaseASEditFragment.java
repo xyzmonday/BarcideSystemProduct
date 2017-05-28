@@ -7,7 +7,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
-import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.barcodesystemproduct.base.base_edit.BaseEditFragment;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
@@ -18,7 +17,6 @@ import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -207,6 +205,8 @@ public abstract class BaseASEditFragment<P extends IASEditPresenter> extends Bas
             result.quantity = getString(etQuantity);
             result.refDoc = lineData.refDoc;
             result.refDocItem = lineData.refDocItem;
+            result.unit = TextUtils.isEmpty(lineData.recordUnit) ? lineData.materialUnit : lineData.recordUnit;
+            result.unitRate = Float.compare(lineData.unitRate, 0.0f) == 0 ? 1.f : lineData.unitRate;
             result.modifyFlag = "Y";
             emitter.onNext(result);
             emitter.onComplete();

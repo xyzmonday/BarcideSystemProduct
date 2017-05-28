@@ -104,18 +104,6 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
     }
 
     /**
-     * 保存明细节点的TransId
-     */
-    protected void saveTransId(List<RefDetailEntity> allNodes) {
-        for (RefDetailEntity node : allNodes) {
-            if (!TextUtils.isEmpty(node.transId)) {
-                mTransId = node.transId;
-                break;
-            }
-        }
-    }
-
-    /**
      * 获取是否该明细是否需要转自有。
      *
      * @param nodes
@@ -177,6 +165,7 @@ public abstract class BaseMSDetailFragment<P extends IMSDetailPresenter>
         if (mAdapter != null) {
             mAdapter.removeNodeByPosition(position);
         }
+        startAutoRefresh();
     }
 
     @Override

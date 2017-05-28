@@ -13,8 +13,8 @@ import android.view.View;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.MainPagerViewAdapter;
+import com.richfit.barcodesystemproduct.base.BaseBarScannerActivity;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
-import com.richfit.barcodesystemproduct.base.BaseScannerActivity;
 import com.richfit.common_lib.transformer.CubeTransformer;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.widget.NoScrollViewPager;
@@ -27,12 +27,12 @@ import butterknife.BindView;
  * Created by monday on 2017/3/10.
  */
 
-public class MainActivity extends BaseScannerActivity<MainPresenterImp> implements
+public class MainActivity extends BaseBarScannerActivity<MainPresenterImp> implements
         MainContract.View, ViewPager.OnPageChangeListener {
+
 
     /*当前选中的页签下表，用于恢复*/
     public static final String CURRENT_PAGE_INDEX_KEY = "current_page_index";
-
 
     @BindView(R.id.tablayout)
     TabLayout mTabLayout;
@@ -168,12 +168,15 @@ public class MainActivity extends BaseScannerActivity<MainPresenterImp> implemen
      * 获取一个Fragment实例对象
      */
     public BaseFragment getFragmentByPosition(final int position) {
-        PagerAdapter adapter = mViewPager.getAdapter();
-        if (adapter != null && MainPagerViewAdapter.class.isInstance(adapter)) {
-            MainPagerViewAdapter mainPagerViewAdapter = (MainPagerViewAdapter) adapter;
-            if (position < 0 || position > mainPagerViewAdapter.getCount() - 1)
-                return null;
-            return (BaseFragment) mainPagerViewAdapter.getItem(position);
+
+        if(mViewPager != null) {
+            PagerAdapter adapter = mViewPager.getAdapter();
+            if (adapter != null && MainPagerViewAdapter.class.isInstance(adapter)) {
+                MainPagerViewAdapter mainPagerViewAdapter = (MainPagerViewAdapter) adapter;
+                if (position < 0 || position > mainPagerViewAdapter.getCount() - 1)
+                    return null;
+                return (BaseFragment) mainPagerViewAdapter.getItem(position);
+            }
         }
         return null;
     }

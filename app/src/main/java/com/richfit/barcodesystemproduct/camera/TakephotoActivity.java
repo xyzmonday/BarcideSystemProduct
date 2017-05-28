@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,10 +20,12 @@ import android.widget.TextView;
 
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.base.BaseFragment;
+import com.richfit.barcodesystemproduct.module.main.MainActivity;
 import com.richfit.common_lib.utils.AppCompat;
 import com.richfit.common_lib.utils.FileUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.StatusBarCompat;
+import com.richfit.common_lib.utils.SysProp;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -67,6 +70,41 @@ public class TakephotoActivity extends AppCompatActivity {
         StatusBarCompat.compat(this, AppCompat.getColor(R.color.colorPrimaryDark, this));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MainActivity.releaseBarcodeReader();
+        waitCamera();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //这里关闭。close
+        sendBroadcast(new Intent().setAction("com.se4500.closecamera"));
+    }
+
+    /**
+     * 发送系统广播，并等待相机释放。sending system broadcast，and waiting for camera release
+     */
+    private void waitCamera() {
+        sendBroadcast(new Intent().setAction("com.se4500.opencamera"));
+        if (SysProp.get("persist.sys.keyreport","false").equals("true")) {
+            if (SysProp.get("persist.sys.se4500","false").equals("true")) {
+                int waitCount;
+                for (waitCount = 0; waitCount < 20; waitCount++) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (Exception e) {
+                        Log.d("yff", "waitCamera: ");
+                    }
+                    if (SysProp.get("persist.sys.iscamera","close").equals("open")) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
     private void initVariable() {
         Intent intent = getIntent();
         if (intent != null) {

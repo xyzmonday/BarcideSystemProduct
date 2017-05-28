@@ -103,6 +103,9 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 item.unqualifiedQuantity = cursor.getString(++index);
                 item.returnQuantity = cursor.getString(++index);
                 item.lineNum105 = cursor.getString(++index);
+                item.materialUnit = cursor.getString(++index);
+                item.recordUnit = cursor.getString(++index);
+                item.unitRate = cursor.getFloat(++index);
                 billDetailList.add(item);
             }
             cursor.close();
@@ -277,7 +280,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
     @Override
     public void savePoInfo(ReferenceEntity refData, String bizType, String refType) {
         SQLiteDatabase db = getWritableDB();
-        if(refData == null || refData.billDetailList == null || refData.billDetailList.size() == 0) {
+        if (refData == null || refData.billDetailList == null || refData.billDetailList.size() == 0) {
             return;
         }
         try {
@@ -311,14 +314,18 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                         .append("created_by,creation_date,")
                         .append("send_work_id,send_inv_id,")
                         .append("status,line_type,biz_type,ref_type,")
-                        .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,line_num_105) ")
-                        .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                        .append("ref_doc,ref_doc_item,ins_lot,ins_lot_quantity,unqualified_quantity,return_quantity,line_num_105, ")
+                        .append("material_unit,record_unit,unit_rate) ")
+                        .append(" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
                 //先将明细的行的主键查出来
                 StringBuffer lineSql = new StringBuffer();
                 lineSql.append("select id from MTL_PO_LINES where po_id = ? and biz_type = ? and ref_type = ?");
                 switch (bizType) {
                     case "13":
                         lineSql.append(" and line_num_105 = ?");
+                        break;
+                    case "110":
+                        lineSql.append("and ins_lot = ?");
                         break;
                     default:
                         lineSql.append(" and po_line_id = ?");
@@ -330,6 +337,9 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                     switch (bizType) {
                         case "13":
                             cursor = db.rawQuery(lineSql.toString(), new String[]{poId, bizType, refType, data.lineNum105});
+                            break;
+                        case "110":
+                            cursor = db.rawQuery(lineSql.toString(), new String[]{poId, bizType, refType, data.insLot});
                             break;
                         default:
                             cursor = db.rawQuery(lineSql.toString(), new String[]{poId, bizType, refType, data.refLineId});
@@ -349,33 +359,39 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                                 data.qmFlag, data.unit, refData.recordCreator, currentDate,
                                 data.workId, data.invId, "Y", data.lineType, bizType, refType,
                                 data.refDoc, data.refDocItem, data.insLot,
-                                data.insLotQuantity, data.lineNum105});//注意105必检将
+                                data.insLotQuantity, data.unqualifiedQuantity,
+                                data.returnQuantity, data.lineNum105, data.materialUnit,
+                                data.recordUnit, String.valueOf(data.unitRate)});//注意105必检将
                     } else {
                         ContentValues cv = new ContentValues();
-
-                        cv.put("po_id",poId);
-                        cv.put("po_line_id",poLineId);
-                        cv.put("line_num",data.lineNum);
-                        cv.put("work_id",data.workId);
-                        cv.put("inv_id",data.invId);
-                        cv.put("material_id",data.materialId);
-                        cv.put("material_num",data.materialNum);
-                        cv.put("material_desc",data.materialDesc);
-                        cv.put("material_group",data.materialGroup);
-                        cv.put("order_quantity",data.orderQuantity);
-                        cv.put("act_quantity",data.actQuantity);
-                        cv.put("qm_flag",data.qmFlag);
-                        cv.put("unit",data.unit);
-                        cv.put("send_work_id",data.workId);
-                        cv.put("send_inv_id",data.invId);
-                        cv.put("line_type",data.lineType);
-                        cv.put("biz_type",bizType);
-                        cv.put("ref_type",refType);
-                        cv.put("ref_doc",data.refDoc);
-                        cv.put("ref_doc_item",data.refDocItem);
-                        cv.put("ins_lot",data.insLot);
-                        cv.put("ins_lot_quantity",data.insLotQuantity);
-                        cv.put("line_num_105",data.lineNum105);
+                        cv.put("id", poLineId);
+                        cv.put("po_id", poId);
+                        cv.put("line_num", data.lineNum);
+                        cv.put("work_id", data.workId);
+                        cv.put("inv_id", data.invId);
+                        cv.put("material_id", data.materialId);
+                        cv.put("material_num", data.materialNum);
+                        cv.put("material_desc", data.materialDesc);
+                        cv.put("material_group", data.materialGroup);
+                        cv.put("order_quantity", data.orderQuantity);
+                        cv.put("act_quantity", data.actQuantity);
+                        cv.put("qm_flag", data.qmFlag);
+                        cv.put("unit", data.unit);
+                        cv.put("send_work_id", data.workId);
+                        cv.put("send_inv_id", data.invId);
+                        cv.put("line_type", data.lineType);
+                        cv.put("biz_type", bizType);
+                        cv.put("ref_type", refType);
+                        cv.put("ref_doc", data.refDoc);
+                        cv.put("ref_doc_item", data.refDocItem);
+                        cv.put("ins_lot", data.insLot);
+                        cv.put("ins_lot_quantity", data.insLotQuantity);
+                        cv.put("line_num_105", data.lineNum105);
+                        cv.put("unqualified_quantity", data.unqualifiedQuantity);
+                        cv.put("return_quantity", data.returnQuantity);
+                        cv.put("material_unit", data.materialUnit);
+                        cv.put("record_unit", data.recordUnit);
+                        cv.put("unit_rate", data.unitRate);
                         cv.put("last_updated_by", refData.recordCreator);
                         cv.put("last_update_date", currentDate);
                         db.update("MTL_PO_LINES", cv, "po_id = ? and id = ? and biz_type = ?",
@@ -421,7 +437,7 @@ public class ReferenceServiceDao extends BaseDao implements IReferenceServiceDao
                 .append("L.material_num,L.material_desc,L.material_group,")
                 .append("L.order_quantity,L.act_quantity,L.qm_flag,L.unit,")
                 .append("L.ref_doc,L.ref_doc_item,L.ins_lot,L.ins_lot_quantity,L.qualified_quantity,")
-                .append("L.unqualified_quantity,L.return_quantity,L.line_num_105 ");
+                .append("L.unqualified_quantity,L.return_quantity,L.line_num_105,L.material_unit,L.record_unit,L.unit_rate ");
 
         //查询条件
         sb.append(" from MTL_PO_LINES L left join p_auth_org WORG on L.work_id = WORG.org_id ")

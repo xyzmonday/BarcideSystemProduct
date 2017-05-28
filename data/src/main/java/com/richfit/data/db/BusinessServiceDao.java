@@ -251,6 +251,10 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                     selectionList.add(param.recWorkId);
                 }
                 break;
+            case "110":
+                sb.append("and L.ins_lot = ? ");
+                selectionList.add(param.insLot);
+                break;
             default:
                 sb.append(" and L.ref_line_id = ?");
                 selectionList.add(param.refLineId);
@@ -290,6 +294,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
         cv.put("ref_line_num", param.refLineNum);
         cv.put("ref_doc", param.refDoc);
         cv.put("ref_doc_item", param.refDocItem);
+        cv.put("unit",param.unit);
+        cv.put("unit_rate",param.unitRate);
         // 移库增加接收工厂、库存地点、接收批次
         if (yk) {
             cv.put("rec_work_id", param.recWorkId);
@@ -878,8 +884,10 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 .append("T.return_quantity,T.move_cause,T.move_cause_desc,T.decision_code,")
                 .append("T.project_text,L.id as locationId,L.quantity,L.rec_quantity,L.location,L.rec_location, ")
                 .append("S.id as transLineSplitId,S.batch_num,S.rec_batch_num,S.special_convert,")
-                .append("M.material_num,M.material_desc,M.material_group,WORG.org_code as work_code,WORG.org_name as work_name,")
-                .append("IORG.org_code as inv_code,IORG.org_name as inv_name ")
+                .append("M.material_num,M.material_desc,M.material_group,")
+                .append("WORG.org_code as work_code,WORG.org_name as work_name,")
+                .append("IORG.org_code as inv_code,IORG.org_name as inv_name, ")
+                .append("T.unit,T.unit_rate ")
                 .append(" from MTL_TRANSACTION_LINES T ")
                 .append(" left join MTL_TRANSACTION_LINES_LOCATION L ")
                 .append(" on T.id = L.trans_line_id ")
@@ -935,7 +943,8 @@ public class BusinessServiceDao extends BaseDao implements IBusinessService {
                 detail.workName = cursor.getString(++index);
                 detail.invCode = cursor.getString(++index);
                 detail.invName = cursor.getString(++index);
-
+                detail.unit = cursor.getString(++index);
+                detail.unitRate = cursor.getFloat(++index);
                 //將工廠和庫存地點信息強制賦值到抬頭
                 refData.workId = detail.workId;
                 refData.invId = detail.invId;

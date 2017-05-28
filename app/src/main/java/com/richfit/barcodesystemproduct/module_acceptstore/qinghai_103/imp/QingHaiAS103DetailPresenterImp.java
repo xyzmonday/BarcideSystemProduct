@@ -11,12 +11,10 @@ import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LocationInfoEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +36,7 @@ public class QingHaiAS103DetailPresenterImp extends ASDetailPresenterImp {
     }
 
     @Override
-    public void editNode(ArrayList<String> sendLocations,ArrayList<String> recLocations,
+    public void editNode(ArrayList<String> sendLocations, ArrayList<String> recLocations,
                          ReferenceEntity refData, RefDetailEntity node, String companyCode,
                          String bizType, String refType, String subFunName, int position) {
 
@@ -182,18 +180,16 @@ public class QingHaiAS103DetailPresenterImp extends ASDetailPresenterImp {
         for (RefDetailEntity node : list) {
             //获取缓存中的明细，如果该行明细没有缓存，那么该行明细仅仅赋值原始单据信息
             RefDetailEntity cachedEntity = getLineDataByRefLineId(node, cache);
-            if (cachedEntity == null)
-                cachedEntity = new RefDetailEntity();
-
+            if (cachedEntity == null) {
+                cachedEntity = node;
+            }
             cachedEntity.lineNum = node.lineNum;
             cachedEntity.materialNum = node.materialNum;
             cachedEntity.materialId = node.materialId;
             cachedEntity.materialDesc = node.materialDesc;
             cachedEntity.materialGroup = node.materialGroup;
-            cachedEntity.unit = node.unit;
             cachedEntity.actQuantity = node.actQuantity;
             cachedEntity.workCode = node.workCode;
-
             //将仓位级别的数据保存到明细行级别中
             List<LocationInfoEntity> locationList = cachedEntity.locationList;
             if (locationList != null && locationList.size() > 0) {

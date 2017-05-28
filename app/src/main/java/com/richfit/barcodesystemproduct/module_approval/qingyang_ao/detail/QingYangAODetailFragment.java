@@ -127,6 +127,7 @@ public class QingYangAODetailFragment extends BaseDetailFragment<ApprovalOtherDe
         if (mAdapter != null) {
             mAdapter.removeNodeByPosition(position);
         }
+        startAutoRefresh();
     }
 
     @Override

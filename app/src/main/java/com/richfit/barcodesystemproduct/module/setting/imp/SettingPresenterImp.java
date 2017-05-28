@@ -241,6 +241,9 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
                     SPrefUtil.saveData("base_url", baseUrl);
                     SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, true);
                     SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY, false);
+                    //注意这里如果更改服务器地址，用户需要重新注册该手持，所以这里必须情况缓存
+                    //但是用户更新版本不需要将改换成清除
+                    SPrefUtil.saveData(Global.DBSOURCE_KEY,"");
                     return appComponent;
                 })
                 .compose(TransformerHelper.io2main())

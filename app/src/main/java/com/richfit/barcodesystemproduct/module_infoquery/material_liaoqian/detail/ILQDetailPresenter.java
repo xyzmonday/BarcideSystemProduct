@@ -1,12 +1,12 @@
 package com.richfit.barcodesystemproduct.module_infoquery.material_liaoqian.detail;
 
-import com.richfit.common_lib.IInterface.IPresenter;
+import com.richfit.barcodesystemproduct.base.base_detail.IBaseDetailPresenter;
 
 /**
  * Created by monday on 2017/3/16.
  */
 
-public interface ILQDetailPresenter extends IPresenter<ILQDetailView> {
+public interface ILQDetailPresenter extends IBaseDetailPresenter<ILQDetailView> {
 
     /**
      * 获取库存信息

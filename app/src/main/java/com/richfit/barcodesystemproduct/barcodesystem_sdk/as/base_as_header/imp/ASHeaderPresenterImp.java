@@ -4,12 +4,12 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderPresenterImp;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.IASHeaderPresenter;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header.IASHeaderView;
+import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderPresenterImp;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.domain.bean.ReferenceEntity;
 
@@ -47,7 +47,6 @@ public class ASHeaderPresenterImp extends BaseHeaderPresenterImp<IASHeaderView>
             mView.getReferenceFail("请选选择单据类型");
             return;
         }
-
         RxSubscriber<ReferenceEntity> subscriber =
                 mRepository.getReference(refNum, refType, bizType, moveType, refLineId, userId)
                 .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
@@ -134,66 +133,6 @@ public class ASHeaderPresenterImp extends BaseHeaderPresenterImp<IASHeaderView>
                 });
         addSubscriber(subscriber);
     }
-
-//    @Override
-//    public void getWorks() {
-//        mView = getView();
-//        ResourceSubscriber<ArrayList<WorkEntity>> subscriber = mRepository.getWorks()
-//                .compose(TransformerHelper.io2main())
-//                .subscribeWith(new ResourceSubscriber<ArrayList<WorkEntity>>() {
-//                    @Override
-//                    public void onNext(ArrayList<WorkEntity> works) {
-//                        if(mView != null) {
-//                            mView.showWorks(works);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable t) {
-//                        if(mView != null) {
-//                            mView.loadWorksFail(t.getMessage());
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
-//        addSubscriber(subscriber);
-//    }
-//
-//    @Override
-//    public void getInvsByWorkId(@NonNull String workId) {
-//        mView = getView();
-//        if(TextUtils.isEmpty(workId) && mView != null) {
-//            mView.loadInvsFail("请先选择工厂");
-//            return;
-//        }
-//        ResourceSubscriber<ArrayList<InvEntity>> subscriber = mRepository.getInvsByWorkId(workId)
-//                .compose(TransformerHelper.io2main())
-//                .subscribeWith(new ResourceSubscriber<ArrayList<InvEntity>>() {
-//                    @Override
-//                    public void onNext(ArrayList<InvEntity> invs) {
-//                        if(mView != null) {
-//                            mView.showInvs(invs);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable t) {
-//                        if(mView != null) {
-//                            mView.loadInvsFail(t.getMessage());
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
-//        addSubscriber(subscriber);
-//    }
 
     @Override
     public void getTransferInfo(final ReferenceEntity refData, String refCodeId, String bizType, String refType) {

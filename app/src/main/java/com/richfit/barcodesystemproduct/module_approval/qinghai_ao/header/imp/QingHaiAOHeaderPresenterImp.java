@@ -4,13 +4,14 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.base.base_header.BaseHeaderPresenterImp;
-import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.header.IQingHaiAOHeaderPresenter;
 import com.richfit.barcodesystemproduct.module_approval.qinghai_ao.header.IQingHaiAOHeaderView;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
+import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.FileUtil;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ReferenceEntity;
 
 import javax.inject.Inject;
@@ -41,6 +42,7 @@ public class QingHaiAOHeaderPresenterImp extends BaseHeaderPresenterImp<IQingHai
             mView.getReferenceFail("请选选择单据类型");
             return;
         }
+
 
         RxSubscriber<ReferenceEntity> subscriber = mRepository.getReference(refNum, refType, bizType, moveType,"", userId)
                 .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)

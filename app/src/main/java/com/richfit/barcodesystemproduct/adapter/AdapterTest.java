@@ -42,14 +42,4 @@ public class AdapterTest extends CommonTreeAdapter<RefDetailEntity> {
 
     }
 
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
-
-    }
-
-    @Override
-    public void notifyNodeChanged(int position) {
-
-    }
-
 }

@@ -198,7 +198,6 @@ public abstract class BaseMSNHeaderFragment extends BaseHeaderFragment<MSNHeader
         if (mUploadMsgEntity != null && !TextUtils.isEmpty(mUploadMsgEntity.workId)) {
             selectedWork(mSendWorks,mUploadMsgEntity.workId,spSendWork);
             selectedWork(mRecWorks,mUploadMsgEntity.workId,spRecWork);
-
         }
     }
 

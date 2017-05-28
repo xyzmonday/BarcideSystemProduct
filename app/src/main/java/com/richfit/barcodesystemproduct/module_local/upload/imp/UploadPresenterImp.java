@@ -492,6 +492,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                 transToSapFlag = "";
                 break;
             case "11":// 采购入库-101
+                break;
             case "12":// 采购入库-103
                 businessTypeDesc = "采购入库-103";
                 break;
@@ -500,11 +501,19 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                 transToSapFlag = "05";
                 break;
             case "19":// 委外入库
+                break;
             case "19_ZJ":// 委外入库-组件
+                break;
             case "110":// 采购入库-105(青海必检)
+                businessTypeDesc = "采购入库-105(必检)";
+                transToSapFlag = "Z03";
+                break;
             case "21":// 销售出库
+                break;
             case "23":// 委外发料
+                break;
             case "24":// 其他出库-有参考
+                break;
             case "38":// UB 351
                 businessTypeDesc = "351转储发出-有参考";
                 transToSapFlag = "05";
@@ -514,27 +523,43 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                 transToSapFlag = "05";
                 break;
             case "45":// UB 352
+                break;
             case "51":// 采购退货-161
                 break;
             case "16":// 其他入库-无参考
+                break;
             case "25":// 其他出库-无参考
+                break;
             case "26":// 无参考-201
+                break;
             case "27":// 无参考-221
+                break;
             case "32":// 301(无参考)
+                break;
             case "34":// 311(无参考)
                 businessTypeDesc = "311移库-无参考";
                 transToSapFlag = "05";
                 break;
             case "44":// 其他退库-无参考
+                break;
             case "46":// 无参考-202
+                break;
             case "47":// 无参考-222
+                break;
             case "71":// 代管料入库
+                break;
             case "72":// 代管料出库
+                break;
             case "73":// 代管料退库
+                break;
             case "74":// 代管料调拨
+                break;
             case "91":// 代管料入库-HRM
+                break;
             case "92":// 代管料出库-HRM
+                break;
             case "93":// 代管料退库-HRM
+                break;
             case "94":// 代管料调拨-HRM
                 break;
         }

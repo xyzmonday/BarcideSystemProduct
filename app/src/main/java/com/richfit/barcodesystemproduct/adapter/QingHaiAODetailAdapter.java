@@ -52,31 +52,31 @@ public class QingHaiAODetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
 
     }
 
-    @Override
-    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
-
-    }
-
-    @Override
-    public void notifyNodeChanged(int position) {
-        RefDetailEntity deleteNode = mVisibleNodes.get(position);
-        deleteNode.invCode = "";
-        deleteNode.totalQuantity = "";
-        deleteNode.manufacturer = "" ;
-        deleteNode.randomQuantity = "";
-        deleteNode.qualifiedQuantity = "";
-        deleteNode.rustQuantity = "";
-        deleteNode.damagedQuantity = "";
-        deleteNode.badQuantity = "";
-        deleteNode.otherQuantity = "";
-        deleteNode.sapPackage = "";
-        deleteNode.qmNum = "";
-        deleteNode.certificate = "";
-        deleteNode.instructions = "";
-        deleteNode.qmCertificate = "";
-        deleteNode.inspectionResult = "";
-        deleteNode.inspectionQuantity = "" ;
-        deleteNode.claimNum = "";
-        notifyItemChanged(position);
-    }
+//    @Override
+//    public void notifyParentNodeChanged(int childNodePosition, int parentNodePosition) {
+//
+//    }
+//
+//    @Override
+//    public void notifyNodeChanged(int position) {
+//        RefDetailEntity deleteNode = mVisibleNodes.get(position);
+//        deleteNode.invCode = "";
+//        deleteNode.totalQuantity = "";
+//        deleteNode.manufacturer = "" ;
+//        deleteNode.randomQuantity = "";
+//        deleteNode.qualifiedQuantity = "";
+//        deleteNode.rustQuantity = "";
+//        deleteNode.damagedQuantity = "";
+//        deleteNode.badQuantity = "";
+//        deleteNode.otherQuantity = "";
+//        deleteNode.sapPackage = "";
+//        deleteNode.qmNum = "";
+//        deleteNode.certificate = "";
+//        deleteNode.instructions = "";
+//        deleteNode.qmCertificate = "";
+//        deleteNode.inspectionResult = "";
+//        deleteNode.inspectionQuantity = "" ;
+//        deleteNode.claimNum = "";
+//        notifyItemChanged(position);
+//    }
 }
