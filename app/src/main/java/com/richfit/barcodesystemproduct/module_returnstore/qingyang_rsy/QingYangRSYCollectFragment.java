@@ -24,7 +24,7 @@ public class QingYangRSYCollectFragment extends BaseASCollectFragment<QingYangRS
     @Override
     public void initEvent() {
         super.initEvent();
-        etLocation.setOnRichEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
+        etLocation.setOnRichAutoEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
     }
 
     @Override

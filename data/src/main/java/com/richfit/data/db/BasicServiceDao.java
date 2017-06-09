@@ -205,6 +205,11 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
         while (cursor.moveToNext()) {
             date = cursor.getString(0);
         }
+        if (!TextUtils.isEmpty(date)) {
+            cursor.close();
+            db.close();
+            return date;
+        }
         if (TextUtils.isEmpty(date)) {
             date = "0001/01/01";
         } else if (!TextUtils.isEmpty(date) && "0001/01/01".equals(date)) {
@@ -279,6 +284,8 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             tableIndex = 8;
         } else if ("WL".equals(queryType)) {
             tableIndex = 9;
+        } else if ("PC".equals(queryType)) {
+            tableIndex = 10;
         }
         boolean isCWFirst = "0001/01/01".equalsIgnoreCase(queryDate);
         insertData(maps, tableIndex, isFirstPage, isCWFirst);
@@ -401,6 +408,16 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         .append(tableName)
                         .append(" (id,material_num,material_desc,material_group,unit)")
                         .append(" VALUES (?,?,?,?,?)");
+                break;
+            case 10:
+                tableName = "BASE_MATERIAL_BATCH";
+                if (isFirstPage) {
+                    db.execSQL("delete from " + tableName);
+                }
+                sql.append("INSERT INTO ")
+                        .append(tableName)
+                        .append(" (id,material_id,work_id,status)")
+                        .append(" VALUES (?,?,?,?)");
                 break;
         }
         db.close();
@@ -550,6 +567,17 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                         stmt.bindString(3, item.get(Global.NAME_KEY).toString());
                         stmt.bindString(4, item.get("materialGroup").toString());
                         stmt.bindString(5, item.get("unit").toString());
+                        stmt.execute();
+                        stmt.clearBindings();
+                    }
+                    break;
+                case 10:
+                    for (int i = start; i < end; i++) {
+                        item = source.get(ptr * Global.MAX_PATCH_LENGTH + i);
+                        stmt.bindString(1, item.get(Global.ID_KEY).toString());
+                        stmt.bindString(2, item.get(Global.CODE_KEY).toString());
+                        stmt.bindString(3, item.get("workId").toString());
+                        stmt.bindString(4, CommonUtil.Obj2String(item.get("status")));
                         stmt.execute();
                         stmt.clearBindings();
                     }
@@ -845,7 +873,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
                     .append(" where P.parent_id = B.org_id ")
                     .append(" and P.org_level = 2 and P.org_code = ? ");
             if (!TextUtils.isEmpty(keyWord)) {
-                sb.append("like ").append("'%").append(keyWord).append("%'");
+                sb.append("and project_num_code like ").append("'%").append(keyWord).append("%'");
             } else if (defaultItemNum > 0) {
                 sb.append(" limit 0, ")
                         .append(defaultItemNum);
@@ -1015,7 +1043,7 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             list.add("请选择");
             while (cursor.moveToNext()) {
                 String storageNum = cursor.getString(0);
-                if(TextUtils.isEmpty(storageNum))
+                if (TextUtils.isEmpty(storageNum))
                     continue;
                 list.add(storageNum);
             }
@@ -1231,5 +1259,51 @@ public class BasicServiceDao extends BaseDao implements IBasicServiceDao {
             cursor.close();
         db.close();
         return item;
+    }
+
+    @Override
+    public List<String> getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag) {
+        List<String> locations = new ArrayList<>();
+        String storageNum = getStorageNum(workId, workCode, invId, invCode);
+        if (TextUtils.isEmpty(storageNum)) {
+            return locations;
+        }
+        SQLiteDatabase db = getReadableDB();
+        clearStringBuffer();
+        sb.append("select location from base_location where storage_num=? ");
+        if (!TextUtils.isEmpty(keyWord)) {
+            sb.append("and location like ").append("'%").append(keyWord).append("%'");
+        } else if (defaultItemNum > 0) {
+            sb.append(" limit 0, ")
+                    .append(defaultItemNum);
+        }
+        L.e("查询仓位列表 = " + sb.toString());
+        Cursor cursor = db.rawQuery(sb.toString(), new String[]{storageNum});
+        while (cursor.moveToNext()) {
+            locations.add(cursor.getString(0));
+        }
+        cursor.close();
+        db.close();
+        L.e("查询到的上架仓位列表size = " + locations.size());
+        return locations;
+    }
+
+    @Override
+    public String getBatchManagerStatus(String workId, String materialId) {
+        L.e("查询批次管理标识workId = " + workId + ";materialId = " + materialId);
+        if (TextUtils.isEmpty(workId) || TextUtils.isEmpty(materialId))
+            return "";
+        SQLiteDatabase db = getReadableDB();
+
+        Cursor cursor = db.rawQuery("select status from base_material_batch where work_id=? and material_id=?",
+                new String[]{workId, materialId});
+        //注意这里不能返回null
+        String status = "";
+        while (cursor.moveToNext()) {
+            status = cursor.getString(0);
+        }
+        cursor.close();
+        db.close();
+        return status;
     }
 }

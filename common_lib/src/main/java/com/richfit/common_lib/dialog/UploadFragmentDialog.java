@@ -79,7 +79,7 @@ public class UploadFragmentDialog extends DialogFragment implements TimeLineAdap
     public void addMessage(UploadMsgEntity info) {
         if (mAdapter != null) {
             mDatas.add(info);
-            mAdapter.notifyDataSetChanged();
+            mAdapter.notifyItemInserted(mDatas.size());
         }
     }
 

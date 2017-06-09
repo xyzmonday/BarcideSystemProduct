@@ -180,10 +180,9 @@
                 android:text="@string/s_location" />
 
 
-            <com.richfit.common_lib.widget.RichEditText
+            <com.richfit.common_lib.widget.RichAutoEditText
                 android:id="@+id/et_location"
-                style="@style/RightRichEditTextItemStyle"
-                android:gravity="center_horizontal" />
+                style="@style/RightRichAutoItemStyle" />
         </LinearLayout>
 
 

@@ -75,6 +75,8 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
     EditText etQmNum;
     @BindView(R.id.et_claim_num)
     EditText etClaimNum;
+    @BindView(R.id.et_remark)
+    EditText etRemark;
 
     int mPosition = -1;
 
@@ -141,7 +143,8 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
         final String qmCertificate = bundle.getString(Global.EXTRA_QM_CERTIFICATE_KEY);
         //检验结果
         final String inspectionResult = bundle.getString(Global.EXTRA_INSPECTION_RESULT_KEY);
-
+        //备注
+        final String remark = bundle.getString(Global.EXTRA_REMARK_KEY);
 
         mPosition = bundle.getInt(Global.EXTRA_POSITION_KEY);
 
@@ -184,6 +187,7 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
             cbQmCertificate.setChecked(DEFUALT_CHOOSED_FLAG.equalsIgnoreCase(qmCertificate) ? true : false);
             //检验结果
             spInspectionResult.setSelection("01".equalsIgnoreCase(inspectionResult) ? 0 : 1);
+            etRemark.setText(remark);
             /*获取库存地点列表*/
             mPresenter.getInvsByWorkId(lineData.workId, 0);
         }
@@ -338,6 +342,7 @@ public class QingHaiAOEditFragment extends BaseEditFragment<QingHaiAOEditPresent
             //检验结果
             result.inspectionResult = spInspectionResult.getSelectedItemPosition() == 0 ? "01" : "02";
             result.modifyFlag = "Y";
+            result.remark = getString(etRemark);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())

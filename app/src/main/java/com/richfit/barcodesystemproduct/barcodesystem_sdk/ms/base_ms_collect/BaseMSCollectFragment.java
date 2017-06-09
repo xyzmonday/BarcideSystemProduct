@@ -63,7 +63,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     @BindView(R.id.et_send_batch_flag)
     protected EditText etSendBatchFlag;
     @BindView(R.id.sp_send_inv)
-    protected  Spinner spSendInv;
+    protected Spinner spSendInv;
     @BindView(R.id.sp_send_location)
     protected Spinner spSendLoc;
     @BindView(R.id.tv_inv_quantity)
@@ -71,7 +71,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     @BindView(R.id.tv_location_quantity)
     protected TextView tvLocQuantity;
     @BindView(R.id.et_quantity)
-    protected  EditText etQuantity;
+    protected EditText etQuantity;
     @BindView(R.id.cb_single)
     CheckBox cbSingle;
     @BindView(R.id.tv_total_quantity)
@@ -101,6 +101,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     /*批次一致性检查*/
     protected boolean isBatchValidate = true;
     protected boolean isLocationChecked = false;
+
     /**
      * 处理扫描
      *
@@ -180,7 +181,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
 
         /*库存地点，选择库存地点加载库存数据*/
         RxAdapterView.itemSelections(spSendInv)
-                .filter(a->spSendLoc.isEnabled())
+                .filter(a -> spSendLoc.isEnabled())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 //注意工厂和库存地点必须使用行里面的
@@ -234,8 +235,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             return;
         }
         etMaterialNum.setEnabled(true);
-        //控制批次
-        etSendBatchFlag.setEnabled(mIsOpenBatchManager);
+        isOpenBatchManager = true;
     }
 
     @Override
@@ -293,6 +293,8 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
     public void bindCommonCollectUI() {
         mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
+        isOpenBatchManager = true;
+        mangageBatchFlagStatus(etSendBatchFlag, lineData.batchManagerStatus);
         etQuantity.setText("");
         //物资描述
         tvMaterialDesc.setText(lineData.materialDesc);
@@ -302,10 +304,10 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         tvActQuantity.setText(lineData.actQuantity);
 
         //发出批次
-        if (TextUtils.isEmpty(getString(etSendBatchFlag))) {
-            etSendBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
+            etSendBatchFlag.setText(lineData.batchFlag);
         }
-        etSendBatchFlag.setEnabled(mIsOpenBatchManager);
+        etSendBatchFlag.setEnabled(isOpenBatchManager);
         //先将库存地点选择器打开，获取缓存后在判断是否需要锁定
         spSendInv.setEnabled(true);
         if (!cbSingle.isChecked())
@@ -353,7 +355,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         final InvEntity invEntity = mInvDatas.get(position);
         mPresenter.getInventoryInfo(getInventoryQueryType(), lineData.workId, invEntity.invId,
                 lineData.workCode, invEntity.invCode, "", getString(etMaterialNum),
-                lineData.materialId, "", getString(etSendBatchFlag), "", "",getInvType(), "");
+                lineData.materialId, "", getString(etSendBatchFlag), "", "", getInvType(), "");
     }
 
     /**
@@ -418,7 +420,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             return;
         }
 
-        if (mIsOpenBatchManager)
+        if (isOpenBatchManager)
             if (TextUtils.isEmpty(batchFlag)) {
                 showMessage("请先输入批次");
                 resetSendLocation();
@@ -470,7 +472,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
             }
 
             //当前输入批次是否与缓存的批次一致
-            if (mIsOpenBatchManager && !TextUtils.isEmpty(mCachedBatchFlag)) {
+            if (isOpenBatchManager && !TextUtils.isEmpty(mCachedBatchFlag)) {
                 if (!mCachedBatchFlag.equalsIgnoreCase(batchFlag)) {
                     showMessage("您输入的批次有误，请重新输入");
                     return;
@@ -488,11 +490,11 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
                 //缓存和输入的都为空或者都不为空而且相等
                 boolean isMatch;
 
-                isBatchValidate = mIsOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
+                isBatchValidate = isOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
                         (!TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) &&
                                 batchFlag.equalsIgnoreCase(cachedItem.batchFlag)));
 
-                isMatch = mIsOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
+                isMatch = isOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
                         locationCombine.equalsIgnoreCase(cachedItem.locationCombine)) || (
                         !TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) &&
                                 locationCombine.equalsIgnoreCase(cachedItem.locationCombine))
@@ -573,7 +575,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
      */
     private void resetCommonUIPartly() {
         //如果没有打开批次，那么用户不能输入批次，这里再次拦截
-        if (!mIsOpenBatchManager)
+        if (!isOpenBatchManager)
             return;
         //库存地点
         if (spSendInv.getAdapter() != null) {
@@ -662,7 +664,7 @@ public abstract class BaseMSCollectFragment extends BaseFragment<MSCollectPresen
         }
 
         //批次
-        if (mIsOpenBatchManager && !isBatchValidate) {
+        if (isOpenBatchManager && !isBatchValidate) {
             showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
             return false;
         }

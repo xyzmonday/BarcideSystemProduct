@@ -49,45 +49,47 @@ public class ASHeaderPresenterImp extends BaseHeaderPresenterImp<IASHeaderView>
         }
         RxSubscriber<ReferenceEntity> subscriber =
                 mRepository.getReference(refNum, refType, bizType, moveType, refLineId, userId)
-                .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
-                .map(refData -> addTreeInfo(refData))
-                .compose(TransformerHelper.io2main())
-                .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext) {
-                    @Override
-                    public void _onNext(ReferenceEntity refData) {
-                        if (mView != null) {
-                            mView.getReferenceSuccess(refData);
-                        }
-                    }
+                        .filter(refData -> refData != null && refData.billDetailList != null && refData.billDetailList.size() > 0)
+                        .flatMap(refData -> Flowable.just(addBatchManagerStatus(refData)))
+                        .map(refData -> addTreeInfo(refData))
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext) {
+                            @Override
+                            public void _onNext(ReferenceEntity refData) {
+                                if (mView != null) {
+                                    mView.getReferenceSuccess(refData);
+                                }
+                            }
 
-                    @Override
-                    public void _onNetWorkConnectError(String message) {
-                        if (mView != null) {
-                            mView.networkConnectError(Global.RETRY_LOAD_REFERENCE_ACTION);
-                        }
-                    }
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_LOAD_REFERENCE_ACTION);
+                                }
+                            }
 
-                    @Override
-                    public void _onCommonError(String message) {
-                        if (mView != null) {
-                            mView.getReferenceFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.getReferenceFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onServerError(String code, String message) {
-                        if (mView != null) {
-                            mView.getReferenceFail(message);
-                        }
-                    }
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.getReferenceFail(message);
+                                }
+                            }
 
-                    @Override
-                    public void _onComplete() {
+                            @Override
+                            public void _onComplete() {
 
-                    }
-                });
+                            }
+                        });
         addSubscriber(subscriber);
     }
+
 
     @Override
     public void deleteCollectionData(String refNum, String transId, String refCodeId, String refType, String bizType,

@@ -35,6 +35,8 @@ public class MSYParentHeaderItemDelegate implements ItemViewDelegate<RefDetailEn
         holder.setText(R.id.sendWork,item.workCode);
         //发出库位
         holder.setText(R.id.sendInv,item.invCode);
+        //接收工厂
+        holder.setText(R.id.recWork,item.recWorkCode);
 
     }
 }

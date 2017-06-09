@@ -55,82 +55,6 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
                 .maxThread(1)
                 .maxRetryCount(3);
     }
-
-
-    @Override
-    public void register() {
-        mView = getView();
-        ResourceSubscriber<String> subscriber =
-                mRepository.getMappingInfo()
-                        .compose(TransformerHelper.io2main())
-                        .subscribeWith(new RxSubscriber<String>(mContext, "正在检查是否已经注册...") {
-                            @Override
-                            public void _onNext(String s) {
-                                if(mView != null) {
-                                    mView.updateDbSource(s);
-                                }
-                            }
-
-                            @Override
-                            public void _onNetWorkConnectError(String message) {
-                                if (mView != null) {
-                                    mView.networkConnectError(Global.RETRY_REGISTER_ACTION);
-                                }
-                            }
-
-                            @Override
-                            public void _onCommonError(String message) {
-                                if (mView != null) {
-                                    mView.unRegister(message);
-                                }
-                            }
-
-                            @Override
-                            public void _onServerError(String code, String message) {
-                                if (mView != null) {
-                                    mView.unRegister(message);
-                                }
-                            }
-
-                            @Override
-                            public void _onComplete() {
-                                if (mView != null) {
-                                    mView.registered();
-                                }
-                            }
-                        });
-        addSubscriber(subscriber);
-    }
-
-    @Override
-    public void syncDate() {
-//        mView = getView();
-//        addSubscriber(mRepository.syncDate()
-//                .compose(TransformerHelper.io2main())
-//                .subscribeWith(new ResourceSubscriber<String>() {
-//                    @Override
-//                    public void onNext(String s) {
-//                        if (mView != null) {
-//                            mView.syncDateSuccess(s);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable t) {
-//                        if (mView != null) {
-//                            mView.syncDateFail(t.getMessage());
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//                        if (mView != null) {
-//                            mView.syncDateComplete();
-//                        }
-//                    }
-//                }));
-    }
-
     /**
      * 下载基础数据的入口。
      * 注意这里由于系统必须去下载两种类型的ZZ的基础数据，
@@ -209,7 +133,6 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
             SPrefUtil.initSharePreference(mContext.getApplicationContext());
         }
         boolean isAppFist = (boolean) SPrefUtil.getData(Global.IS_APP_FIRST_KEY, true);
-        L.e("isAppFist = " + isAppFist);
         if (!isAppFist) {
             //如果不是第一次启动,那么直接同步基础数据
             mView.downDBComplete();
@@ -230,7 +153,7 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
             file.mkdir();
         }
         final String savePath = file.getAbsolutePath();
-        final String url = BarcodeSystemApplication.baseUrl + "/downloadInitialDB?macAddress=" + Global.MAC_ADDRESS;
+        final String url = BarcodeSystemApplication.baseUrl + "downloadInitialDB?macAddress=" + Global.MAC_ADDRESS;
         L.e("下载基础数据库的url = " + url);
         ResourceObserver<DownloadStatus> observer = mRxDownload.download(url, dbName, savePath)
                 .doOnComplete(() -> SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, false))
@@ -258,6 +181,35 @@ public class SplashPresenterImp extends BasePresenter<ISplashView>
                 });
         addSubscriber(observer);
     }
+
+    @Override
+    public void getConnectionStatus() {
+        mView = getView();
+        ResourceSubscriber<String> subscriber = mRepository.getConnectionStatus()
+                .compose(TransformerHelper.io2main())
+                .subscribeWith(new ResourceSubscriber<String>() {
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        if(mView != null) {
+                            mView.networkNotAvailable(t.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if(mView != null) {
+                            mView.networkAvailable();
+                        }
+                    }
+                });
+        addSubscriber(subscriber);
+    }
+
 
     private void saveLoadBasicDataTaskDate() {
         final String currentDate = UiUtil.getCurrentDate(Global.GLOBAL_DATE_PATTERN_TYPE4);

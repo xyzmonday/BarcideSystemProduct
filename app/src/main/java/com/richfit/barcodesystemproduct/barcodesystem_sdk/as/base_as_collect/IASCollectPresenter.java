@@ -20,6 +20,8 @@ public interface IASCollectPresenter extends IPresenter<IASCollectView> {
 
     void checkLocation(String queryType, String workId, String invId, String batchFlag, String location);
 
+    void getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag,
+                         boolean isDropDown);
     /**
      * 获取单条缓存。
      *

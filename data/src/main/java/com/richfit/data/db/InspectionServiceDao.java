@@ -497,6 +497,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
             cv.put("created_by", param.userId);
             cv.put("creation_date", creationDate);
             cv.put("quantity", param.quantity);
+            cv.put("remark",param.remark);
             switch (param.companyCode) {
                 case "20N0":
                 case "20A0":
@@ -512,7 +513,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
         } else {
             sb.append("update MTL_INSPECTION_LINES set po_line_id = ?,material_id = ?,inspection_person = ?,line_num = ?,")
                     .append("inspection_result = ?,work_id = ?,inv_id = ?,")
-                    .append("last_updated_by = ?,last_update_date = ?,inspection_date = ?");
+                    .append("last_updated_by = ?,last_update_date = ?,inspection_date = ?,remark=?");
             if ("Y".equalsIgnoreCase(param.modifyFlag)) {
                 // 修改
                 sb.append(",quantity = ?");
@@ -525,7 +526,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                         db.execSQL(sb.toString(), new Object[]{param.refLineId, param.materialId,
                                 param.userId, param.refLineNum, param.inspectionResult,
                                 param.workId, param.invId, param.userId, currentDate, currentDate,
-                                param.quantity, param.qualifiedQuantity, insLineId});
+                                param.remark,param.quantity, param.qualifiedQuantity, insLineId});
                         break;
                     case "8200":
                         //庆阳
@@ -542,7 +543,7 @@ public class InspectionServiceDao extends BaseDao implements IInspectionServiceD
                                 param.refLineId, param.materialId,
                                 param.userId, param.refLineNum, param.inspectionResult,
                                 param.workId, param.invId, param.userId, currentDate, currentDate,
-                                param.quantity, param.qualifiedQuantity, insLineId});
+                                param.remark,param.quantity, param.qualifiedQuantity, insLineId});
                         break;
                     case "8200":
                         //庆阳

@@ -1,6 +1,5 @@
 package com.richfit.domain.repository;
 
-import android.support.annotation.NonNull;
 
 import com.richfit.domain.bean.BizFragmentConfig;
 import com.richfit.domain.bean.InventoryEntity;
@@ -32,7 +31,7 @@ public interface IServerRepository extends IRepository {
      *
      * @param requestParam:下载基础数据请求的参数包装
      */
-    Flowable<LoadBasicDataWrapper> preparePageLoad(@NonNull LoadBasicDataWrapper requestParam);
+    Flowable<LoadBasicDataWrapper> preparePageLoad( LoadBasicDataWrapper requestParam);
 
     /**
      * 下载基础数据
@@ -40,7 +39,7 @@ public interface IServerRepository extends IRepository {
      * @param task：本次基础数据的下载任务
      * @return
      */
-    Flowable<List<Map<String, Object>>> loadBasicData(@NonNull LoadDataTask task);
+    Flowable<List<Map<String, Object>>> loadBasicData(LoadDataTask task);
 
     /**
      * 同步服务器的日期
@@ -108,7 +107,6 @@ public interface IServerRepository extends IRepository {
      */
     Flowable<String> uploadInspectionImage(ResultEntity result);
 
-
     /**
      * 获取库存
      *
@@ -157,6 +155,8 @@ public interface IServerRepository extends IRepository {
      * @return
      */
     Flowable<String> uploadMultiFiles(List<ResultEntity> results);
+
+    Flowable<String> uploadMultiFilesOffline(List<ResultEntity> results);
 
     /**
      * 获取设备相关的信息

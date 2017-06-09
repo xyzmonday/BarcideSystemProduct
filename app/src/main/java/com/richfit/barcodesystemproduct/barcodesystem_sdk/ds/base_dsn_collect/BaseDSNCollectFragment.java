@@ -170,7 +170,6 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
     public void initDataLazily() {
         //检查抬头界面的数据
         etMaterialNum.setEnabled(false);
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
         if (mRefData == null) {
             showMessage("请先在抬头界面选择工厂");
             return;
@@ -188,7 +187,7 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
             return;
         }
         etMaterialNum.setEnabled(true);
-
+        isOpenBatchManager = true;
     }
 
 
@@ -207,12 +206,13 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
     @Override
     public void onBindCommonUI(ReferenceEntity refData, String batchFlag) {
         RefDetailEntity data = refData.billDetailList.get(0);
+        isOpenBatchManager = true;
+        mangageBatchFlagStatus(etBatchFlag, data.batchManagerStatus);
         //刷新UI
         etMaterialNum.setTag(data.materialId);
         tvMaterialDesc.setText(data.materialDesc);
         tvMaterialGroup.setText(data.materialGroup);
-        etBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag :
-                batchFlag);
+        etBatchFlag.setText(!TextUtils.isEmpty(data.batchFlag) ? data.batchFlag : batchFlag);
         mHistoryDetailList = refData.billDetailList;
     }
 
@@ -325,7 +325,7 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
         final String invQuantity = mInventoryDatas.get(position).invQuantity;
         final String batchFlag = getString(etBatchFlag);
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("请输入发出批次");
             resetSendLocation();
             return;
@@ -347,7 +347,7 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
             List<LocationInfoEntity> locationList = detail.locationList;
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
-                    final boolean isMatched = mIsOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
+                    final boolean isMatched = isOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                             && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);
                     if (isMatched) {
@@ -507,7 +507,7 @@ public abstract class BaseDSNCollectFragment extends BaseFragment<DSNCollectPres
      */
     protected void resetCommonUIPartly() {
         //如果没有打开批次，那么用户不能输入批次，这里再次拦截
-        if (!mIsOpenBatchManager)
+        if (!isOpenBatchManager)
             return;
         //库存地点
         if (spInv.getAdapter() != null) {

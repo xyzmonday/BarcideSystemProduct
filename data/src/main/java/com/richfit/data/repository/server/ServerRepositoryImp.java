@@ -1,6 +1,5 @@
 package com.richfit.data.repository.server;
 
-import android.support.annotation.NonNull;
 
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.utils.CommonUtil;
@@ -50,7 +49,6 @@ public class ServerRepositoryImp implements IServerRepository {
         this.mRequestApi = requestApi;
         this.mRequestParam = new HashMap<>();
     }
-
 
 
     @Override
@@ -111,9 +109,8 @@ public class ServerRepositoryImp implements IServerRepository {
      * @return
      */
     @Override
-    public Flowable<ReferenceEntity> getReference(@NonNull String refNum, @NonNull String refType,
-                                                  @NonNull String bizType, @NonNull String moveType,
-                                                  @NonNull String refLineId, @NonNull String userId) {
+    public Flowable<ReferenceEntity> getReference(String refNum, String refType, String bizType, String moveType,
+                                                  String refLineId, String userId) {
 
         mRequestParam.clear();
         mRequestParam.put("recordNum", refNum.trim().toUpperCase());
@@ -344,7 +341,7 @@ public class ServerRepositoryImp implements IServerRepository {
     @Override
     public Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel,
                                                   String checkSpecial, String storageNum, String workId,
-                                                  String invId, String checkNum,String checkDate) {
+                                                  String invId, String checkNum, String checkDate) {
         mRequestParam.clear();
         mRequestParam.put("userId", userId);
         mRequestParam.put("businessType", bizType);
@@ -399,7 +396,7 @@ public class ServerRepositoryImp implements IServerRepository {
      * @return
      */
     @Override
-    public Flowable<List<Map<String, Object>>> loadBasicData(@NonNull LoadDataTask task) {
+    public Flowable<List<Map<String, Object>>> loadBasicData(LoadDataTask task) {
         mRequestParam.clear();
         mRequestParam.put("queryType", task.queryType);
         mRequestParam.put("queryDate", task.queryDate);
@@ -494,6 +491,7 @@ public class ServerRepositoryImp implements IServerRepository {
 
     }
 
+
     /**
      * 数据采集界面保存单条盘点数据
      *
@@ -587,6 +585,30 @@ public class ServerRepositoryImp implements IServerRepository {
         String requestParam = JsonUtil.object2Json(results);
         RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), requestParam);
         return mRequestApi.uploadMultiFiles(bodyMap, description)
+                .compose(TransformerHelper.MapTransformer);
+    }
+
+    @Override
+    public Flowable<String> uploadMultiFilesOffline(List<ResultEntity> results) {
+        Map<String, RequestBody> bodyMap = new HashMap<>();
+        if (results.size() > 0) {
+            for (int i = 0; i < results.size(); i++) {
+                ResultEntity result = results.get(i);
+                File file = null;
+                try {
+                    file = new File(result.imagePath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    file = null;
+                }
+                if (file == null)
+                    continue;
+                bodyMap.put("file" + i + "\"; filename=\"" + file.getName(), RequestBody.create(MediaType.parse("image/png"), file));
+            }
+        }
+        String requestParam = JsonUtil.object2Json(results);
+        RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), requestParam);
+        return mRequestApi.uploadMultiFilesOffline(bodyMap, description)
                 .compose(TransformerHelper.MapTransformer);
     }
 

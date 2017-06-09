@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
@@ -70,6 +71,8 @@ public class RSNCollectPresenterImp extends BasePresenter<IRSNCollectView>
         mView = getView();
         RxSubscriber<ReferenceEntity> subscriber = mRepository.getTransferInfoSingle("","",bizType, "",
                 workId,invId,recWorkId,recInvId,materialNum,batchFlag,"",refDoc,refDocItem,userId)
+                .filter(refData -> refData != null && refData.billDetailList.size() > 0)
+                .flatMap(refData -> Flowable.just(addBatchManagerStatus(refData)))
                 .compose(TransformerHelper.io2main())
                 .subscribeWith(new RxSubscriber<ReferenceEntity>(mContext) {
                     @Override

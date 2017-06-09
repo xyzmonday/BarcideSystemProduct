@@ -148,7 +148,7 @@ public class QingHaiMSN311CollectFragment extends BaseMSNCollectFragment<MSNColl
             return false;
         }
         //检查发出批次
-        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
             showMessage("批次为空");
             return false;
         }

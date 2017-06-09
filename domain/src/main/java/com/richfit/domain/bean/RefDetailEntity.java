@@ -144,6 +144,8 @@ public class RefDetailEntity extends TreeNode implements Cloneable {
     public String deviceId;
     public String inspectionPerson;
     public String userId;
+    /*是否打开了批次管理*/
+    public boolean batchManagerStatus;
 
 
     @Override
@@ -207,6 +209,9 @@ public class RefDetailEntity extends TreeNode implements Cloneable {
                 ", price='" + price + '\'' +
                 ", recLocation='" + recLocation + '\'' +
                 ", recBatchFlag='" + recBatchFlag + '\'' +
+                ", recordUnit='" + recordUnit + '\'' +
+                ", materialUnit='" + materialUnit + '\'' +
+                ", unitRate=" + unitRate +
                 ", inspectionQuantity='" + inspectionQuantity + '\'' +
                 ", manufacturer='" + manufacturer + '\'' +
                 ", randomQuantity='" + randomQuantity + '\'' +
@@ -240,6 +245,9 @@ public class RefDetailEntity extends TreeNode implements Cloneable {
                 ", transLineSplitId='" + transLineSplitId + '\'' +
                 ", specialConvert='" + specialConvert + '\'' +
                 ", deviceId='" + deviceId + '\'' +
+                ", inspectionPerson='" + inspectionPerson + '\'' +
+                ", userId='" + userId + '\'' +
+                ", batchManagerStatus=" + batchManagerStatus +
                 '}';
     }
 }

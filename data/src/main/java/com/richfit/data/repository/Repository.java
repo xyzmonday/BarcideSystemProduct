@@ -1,7 +1,5 @@
 package com.richfit.data.repository;
 
-import android.support.annotation.NonNull;
-
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
@@ -64,13 +62,30 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<UserEntity> Login(String userName, String password) {
-        return isLocal ? mLocalRepository.Login(userName, password) : mServerRepository.Login(userName, password);
+    public Flowable<UserEntity> login(String userName, String password) {
+        return isLocal ? mLocalRepository.login(userName, password) : mServerRepository.login(userName, password);
     }
 
+    /**
+     * 2017年06月09日修改，对于离线如果没有在本地没有查到返回error,如果是在线，那么先从本地获取然后
+     * 在从网络获取，加快响应速度
+     * @param loginId
+     * @param mode
+     * @return
+     */
     @Override
     public Flowable<ArrayList<MenuNode>> getMenuInfo(String loginId, int mode) {
-        return isLocal ? mLocalRepository.getMenuInfo(loginId, mode) : mServerRepository.getMenuInfo(loginId, mode);
+        return isLocal ? mLocalRepository.getMenuInfo(loginId, mode)
+                .flatMap(list -> {
+                    if (list == null || list.size() == 0) {
+                        return Flowable.error(new Throwable("未获取到用户菜单"));
+                    }
+                    return Flowable.just(list);
+                }) :
+                Flowable.concat(mLocalRepository.getMenuInfo(loginId, mode),
+                        mServerRepository.getMenuInfo(loginId, mode))
+                        .filter(list -> list != null && list.size() > 0)
+                        .firstOrError().toFlowable();
     }
 
     @Override
@@ -95,7 +110,7 @@ public class Repository implements ILocalRepository, IServerRepository {
      * @return
      */
     @Override
-    public Flowable<LoadBasicDataWrapper> preparePageLoad(@NonNull LoadBasicDataWrapper param) {
+    public Flowable<LoadBasicDataWrapper> preparePageLoad(LoadBasicDataWrapper param) {
         return mServerRepository.preparePageLoad(param);
     }
 
@@ -165,7 +180,7 @@ public class Repository implements ILocalRepository, IServerRepository {
      * @return
      */
     @Override
-    public String getLoadBasicDataTaskDate(@NonNull String requestType) {
+    public String getLoadBasicDataTaskDate(String requestType) {
         return mLocalRepository.getLoadBasicDataTaskDate(requestType);
     }
 
@@ -242,9 +257,8 @@ public class Repository implements ILocalRepository, IServerRepository {
      * @return
      */
     @Override
-    public Flowable<ReferenceEntity> getReference(@NonNull String refNum, @NonNull String refType,
-                                                  @NonNull String bizType, @NonNull String moveType,
-                                                  @NonNull String refLineId, @NonNull String userId) {
+    public Flowable<ReferenceEntity> getReference(String refNum, String refType, String bizType, String moveType,
+                                                  String refLineId, String userId) {
         return isLocal ? mLocalRepository.getReference(refNum, refType, bizType, moveType, refLineId, userId) :
                 mServerRepository.getReference(refNum, refType, bizType, moveType, refLineId, userId);
     }
@@ -466,6 +480,11 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
+    public Flowable<String> uploadMultiFilesOffline(List<ResultEntity> results) {
+        return mServerRepository.uploadCheckDataOffline(results);
+    }
+
+    @Override
     public Flowable<ResultEntity> getDeviceInfo(String deviceId) {
         return mServerRepository.getDeviceInfo(deviceId);
     }
@@ -491,13 +510,23 @@ public class Repository implements ILocalRepository, IServerRepository {
     }
 
     @Override
-    public Flowable<String> setTransFlag(String bizType, String transId,String transFlag) {
-        return mLocalRepository.setTransFlag(bizType, transId,transFlag);
+    public Flowable<String> setTransFlag(String bizType, String transId, String transFlag) {
+        return mLocalRepository.setTransFlag(bizType, transId, transFlag);
     }
 
     @Override
     public Flowable<String> uploadEditedHeadData(ResultEntity resultEntity) {
         return mLocalRepository.uploadEditedHeadData(resultEntity);
+    }
+
+    @Override
+    public Flowable<List<String>> getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag) {
+        return mLocalRepository.getLocationList(workId, workCode, invId, invCode, keyWord, defaultItemNum, flag);
+    }
+
+    @Override
+    public String getBatchManagerStatus(String workId, String materialId) {
+        return mLocalRepository.getBatchManagerStatus(workId, materialId);
     }
 
     @Override

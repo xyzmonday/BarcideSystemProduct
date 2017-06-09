@@ -46,14 +46,12 @@ public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectP
     public void initEvent() {
         super.initEvent();
         /*监听上架仓位点击事件(注意如果是必检物资该监听无效)*/
-        etLocation.setOnRichEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
+        etLocation.setOnRichAutoEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
     }
 
     @Override
     public void initDataLazily() {
         super.initDataLazily();
-        //注意由于initDataLazily方法中通过是否打开批次管理对etBatchFlag进行设置
-        //所以这里必须强制将其设置为false。因为不能关闭批次管理标识。
         etBatchFlag.setEnabled(false);
     }
 
@@ -65,25 +63,11 @@ public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectP
         mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
         if (lineData != null && !"3".equals(lineData.lineType)) {
-            showMessage("该张单据不允许做委外入库");
+            showMessage("该物料不允许做委外入库");
             return;
         }
-        etQuantity.setText("");
-        //物资描述
-        tvMaterialDesc.setText(lineData.materialDesc);
-        //特殊库存标识
-        tvSpecialInvFlag.setText(lineData.specialInvFlag);
-        //工厂
-        tvWork.setText(lineData.workName);
-        //应收数量
-        tvActQuantity.setText(lineData.actQuantity);
-        //批次。注意这里的逻辑是如果用户输入或者扫描带出了批次，那么不需要
-        //刷新批次，因为此时单据中批次和显示的批次一致；如果用户没有输入或者条码中没有批次
-        //那么你默认显示单据中的批次即可，如果没有打开批次管理那么默认显示为空(按理来说此时单据中的
-        // 批次信息也应该为空)。在青海委外和105入库中批次只能够显示条码和单据中的批次。
-        if (TextUtils.isEmpty(getString(etBatchFlag))) {
-            etBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
-        }
+        super.bindCommonCollectUI();
+        //处理必检物资逻辑
         //如果是必检物资，不显示批次(注意也不检查批次的输入)
         isQmFlag = "X".equalsIgnoreCase(lineData.qmFlag);//true表示质检物资
         //如果是质检物资不做上架处理
@@ -92,12 +76,6 @@ public class QingHaiASWWCollectFragment extends BaseASCollectFragment<ASCollectP
         //如果是质检，不管是否有批次都要清除
         if (isQmFlag)
             etBatchFlag.setText("");
-        //先将库存地点选择器打开，获取缓存后在判断是否需要锁定
-        spInv.setEnabled(true);
-        tvLocQuantity.setText("");
-        tvTotalQuantity.setText("");
-        if (!cbSingle.isChecked())
-            mPresenter.getInvsByWorkId(lineData.workId, getOrgFlag());
     }
 
 

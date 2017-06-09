@@ -78,6 +78,7 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
      */
     @Override
     public long getHeaderId(int position) {
+
         //这我们给出的是业务类型的共享同一个stickyHeader
         String businessType = mDatas.get(position).businessType;
         String workId = mDatas.get(position).workId;
@@ -85,17 +86,18 @@ public class ShowUploadDataAdapter extends RecyclerView.Adapter<ShowUploadDataAd
         String storageNum = mDatas.get(position).storageNum;
         String recInvId = mDatas.get(position).recInvId;
         String refNum = mDatas.get(position).refCode;
+        String checkLevel = mDatas.get(position).checkLevel;
         if (TextUtils.isEmpty(businessType)) {
             return -1;
         }
         char[] chars = null;
         switch (businessType) {
             //特别处理盘点
-            case "Z01":
-            case "Z02":
+            case "C01":
+            case "C02":
                 //如果选择的库存级，那么直接使用业务类型+工厂+库存地点(注意这里是无仓考)
                 chars = !TextUtils.isEmpty(storageNum) ?
-                        storageNum.toCharArray() : (businessType + workId + invId).toCharArray();
+                        (businessType + storageNum).toCharArray() : (businessType + workId + invId).toCharArray();
                 break;
             case "16":// 其他入库-无参考
             case "25":// 其他出库-无参考

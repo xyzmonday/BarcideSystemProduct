@@ -140,7 +140,7 @@ public abstract class BaseRSNCollectFragment extends BaseFragment<RSNCollectPres
             return;
         }
         etMaterialNum.setEnabled(true);
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
+        isOpenBatchManager = true;
         //加载发出工厂下的发出库位
         mPresenter.getInvsByWorks(mRefData.workId, 0);
     }
@@ -178,6 +178,8 @@ public abstract class BaseRSNCollectFragment extends BaseFragment<RSNCollectPres
     @Override
     public void onBindCommonUI(ReferenceEntity refData, String batchFlag) {
         RefDetailEntity data = refData.billDetailList.get(0);
+        isOpenBatchManager = true;
+        mangageBatchFlagStatus(etBatchFlag, data.batchManagerStatus);
         //刷新UI
         etMaterialNum.setTag(data.materialId);
         tvMaterialDesc.setText(data.materialDesc);
@@ -200,7 +202,7 @@ public abstract class BaseRSNCollectFragment extends BaseFragment<RSNCollectPres
      */
     private void matchLocationQuantity(final String batchFlag, final String location) {
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("批次为空");
             return;
         }
@@ -222,7 +224,7 @@ public abstract class BaseRSNCollectFragment extends BaseFragment<RSNCollectPres
             List<LocationInfoEntity> locationList = detail.locationList;
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
-                    final boolean isMatched = mIsOpenBatchManager ? location.equalsIgnoreCase(locationInfo.location)
+                    final boolean isMatched = isOpenBatchManager ? location.equalsIgnoreCase(locationInfo.location)
                             && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             location.equalsIgnoreCase(locationInfo.location);
                     if (isMatched) {
@@ -264,7 +266,7 @@ public abstract class BaseRSNCollectFragment extends BaseFragment<RSNCollectPres
             return false;
         }
         //批次
-        if (mIsOpenBatchManager)
+        if (isOpenBatchManager)
             if (TextUtils.isEmpty(getString(etBatchFlag))) {
                 showMessage("请先输入批次");
                 return false;

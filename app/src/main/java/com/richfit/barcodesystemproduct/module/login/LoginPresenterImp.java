@@ -3,13 +3,20 @@ package com.richfit.barcodesystemproduct.module.login;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.richfit.barcodesystemproduct.BarcodeSystemApplication;
 import com.richfit.barcodesystemproduct.base.BasePresenter;
 import com.richfit.barcodesystemproduct.crash.CrashLogUtil;
+import com.richfit.barcodesystemproduct.di.component.AppComponent;
+import com.richfit.barcodesystemproduct.di.component.DaggerAppComponent;
+import com.richfit.barcodesystemproduct.di.module.AppModule;
 import com.richfit.common_lib.rxutils.RxSubscriber;
 import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
+import com.richfit.common_lib.utils.SPrefUtil;
+import com.richfit.data.net.api.IRequestApi;
+import com.richfit.data.repository.Repository;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.UserEntity;
 
@@ -49,7 +56,7 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
             return;
         }
         ResourceSubscriber<UserEntity> subscriber =
-                mRepository.Login(userName, password)
+                mRepository.login(userName, password)
                         .doOnNext(userEntity -> mRepository.saveUserInfo(userEntity))
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new RxSubscriber<UserEntity>(mContext, "正在登陆...") {
@@ -61,13 +68,14 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
                                 Global.COMPANY_ID = userInfo.companyId;
                                 Global.COMPANY_CODE = userInfo.companyCode;
                                 Global.AUTH_ORG = userInfo.authOrgs;
-                                Global.BATCH_FLAG = "Y".equals(userInfo.batchFlag) ? true : false;
+                                Global.BATCHMANAGERSTATUS = userInfo.batchFlag;
+                                Global.WMFLAG = userInfo.wmFlag;
                             }
 
                             @Override
                             public void _onNetWorkConnectError(String message) {
                                 if (mView != null) {
-                                    mView.networkConnectError(message);
+                                    mView.networkConnectError(Global.RETRY_LOGIN_ACTION);
                                 }
                             }
 
@@ -171,6 +179,92 @@ public class LoginPresenterImp extends BasePresenter<LoginContract.View>
                     }
                 });
         addSubscriber(subscriber);
+    }
+
+
+    @Override
+    public void getMappingInfo() {
+        mView = getView();
+        ResourceSubscriber<String> subscriber =
+                mRepository.getMappingInfo()
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new RxSubscriber<String>(mContext, "正在检查是否已经注册...") {
+                            @Override
+                            public void _onNext(String s) {
+//                                if(mView != null) {
+//                                    mView.updateDbSource(s);
+//                                }
+                            }
+
+                            @Override
+                            public void _onNetWorkConnectError(String message) {
+                                if (mView != null) {
+                                    mView.networkConnectError(Global.RETRY_REGISTER_ACTION);
+                                }
+                            }
+
+                            @Override
+                            public void _onCommonError(String message) {
+                                if (mView != null) {
+                                    mView.unRegister(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onServerError(String code, String message) {
+                                if (mView != null) {
+                                    mView.unRegister(message);
+                                }
+                            }
+
+                            @Override
+                            public void _onComplete() {
+                                if (mView != null) {
+                                    mView.registered();
+                                }
+                            }
+                        });
+        addSubscriber(subscriber);
+    }
+
+
+    @Override
+    public void setupUrl(String url) {
+        mView = getView();
+        Repository repository = BarcodeSystemApplication.getAppComponent().getRepository();
+        IRequestApi requstApi = BarcodeSystemApplication.getAppComponent().getRequestApi();
+        requstApi = null;
+        repository = null;
+        Flowable.just(url)
+                .map(baseUrl -> {
+                    AppComponent appComponent = DaggerAppComponent.builder()
+                            .appModule(new AppModule(BarcodeSystemApplication.getAppContext(), baseUrl))
+                            .build();
+                    BarcodeSystemApplication.baseUrl = baseUrl;
+                    SPrefUtil.saveData("base_url", baseUrl);
+                    SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, true);
+                    SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY, false);
+                    return appComponent;
+                })
+                .compose(TransformerHelper.io2main())
+                .subscribe(new ResourceSubscriber<AppComponent>() {
+                    @Override
+                    public void onNext(AppComponent appComponent) {
+                        BarcodeSystemApplication.setAppComponent(appComponent);
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if (mView != null) {
+                            mView.setupUrlComplete();
+                        }
+                    }
+                });
     }
 
 }

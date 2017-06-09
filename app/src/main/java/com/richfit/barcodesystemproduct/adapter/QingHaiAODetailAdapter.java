@@ -48,8 +48,8 @@ public class QingHaiAODetailAdapter extends CommonTreeAdapter<RefDetailEntity> {
                 .setText(R.id.inspectionQuantity,item.inspectionQuantity)
                 .setText(R.id.qmCertificate,item.qmCertificate)
                 .setText(R.id.claimNum,item.claimNum)
-                .setText(R.id.inspectionResult,item.inspectionResult);
-
+                .setText(R.id.inspectionResult,item.inspectionResult)
+                .setText(R.id.remark,item.remark);
     }
 
 //    @Override

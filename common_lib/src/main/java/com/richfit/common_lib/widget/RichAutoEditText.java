@@ -12,13 +12,14 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.richfit.common_lib.R;
+import com.richfit.common_lib.utils.L;
 
 /**
  * 带按钮的AutoCompleteTextView。
  */
 public class RichAutoEditText extends AppCompatAutoCompleteTextView implements TextWatcher {
 
-    private Drawable mClearIcon;
+    private Drawable mSuffixIcon;
 
     private Drawable mPrefixIcon;
 
@@ -51,9 +52,9 @@ public class RichAutoEditText extends AppCompatAutoCompleteTextView implements T
         }
 
         if (rightDrawable == null) {
-            rightDrawable = ContextCompat.getDrawable(context, R.mipmap.icon_clear);
+            rightDrawable = ContextCompat.getDrawable(context, R.mipmap.icon_find);
         }
-        mClearIcon = rightDrawable;
+        mSuffixIcon = rightDrawable;
         setSuffixIconVisible(false);
         addTextChangedListener(this);
     }
@@ -81,7 +82,7 @@ public class RichAutoEditText extends AppCompatAutoCompleteTextView implements T
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
                 final int x = (int) event.getX();
-                if (mClearIcon.isVisible() && x > getWidth() - getPaddingRight() - mClearIcon.getIntrinsicWidth()) {
+                if (mSuffixIcon.isVisible() && x > getWidth() - getPaddingRight() - mSuffixIcon.getIntrinsicWidth() * 2) {
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         if (mListener != null) {
                             mListener.onTouchRichEdit(this, getText().toString().trim());
@@ -118,22 +119,21 @@ public class RichAutoEditText extends AppCompatAutoCompleteTextView implements T
      * @param visible
      */
     public void setSuffixIconVisible(final boolean visible) {
-        mClearIcon.setVisible(visible, false);
+        if (mSuffixIcon == null)
+            return;
+        mSuffixIcon.setVisible(visible, false);
         final Drawable[] compoundDrawables = getCompoundDrawables();
-        setCompoundDrawables(
-                compoundDrawables[0],
-                compoundDrawables[1],
-                visible ? mClearIcon : null,
-                compoundDrawables[3]);
+        setCompoundDrawables(compoundDrawables[0],
+                compoundDrawables[1], visible ? mSuffixIcon : null, compoundDrawables[3]);
     }
 
     /**
      * 设置左边的icon的着色
      */
     public void setPrefixIconTintColor(int tintColor) {
-        if(tintColor == 0)
+        if (tintColor == 0 || mPrefixIcon == null)
             return;
-        DrawableCompat.setTint(mPrefixIcon, ContextCompat.getColor(getContext(),tintColor));
+        DrawableCompat.setTint(mPrefixIcon, ContextCompat.getColor(getContext(), tintColor));
     }
 
 }

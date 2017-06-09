@@ -26,6 +26,8 @@ import com.richfit.domain.bean.WorkEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 
@@ -86,6 +88,7 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
         //点击自动提示控件，显示默认列表
         RxView.clicks(etAutoComp)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
+                .filter(a -> mAutoDatas != null && mAutoDatas.size() > 0)
                 .subscribe(a -> showAutoCompleteConfig(etAutoComp));
 
         //用户选择自动提示控件的某一条数据，隐藏输入法
@@ -103,6 +106,7 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
         //如果是离线直接获取缓存，不能让用户删除缓存
         if (mUploadMsgEntity != null && mPresenter != null && mPresenter.isLocal())
             return;
+
         //删除历史数据
         mPresenter.deleteCollectionData("", mBizType, Global.USER_ID, mCompanyCode);
     }
@@ -171,15 +175,21 @@ public abstract class BaseDSNHeaderFragment extends BaseHeaderFragment<DSNHeader
         showMessage(message);
     }
 
+    /**
+     * 如果用户输入的关键字在mLocationList存在，那么不在进行数据查询.
+     * @param keyWord
+     * @return
+     */
     private boolean filterKeyWord(CharSequence keyWord) {
+        Pattern pattern = Pattern.compile("^" + keyWord.toString().toUpperCase());
         for (String item : mAutoDatas) {
-            if (item.contains(keyWord)) {
+            Matcher matcher = pattern.matcher(item);
+            while (matcher.find()) {
                 return true;
             }
         }
         return false;
     }
-
     @Override
     public void _onPause() {
         super._onPause();

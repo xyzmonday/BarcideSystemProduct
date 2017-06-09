@@ -219,7 +219,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             return;
         }
         etMaterialNum.setEnabled(true);
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
+        isOpenBatchManager = true;
     }
 
     @Override
@@ -277,6 +277,9 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
     public void bindCommonCollectUI() {
         mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
+        //再次复位批次管理标识
+        isOpenBatchManager = true;
+        mangageBatchFlagStatus(etBatchFlag, lineData.batchManagerStatus);
         etQuantity.setText("");
         //物资描述
         tvMaterialDesc.setText(lineData.materialDesc);
@@ -284,17 +287,13 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
         tvWork.setText(lineData.workName);
         //应收数量
         tvActQuantity.setText(lineData.actQuantity);
-
         //批次
-        if (TextUtils.isEmpty(getString(etBatchFlag))) {
-            etBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etBatchFlag))) {
+            etBatchFlag.setText(lineData.batchFlag);
         }
-
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
-
+        etBatchFlag.setEnabled(isOpenBatchManager);
         //先将库存地点选择器打开，获取缓存后在判断是否需要锁定
         spInv.setEnabled(true);
-
         if (!cbSingle.isChecked())
             mPresenter.getInvsByWorkId(lineData.workId, getOrgFlag());
     }
@@ -332,7 +331,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             return;
         }
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etBatchFlag))) {
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etBatchFlag))) {
             showMessage("请输入批次");
             return;
         }
@@ -393,7 +392,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             return;
         }
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("请先输入批次");
             return;
         }
@@ -455,13 +454,13 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
                 //缓存和输入的都为空或者都不为空而且相等
                 boolean isMatch;
 
-                isBatchValidate = mIsOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
+                isBatchValidate = isOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
                         (!TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) &&
                                 batchFlag.equalsIgnoreCase(cachedItem.batchFlag)));
 
                 //这里匹配的逻辑是，如果打开了匹配管理，那么如果输入了批次通过批次和仓位批次，而且如果批次没有输入，那么通过仓位匹配。
                 //如果没有打开批次管理，那么直接通过仓位匹配
-                isMatch = mIsOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
+                isMatch = isOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
                         locationCombine.equalsIgnoreCase(cachedItem.locationCombine)) || (
                         !TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) &&
                                 locationCombine.equalsIgnoreCase(cachedItem.locationCombine))
@@ -543,7 +542,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
      */
     private void resetCommonUIPartly() {
         //如果没有打开批次，那么用户不能输入批次，这里再次拦截
-        if (!mIsOpenBatchManager)
+        if (!isOpenBatchManager)
             return;
         //库存地点
         if (spInv.getAdapter() != null) {
@@ -629,7 +628,7 @@ public abstract class BaseDSCollectFragment<P extends IDSCollectPresenter> exten
             return false;
         }
         //批次
-        if (mIsOpenBatchManager && !isBatchValidate) {
+        if (isOpenBatchManager && !isBatchValidate) {
             showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
             return false;
         }

@@ -159,9 +159,7 @@ public class LocalRepositoryImp implements ILocalRepository {
         return Flowable.just(loginId)
                 .flatMap(id -> {
                     ArrayList<MenuNode> list = mBasicServiceDao.getMenuInfo(id, mode);
-                    if (list == null || list.size() == 0) {
-                        return Flowable.error(new Throwable("未获取到用户菜单"));
-                    }
+
                     return Flowable.just(list);
                 });
 
@@ -542,6 +540,18 @@ public class LocalRepositoryImp implements ILocalRepository {
                     }
                     return Flowable.error(new Throwable("修改失败"));
                 });
+    }
+
+    @Override
+    public Flowable<List<String>> getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag) {
+        List<String> list = mBasicServiceDao.getLocationList(workId, workCode, invId, invCode, keyWord, defaultItemNum, flag);
+        return Flowable.just(list);
+
+    }
+
+    @Override
+    public String getBatchManagerStatus(String workId, String materialId) {
+        return mBasicServiceDao.getBatchManagerStatus(workId,materialId);
     }
 
 

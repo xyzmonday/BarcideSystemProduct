@@ -1,6 +1,5 @@
 package com.richfit.domain.repository;
 
-import android.support.annotation.NonNull;
 
 import com.richfit.domain.bean.InventoryEntity;
 import com.richfit.domain.bean.MaterialEntity;
@@ -28,7 +27,8 @@ public interface IRepository {
      * @param userName：登录名
      * @param password：登录密码
      */
-    Flowable<UserEntity> Login(String userName, String password);
+    Flowable<UserEntity> login(String userName, String password);
+
     /**
      * 下载额外字段的配置信息
      *
@@ -47,9 +47,8 @@ public interface IRepository {
      * @param moveType:移动类型
      * @param userId：用户loginId
      */
-    Flowable<ReferenceEntity> getReference(@NonNull String refNum, @NonNull String refType,
-                                           @NonNull String bizType, @NonNull String moveType,
-                                           @NonNull String refLineId, @NonNull String userId);
+    Flowable<ReferenceEntity> getReference(String refNum, String refType, String bizType, String moveType,
+                                           String refLineId, String userId);
 
     /**
      * 抬头界面删除整单缓存
@@ -129,6 +128,7 @@ public interface IRepository {
      * @return
      */
     Flowable<String> uploadCheckDataSingle(ResultEntity result);
+
     /**
      * 获取盘点头数据。
      *
@@ -143,7 +143,7 @@ public interface IRepository {
      * @return
      */
     Flowable<ReferenceEntity> getCheckInfo(String userId, String bizType, String checkLevel, String checkSpecial,
-                                           String storageNum, String workId, String invId, String checkNum,String checkDate);
+                                           String storageNum, String workId, String invId, String checkNum, String checkDate);
 
     /**
      * 删除整个盘点单

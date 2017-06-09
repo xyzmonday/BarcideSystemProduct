@@ -138,7 +138,7 @@ public abstract class BaseRSNEditFragment extends BaseEditFragment<RSNEditPresen
      */
     private void loadLocationQuantity(String location, String batchFlag) {
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("批次为空");
             return;
         }

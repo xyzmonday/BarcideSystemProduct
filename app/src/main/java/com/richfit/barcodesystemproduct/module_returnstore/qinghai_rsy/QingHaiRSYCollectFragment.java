@@ -25,7 +25,7 @@ public class QingHaiRSYCollectFragment extends BaseASCollectFragment<ASCollectPr
     @Override
     public void initEvent() {
         super.initEvent();
-        etLocation.setOnRichEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
+        etLocation.setOnRichAutoEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
     }
 
     @Override

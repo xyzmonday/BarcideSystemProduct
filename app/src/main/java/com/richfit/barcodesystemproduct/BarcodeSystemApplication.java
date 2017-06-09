@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.multidex.MultiDex;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.github.moduth.blockcanary.BlockCanary;
 import com.richfit.barcodesystemproduct.di.component.AppComponent;
@@ -64,7 +63,6 @@ public class BarcodeSystemApplication extends Application {
         InitializeService.start(this);
         //开启性能检测
         if (BuildConfig.DEBUG) {
-            Log.e("yff","App启动baseUrl = " + baseUrl);
             BlockCanary.install(this, new AppBlockCanaryContext()).start();
             mRefWatcher = LeakCanary.install(this);
         }
@@ -78,6 +76,7 @@ public class BarcodeSystemApplication extends Application {
             //说明用户手动设置过Url
             return baseUrl;
         }
+//        Log.e("yff", "appName = " + BuildConfig.APP_NAME);
         //如果没有手动设置过Url
         if (BuildConfig.DEBUG) {
             switch (BuildConfig.APP_NAME) {
@@ -87,8 +86,12 @@ public class BarcodeSystemApplication extends Application {
                     break;
                 case Global.QINGHAI:
                     //青海测试地址(D)
+//                    baseUrl = "http://10.82.53.52:8080/ktbk_middleware/MobileProcess/";
                     baseUrl = "http://11.11.47.29:8087/ktbk_middleware/MobileProcess/";
-//                    baseUrl = "http://10.82.60.100:8080/ktbk_middleware/MobileProcess/";
+                    break;
+                case Global.XINANGD:
+                    //西南管道
+                    baseUrl = "http://11.11.47.29:8085/gdbk_middleware/MobileProcess/";
                     break;
             }
         } else {
@@ -122,7 +125,8 @@ public class BarcodeSystemApplication extends Application {
      */
     private boolean dexOptDone(Context context) {
         SPHelper.init(context);
-        return SPHelper.getBoolean("dex_opt", false);
+        boolean dex_opt = SPHelper.getBoolean("dex_opt", false);
+        return dex_opt;
     }
 
     /**

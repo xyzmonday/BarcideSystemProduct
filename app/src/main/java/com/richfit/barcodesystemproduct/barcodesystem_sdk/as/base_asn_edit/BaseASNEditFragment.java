@@ -136,7 +136,7 @@ public abstract class BaseASNEditFragment extends BaseEditFragment<ASNEditPresen
      */
     private void loadLocationQuantity(String location, String batchFlag) {
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("批次为空");
             return;
         }

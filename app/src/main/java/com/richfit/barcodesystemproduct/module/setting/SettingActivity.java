@@ -85,6 +85,8 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
     ButtonCircleProgressBar mProgressBar;
     @BindView(R.id.set_ip)
     LinearLayout llSetIP;
+    @BindView(R.id.sb_batch_flag)
+    SwitchView sbBatchFlag;
 
     private UpdateEntity mUpdateInfo;
     private int mCurrentLoadStatus = LOAD_STATUS_START;
@@ -134,7 +136,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
 
     @Override
     public void initData(Bundle savedInstanceState) {
-        mCheckUpdateApk.setText(mCheckUpdateApk.getText() + "(" + String.valueOf(UiUtil.getCurrentVersionName(this)) + ")");
+        mCheckUpdateApk.setText(mCheckUpdateApk.getText() + "V(" + String.valueOf(UiUtil.getCurrentVersionName(this)) + ")");
     }
 
     /**
@@ -194,6 +196,14 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             task.queryType = "CW";
             requestParams.add(task);
             mMessage += "仓位主数据";
+        }
+
+        if(sbBatchFlag.isOpened()) {
+            task = new LoadBasicDataWrapper();
+            task.isByPage = true;
+            task.queryType = "PC";
+            requestParams.add(task);
+            mMessage += "批次启用主数据";
         }
 
         if (TextUtils.isEmpty(mMessage)) {
@@ -300,6 +310,7 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
         //如果新版本不能覆盖旧版本的数据，那么必须让它从新下载
         SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, true);
         SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY, false);
+        mPresenter.setLocal(false);
         String apkCacheDir = FileUtil.getApkCacheDir(this.getApplicationContext());
         String appName = mUpdateInfo.appName;
         File file = new File(apkCacheDir, appName);
@@ -437,6 +448,15 @@ public class SettingActivity extends BaseActivity<SettingPresenterImp>
             }
         }
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mAlertView != null) {
+            mAlertView.dismiss();
+            mAlertView = null;
+        }
     }
 }
 

@@ -17,9 +17,9 @@ public class Global {
     public static String COMPANY_CODE;
     public static String MAC_ADDRESS;
     public static String AUTH_ORG;
-    public static String dbSource;
-    //是否打开批次管理Y表示打开
-    public static boolean BATCH_FLAG;
+    public static String DBSOURCE;
+    public static String BATCHMANAGERSTATUS;
+    public static String WMFLAG;
 
     /*主模块编码*/
     public static final String WZYS = "100";
@@ -49,8 +49,9 @@ public class Global {
     public static final int OFFLINE_MODE = 0x1;
 
     /*地区公司*/
-    public static final String QINGYANG = "qingyang";
-    public static final String QINGHAI = "qinghai";
+    public static final String QINGYANG = "qysh";
+    public static final String QINGHAI = "qhyt";
+    public static final String XINANGD = "xngd";
 
     /*配置文件类型*/
     public static final String HEADER_CONFIG_TYPE = "0";
@@ -195,6 +196,7 @@ public class Global {
     public static final String EXTRA_QM_CERTIFICATE_KEY = "extra_qm_certificate";
     /*检验结果*/
     public static final String EXTRA_INSPECTION_RESULT_KEY = "extra_inspection_result";
+    /*fragment的信息是否已经初始化完毕，只有用户进入过在线模式系统该值才为true*/
     public static final String IS_INITED_FRAGMENT_CONFIG_KEY ="is_inited_fragment_config";
     public static final String IMAGE_DEFAULT_FORMAT = ".jpeg";
     public static final String EXTRA_TAKE_PHOTO_TYPE = "extra_take_photo_type";
@@ -215,8 +217,7 @@ public class Global {
     public static final String EXTRA_CAPTION_KEY = "extra_caption";
     public static final String EXTRA_UPLOAD_MSG_KEY = "extra_upload_msg";
     public static final String EXTRA_MODE_KEY = "extra_mode";
-    public static final String DBSOURCE_KEY = "dbSource";
-
+    public static final String EXTRA_REMARK_KEY = "extra_remark";
 
     /*扫描物料和批次位置*/
     public static final int MATERIAL_POS = 2;
@@ -225,6 +226,5 @@ public class Global {
     /*料签*/
     public static final int MATERIAL_POS_L = 4;
     public static final int BATCHFALG_POS_L = 6;
-
 
 }

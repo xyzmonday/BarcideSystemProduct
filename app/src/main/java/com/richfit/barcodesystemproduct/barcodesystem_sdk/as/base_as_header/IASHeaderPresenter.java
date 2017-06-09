@@ -1,7 +1,5 @@
 package com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_header;
 
-import android.support.annotation.NonNull;
-
 import com.richfit.barcodesystemproduct.base.base_header.IBaseHeaderPresenter;
 import com.richfit.domain.bean.ReferenceEntity;
 
@@ -12,18 +10,10 @@ import com.richfit.domain.bean.ReferenceEntity;
  */
 
 public interface IASHeaderPresenter extends IBaseHeaderPresenter<IASHeaderView> {
-    /**
-     * 获取单据数据
-     *
-     * @param refNum：单号
-     * @param refType:单据类型
-     * @param bizType：业务类型
-     * @param moveType:移动类型
-     * @param userId：用户loginId
-     */
-    void getReference(@NonNull String refNum, @NonNull String refType,
-                      @NonNull String bizType, @NonNull String moveType,
-                      @NonNull String refLineId, @NonNull String userId);
+
+    void getReference(String refNum, String refType, String bizType,
+                      String moveType, String refLineId, String userId);
+
     /**
      * 获取整单缓存
      *

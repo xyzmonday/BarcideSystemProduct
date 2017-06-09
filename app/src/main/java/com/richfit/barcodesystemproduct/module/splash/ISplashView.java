@@ -8,13 +8,13 @@ import com.richfit.barcodesystemproduct.base.BaseView;
 
 public interface ISplashView extends BaseView{
 
+    void networkAvailable();
+    void networkNotAvailable(String message);
+
     void toLogin();
     void syncDataError(String message);
 
-    void unRegister(String message);
-    void updateDbSource(String dbSource);
-    void registered();
-
     void downDBComplete();
     void downDBFail(String message);
+
 }

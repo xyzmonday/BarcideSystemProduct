@@ -76,4 +76,14 @@
 
     <View style="@style/ItemSeperatorLayout" />
 
+    <View style="@style/ItemSeperatorLayout" />
+
+    <TextView
+        android:id="@+id/recWork"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/rec_work" />
+
+    <View style="@style/ItemSeperatorLayout" />
+
 </LinearLayout>

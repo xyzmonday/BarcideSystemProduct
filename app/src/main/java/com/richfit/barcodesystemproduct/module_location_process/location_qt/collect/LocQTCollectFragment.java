@@ -195,7 +195,7 @@ public class LocQTCollectFragment extends BaseFragment<LocQTCollectPresenterImp>
             return;
         }
         etMaterialNum.setEnabled(true);
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
+        etBatchFlag.setEnabled(isOpenBatchManager);
     }
 
     /**
@@ -276,7 +276,7 @@ public class LocQTCollectFragment extends BaseFragment<LocQTCollectPresenterImp>
         //允许进行上下架的数量(应收数量)
         tvActQuantity.setText(lineData.actQuantity);
         if (TextUtils.isEmpty(getString(etBatchFlag))) {
-            etBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
+            etBatchFlag.setText(isOpenBatchManager ? lineData.batchFlag : "");
         }
         //这里需要根据具体是上架还是下架进行接下来的业务分发，如果是上架那么不做处理了
         if (true) {
@@ -300,7 +300,7 @@ public class LocQTCollectFragment extends BaseFragment<LocQTCollectPresenterImp>
             mInventoryDatas.clear();
             mXLocAdapter.notifyDataSetChanged();
         }
-        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etBatchFlag))) {
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etBatchFlag))) {
             showMessage("请输入批次");
             return;
         }
@@ -362,7 +362,7 @@ public class LocQTCollectFragment extends BaseFragment<LocQTCollectPresenterImp>
         }
 
         //批次处理。打开了批次管理而且必须输入，那么检查是否输入了批次
-        if (mIsOpenBatchManager && etBatchFlag.isEnabled())
+        if (isOpenBatchManager && etBatchFlag.isEnabled())
             if (TextUtils.isEmpty(batchFlag)) {
                 showMessage("请先输入批次");
                 return;
@@ -402,7 +402,7 @@ public class LocQTCollectFragment extends BaseFragment<LocQTCollectPresenterImp>
             return;
         }
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("请先输入批次");
             return;
         }
@@ -455,10 +455,10 @@ public class LocQTCollectFragment extends BaseFragment<LocQTCollectPresenterImp>
                 //缓存和输入的都为空或者都不为空而且相等,那么系统默认批次匹配
                 boolean isMatch;
 
-                isBatchValidate = mIsOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
+                isBatchValidate = isOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
                         (!TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) && batchFlag.equalsIgnoreCase(cachedItem.batchFlag)));
 
-                isMatch = mIsOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
+                isMatch = isOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
                         location.equalsIgnoreCase(cachedItem.location)) || (
                         !TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) &&
                                 location.equalsIgnoreCase(cachedItem.location))

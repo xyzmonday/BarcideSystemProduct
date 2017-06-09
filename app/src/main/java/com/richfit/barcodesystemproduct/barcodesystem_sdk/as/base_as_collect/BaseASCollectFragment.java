@@ -13,7 +13,9 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
+import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.adapter.InvAdapter;
@@ -23,6 +25,7 @@ import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.UiUtil;
+import com.richfit.common_lib.widget.RichAutoEditText;
 import com.richfit.common_lib.widget.RichEditText;
 import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.LocationInfoEntity;
@@ -31,6 +34,9 @@ import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
@@ -45,7 +51,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * 第二个是检查批次是否一致的问题
  * 又分为一下两种情况:
  * 1. 打开了批次管理，对于非必检物资做一致性检查
- * 2. 打开了批次管理，对于enable=true的做一致性检查
+ * 2. 打开了批次管理，对于enable=false的做一致性检查
+ * <p>
+ * 2017年06月07日:将上架仓位修改成可下拉的，数据源从仓位主数据里面获取
  *
  * @param <P>
  */
@@ -80,7 +88,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     @BindView(R.id.tv_location_name)
     protected TextView tvLocationName;
     @BindView(R.id.et_location)
-    protected RichEditText etLocation;
+    protected RichAutoEditText etLocation;
     @BindView(R.id.tv_location_quantity)
     protected TextView tvLocQuantity;
     @BindView(R.id.quantity_name)
@@ -119,6 +127,9 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     protected boolean isNLocation = false;
     /*批次一致性检查*/
     protected boolean isBatchValidate = true;
+    /*上架仓位列表适配器*/
+    ArrayAdapter<String> mLocationAdapter;
+    List<String> mLocationList;
 
     @Override
     protected int getContentId() {
@@ -167,6 +178,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     protected void initVariable(@Nullable Bundle savedInstanceState) {
         mRefLines = new ArrayList<>();
         mInvDatas = new ArrayList<>();
+        mLocationList = new ArrayList<>();
     }
 
 
@@ -202,10 +214,39 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
                     tvLocQuantity.setText("");
                     tvTotalQuantity.setText("");
                 });
-        //对于质检物资(不上架)通过库存地点来获取缓存
+
+        //对于质检物资(不上架)通过库存地点来获取缓存，如果需要上架选择库存地点获取上架仓位列表
         RxAdapterView.itemSelections(spInv)
-                .filter(pos -> pos > 0 && isNLocation)
-                .subscribe(pos -> getTransferSingle(getString(etBatchFlag), getString(etLocation)));
+                .filter(pos -> pos > 0)
+                .subscribe(pos -> {
+                    if (isNLocation) {
+                        //如果不上架
+                        getTransferSingle(getString(etBatchFlag), getString(etLocation));
+                    } else {
+                        loadLocationList(getString(etLocation), false);
+                    }
+                });
+
+        //监听输入的关键字
+        RxTextView.textChanges(etLocation)
+                .debounce(100, TimeUnit.MILLISECONDS)
+                .filter(str -> !TextUtils.isEmpty(str) && mLocationList != null &&
+                        mLocationList.size() > 0 && !filterKeyWord(str))
+                .subscribe(a -> loadLocationList(getString(etLocation), true));
+
+        //选中上架仓位列表的item，关闭输入法,并且直接匹配出仓位数量
+        RxAutoCompleteTextView.itemClickEvents(etLocation)
+                .filter(a -> !isNLocation)
+                .subscribe(a -> {
+                    hideKeyboard(etLocation);
+                    getTransferSingle(getString(etBatchFlag), getString(etLocation));
+                });
+
+        //点击自动提示控件，显示默认列表
+        RxView.clicks(etLocation)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
+                .filter(a -> mLocationList != null && mLocationList.size() > 0)
+                .subscribe(a -> showAutoCompleteConfig(etLocation));
     }
 
     /**
@@ -243,8 +284,9 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             return;
         }
         etMaterialNum.setEnabled(true);
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
         etLocation.setEnabled(!isNLocation);
+        //重新复位批次管理标识
+        isOpenBatchManager = true;
     }
 
 
@@ -311,6 +353,9 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
     public void bindCommonCollectUI() {
         mSelectedRefLineNum = mRefLines.get(spRefLine.getSelectedItemPosition());
         RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
+        //再次复位批次管理标识
+        isOpenBatchManager = true;
+        mangageBatchFlagStatus(etBatchFlag, lineData.batchManagerStatus);
         etQuantity.setText("");
         //物资描述
         tvMaterialDesc.setText(lineData.materialDesc);
@@ -320,12 +365,9 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         tvWork.setText(lineData.workName);
         //应收数量
         tvActQuantity.setText(lineData.actQuantity);
-        //批次。注意这里的逻辑是如果用户输入或者扫描带出了批次，那么不需要
-        //刷新批次，因为此时单据中批次和显示的批次一致；如果用户没有输入或者条码中没有批次
-        //那么你默认显示单据中的批次即可，如果没有打开批次管理那么默认显示为空(按理来说此时单据中的
-        // 批次信息也应该为空)。在青海委外和105入库中批次只能够显示条码和单据中的批次。
-        if (TextUtils.isEmpty(getString(etBatchFlag))) {
-            etBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
+        //如果打开了批次管理，那么以当前输入的为准，如果没有那么获取单据中的批次
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etBatchFlag))) {
+            etBatchFlag.setText(lineData.batchFlag);
         }
         //先将库存地点选择器打开，获取缓存后在判断是否需要锁定
         spInv.setEnabled(true);
@@ -355,6 +397,53 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         spInv.setSelection(isNLocation ? 1 : 0);
     }
 
+    @Override
+    public void loadLocationList(String keyWord, boolean isDropDown) {
+        RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
+        InvEntity invEntity = mInvDatas.get(spInv.getSelectedItemPosition());
+        mPresenter.getLocationList(lineData.workId, lineData.workCode, invEntity.invId,
+                invEntity.invCode, keyWord, 100, getInteger(R.integer.orgNorm), isDropDown);
+    }
+
+    /**
+     * 如果用户输入的关键字在mLocationList存在，那么不在进行数据查询.
+     *
+     * @param keyWord
+     * @return
+     */
+    private boolean filterKeyWord(CharSequence keyWord) {
+        Pattern pattern = Pattern.compile("^" + keyWord.toString().toUpperCase());
+        for (String item : mLocationList) {
+            Matcher matcher = pattern.matcher(item);
+            while (matcher.find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void getLocationListFail(String message) {
+        showMessage(message);
+    }
+
+    @Override
+    public void getLocationListSuccess(List<String> list, boolean isDropDown) {
+        mLocationList.clear();
+        mLocationList.addAll(list);
+        if (mLocationAdapter == null) {
+            mLocationAdapter = new ArrayAdapter<>(mActivity,
+                    android.R.layout.simple_dropdown_item_1line, mLocationList);
+            etLocation.setAdapter(mLocationAdapter);
+            setAutoCompleteConfig(etLocation);
+        } else {
+            mLocationAdapter.notifyDataSetChanged();
+        }
+        if (isDropDown) {
+            showAutoCompleteConfig(etLocation);
+        }
+    }
+
     /**
      * 获取单条缓存。
      * 在获取仓位数量的缓存之前，必须检查仓位是否合理。注意不同的公司检查的策略不一样。
@@ -372,15 +461,17 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         }
 
         //批次处理。打开了批次管理而且必须输入，那么检查是否输入了批次
-        if (mIsOpenBatchManager && etBatchFlag.isEnabled())
+        if (isOpenBatchManager && etBatchFlag.isEnabled()) {
             if (TextUtils.isEmpty(batchFlag)) {
                 showMessage("请先输入批次");
                 return;
             }
+        }
         if (TextUtils.isEmpty(location) && !isNLocation) {
             showMessage("请先输入上架仓位");
             return;
         }
+
         isBatchValidate = false;
 
         if (!isNLocation) {
@@ -431,6 +522,13 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             mInvDatas.clear();
             mInvAdapter.notifyDataSetChanged();
         }
+
+        //上架仓位
+        if (mLocationAdapter != null) {
+            mLocationList.clear();
+            mLocationAdapter.notifyDataSetChanged();
+        }
+
         spInv.setEnabled(true);
     }
 
@@ -469,10 +567,10 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
                     //缓存和输入的都为空或者都不为空而且相等,那么系统默认批次匹配
                     boolean isMatch;
 
-                    isBatchValidate = mIsOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
+                    isBatchValidate = isOpenBatchManager && ((TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag)) ||
                             (!TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) && batchFlag.equalsIgnoreCase(cachedItem.batchFlag)));
 
-                    isMatch = mIsOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
+                    isMatch = isOpenBatchManager ? (TextUtils.isEmpty(cachedItem.batchFlag) && TextUtils.isEmpty(batchFlag) &&
                             location.equalsIgnoreCase(cachedItem.location)) || (
                             !TextUtils.isEmpty(cachedItem.batchFlag) && !TextUtils.isEmpty(batchFlag) &&
                                     location.equalsIgnoreCase(cachedItem.location))
@@ -492,7 +590,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
                 }
             }
         } else {
-            //对于质检物质，显示累计数量锁定库存地点
+            //对于不上架的物资，显示累计数量和锁定库存地点
             if (cache != null) {
                 tvTotalQuantity.setText(cache.totalQuantity);
                 lockInv(cache.invId);
@@ -595,7 +693,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
             return false;
         }
         //第一步检查是否需要输入批次。打开了批次管理，并且批次可以输入的情况下
-        if (mIsOpenBatchManager && etBatchFlag.isEnabled()) {
+        if (isOpenBatchManager && etBatchFlag.isEnabled()) {
             if (TextUtils.isEmpty(getString(etBatchFlag))) {
                 showMessage("请先输入批次");
                 return false;
@@ -603,16 +701,15 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         }
 
         //批次，对于批次的检查比较严格，分为以下几种情况(注意到数据保存这里，仅仅是需要检查是否修改了已经匹配上缓存的批次)
-        //1. 打开了批次管理，但是需要根据是否是必检物资来判断是否检查(isQmFlag)。
-        //   如果是必检物资那么不需要检查；
+        //1. 打开了批次管理，对于非必检物资必须做批次一致性检查;
         //2. 打开了批次管理，但是批次只能是从单据或者条码中带出来的，那么不需要检查批次是否一致
-        //   该情况有etBatchFag的enable属性控制。如果enable=false，那么必须检查批次是否一致
-        if (mIsOpenBatchManager && !isQmFlag && !isBatchValidate) {
-            showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
+
+        if (isOpenBatchManager && !isQmFlag && !isBatchValidate) {
+            showMessage("批次输入有误，请检查本次输入批次是否与上一次批次输入一致");
             return false;
         }
-        if (mIsOpenBatchManager && !etBatchFlag.isEnabled() && !isBatchValidate) {
-            showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
+        if (isOpenBatchManager && !etBatchFlag.isEnabled() && !isBatchValidate) {
+            showMessage("批次输入有误，请检查本次输入批次是否与上一次批次输入一致");
             return false;
         }
 
@@ -714,6 +811,7 @@ public abstract class BaseASCollectFragment<P extends IASCollectPresenter> exten
         }
         super.retry(retryAction);
     }
+
 
     protected abstract int getOrgFlag();
 }

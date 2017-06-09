@@ -10,6 +10,7 @@ import com.richfit.common_lib.utils.Global;
 
 
 /**
+ * 注意103入库不上架也不打开批次管理
  * Created by monday on 2017/2/17.
  */
 
@@ -39,8 +40,6 @@ public class QingHaiAS103CollectFragment extends BaseASCollectFragment<ASCollect
     @Override
     protected void initVariable(@Nullable Bundle savedInstanceState) {
         super.initVariable(savedInstanceState);
-        //不打开批次管理，所有的批次不做任何检查
-        mIsOpenBatchManager = false;
         //不上架，不能输入仓位，单条缓存有库存地点触发
         isNLocation = true;
     }
@@ -51,6 +50,15 @@ public class QingHaiAS103CollectFragment extends BaseASCollectFragment<ASCollect
         llLocation.setVisibility(View.GONE);
         llLocationQuantity.setVisibility(View.GONE);
         super.initView();
+    }
+
+
+
+    @Override
+    public void bindCommonCollectUI() {
+        super.bindCommonCollectUI();
+        //强制不进行批次检查
+        isOpenBatchManager = false;
     }
 
     @Override

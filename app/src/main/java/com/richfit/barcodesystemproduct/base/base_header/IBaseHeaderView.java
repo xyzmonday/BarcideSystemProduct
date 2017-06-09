@@ -15,4 +15,5 @@ public interface IBaseHeaderView extends BaseView {
 
     void uploadEditedHeadDataFail(String message);
     void uploadEditedHeadComplete();
+
 }

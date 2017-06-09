@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.richfit.barcodesystemproduct.base.BaseFragment;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.UploadMsgEntity;
 

@@ -146,7 +146,7 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
             return;
         }
         etMaterialNum.setEnabled(true);
-        etBatchFlag.setEnabled(mIsOpenBatchManager);
+        etBatchFlag.setEnabled(isOpenBatchManager);
     }
 
     /**
@@ -259,7 +259,7 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
         etQuantity.setText(mCacheQuantity);
         //批次
         if (TextUtils.isEmpty(getString(etBatchFlag))) {
-            etBatchFlag.setText(mIsOpenBatchManager ? lineData.batchFlag : "");
+            etBatchFlag.setText(isOpenBatchManager ? lineData.batchFlag : "");
         }
         //获取库存地点
         mPresenter.getInvsByWorkId(lineData.workId, 0);
@@ -371,7 +371,7 @@ public class QingYangAOCollectFragment extends BaseFragment<ApprovalOtherPresent
         }
 
         //批次信息必须与单据中的一样，这里批次在单据中一定有，但是防止用户修改
-        if (mIsOpenBatchManager) {
+        if (isOpenBatchManager) {
             RefDetailEntity lineData = getLineData(mSelectedRefLineNum);
             final String batchFlag = lineData.batchFlag;
             if (!TextUtils.isEmpty(batchFlag) &&

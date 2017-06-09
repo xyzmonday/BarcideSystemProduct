@@ -16,4 +16,6 @@ public class QingHaiDSNHeaderFragment extends BaseDSNHeaderFragment {
     public void initInjector() {
         mFragmentComponent.inject(this);
     }
+
+
 }

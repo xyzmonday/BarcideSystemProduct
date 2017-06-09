@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 
 import com.richfit.barcodesystemproduct.BuildConfig;
 import com.richfit.barcodesystemproduct.base.BaseActivity;
@@ -13,7 +12,6 @@ import com.richfit.barcodesystemproduct.module.login.LoginActivity;
 import com.richfit.barcodesystemproduct.module.splash.imp.SplashPresenterImp;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.NetworkStateUtil;
-import com.richfit.common_lib.utils.SPrefUtil;
 import com.richfit.common_lib.utils.SysProp;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.LoadBasicDataWrapper;
@@ -41,6 +39,7 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
 
     ArrayList<LoadBasicDataWrapper> mRequestParam;
 
+
     @Override
     protected int getContentId() {
         return 0;
@@ -61,6 +60,13 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     @Override
     public void initData(Bundle savedInstanceState) {
         super.initData(savedInstanceState);
+        startBarcodeSystem();
+    }
+
+    /**
+     * 进入条码系统的入口
+     */
+    private void startBarcodeSystem() {
         if (judgeProperty()) {
             new AlertDialog.Builder(this)
                     .setTitle("扫描设置")
@@ -79,8 +85,34 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
             toLogin();
             return;
         }
+        //如果有网络那么直接进行基础数据更新
         mPresenter.setLocal(false);
-        toRegister();
+        Global.DBSOURCE = BuildConfig.APP_NAME;
+        Global.MAC_ADDRESS = UiUtil.getMacAddress();
+        mPresenter.getConnectionStatus();
+    }
+
+    /**
+     * 如果该地址能够连接到服务器
+     */
+    @Override
+    public void networkAvailable() {
+        //如果网络可用，那么针对不同的地区公司下载原始单据数据
+        switch (BuildConfig.APP_NAME) {
+            case Global.QINGHAI:
+                mPresenter.downloadInitialDB();
+                break;
+            default:
+                //如果没有离线业务，那么直接同步基础数据
+                startSyncBasicData();
+                break;
+        }
+    }
+
+    @Override
+    public void networkNotAvailable(String message) {
+        showMessage(message);
+        toLogin();
     }
 
     /**
@@ -94,34 +126,49 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
         return false;
     }
 
-    private void toRegister() {
-        if (mPresenter != null) {
-            Global.MAC_ADDRESS = UiUtil.getMacAddress();
-            mPresenter.register();
-        }
-    }
 
     /**
      * 跳转到登陆页面
      */
     @Override
     public void toLogin() {
-        if (TextUtils.isEmpty(Global.dbSource)) {
-            //可能是离线或者注册失败过。从缓存得到数据
-            Global.dbSource = (String) SPrefUtil.getData(Global.DBSOURCE_KEY, "");
-            if (TextUtils.isEmpty(Global.dbSource)) {
-                //如果还是为空那么，说明一定没有注册过
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("提示")
-                        .setMessage("该手持未注册，请将提供的手持MAC地址联系条码项目组进行注册。MAC地址为" + UiUtil.getMacAddress())
-                        .show();
-                return;
-            }
-        }
         startActivity(new Intent(SplashActivity.this, LoginActivity.class));
         overridePendingTransition(0, android.R.anim.fade_out);
         finish();
     }
+
+    /**
+     * 同步基础数据
+     */
+    private void startSyncBasicData() {
+        if (mRequestParam == null) {
+            mRequestParam = new ArrayList<>();
+        }
+
+        LoadBasicDataWrapper task = new LoadBasicDataWrapper();
+        task.isByPage = false;
+        task.queryType = "ZZ";
+        mRequestParam.add(task);
+
+        //如果需要二级单位的组织机构
+        switch (BuildConfig.APP_NAME) {
+            case Global.QINGYANG:
+                task = new LoadBasicDataWrapper();
+                task.isByPage = false;
+                task.queryType = "ZZ2";
+                mRequestParam.add(task);
+                break;
+        }
+
+        //获取扩展字段的字典
+        task = new LoadBasicDataWrapper();
+        task.isByPage = false;
+        task.queryType = "SD";
+        mRequestParam.add(task);
+
+        mPresenter.loadAndSaveBasicData(mRequestParam);
+    }
+
 
     /**
      * 同步基础数据出错
@@ -145,40 +192,8 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     }
 
     /**
-     * 用户未注册，提示用户注册。
-     *
-     * @param message
+     * 如果基础数据下载完毕或者不是第一次进入该app那么直接同步基础数据
      */
-    @Override
-    public void unRegister(String message) {
-        Global.dbSource = "";
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("提示")
-                .setMessage("该手持未注册，请将提供的手持MAC地址联系条码项目组进行注册。MAC地址为" + Global.MAC_ADDRESS)
-                .show();
-    }
-
-    @Override
-    public void updateDbSource(String dbSource) {
-        SPrefUtil.getData(Global.DBSOURCE_KEY, dbSource);
-        Global.dbSource = dbSource;
-    }
-
-    /**
-     * 注册完毕
-     */
-    @Override
-    public void registered() {
-        switch (BuildConfig.APP_NAME) {
-            case Global.QINGYANG:
-                startSyncBasicData();
-                break;
-            case Global.QINGHAI:
-                mPresenter.downloadInitialDB();
-                break;
-        }
-    }
-
     @Override
     public void downDBComplete() {
         startSyncBasicData();
@@ -187,39 +202,9 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     @Override
     public void downDBFail(String message) {
         showMessage(message);
+        toLogin();
     }
 
-    /**
-     * 同步基础数据
-     */
-    private void startSyncBasicData() {
-        if (mRequestParam == null) {
-            mRequestParam = new ArrayList<>();
-        }
-        LoadBasicDataWrapper task = null;
-        switch (BuildConfig.APP_NAME) {
-            case Global.QINGYANG:
-                task = new LoadBasicDataWrapper();
-                task.isByPage = false;
-                task.queryType = "ZZ2";
-                mRequestParam.add(task);
-                break;
-            default:
-                task = new LoadBasicDataWrapper();
-                task.isByPage = false;
-                task.queryType = "ZZ";
-                mRequestParam.add(task);
-                break;
-        }
-
-        //获取扩展字段的字典
-        task = new LoadBasicDataWrapper();
-        task.isByPage = false;
-        task.queryType = "SD";
-        mRequestParam.add(task);
-
-        mPresenter.loadAndSaveBasicData(mRequestParam);
-    }
 
     @Override
     public void networkConnectError(String retryAction) {
@@ -229,9 +214,6 @@ public class SplashActivity extends BaseActivity<SplashPresenterImp>
     @Override
     public void retry(String action) {
         switch (action) {
-            case Global.RETRY_REGISTER_ACTION:
-                mPresenter.register();
-                break;
             case Global.RETRY_SYNC_BASIC_DATA_ACTION:
                 mPresenter.loadAndSaveBasicData(mRequestParam);
                 break;

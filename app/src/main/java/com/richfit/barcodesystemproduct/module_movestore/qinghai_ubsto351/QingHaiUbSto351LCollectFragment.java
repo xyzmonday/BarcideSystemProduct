@@ -101,7 +101,7 @@ public class QingHaiUbSto351LCollectFragment extends BaseMSCollectFragment {
             return;
         }
 
-        if (mIsOpenBatchManager)
+        if (isOpenBatchManager)
             if (TextUtils.isEmpty(batchFlag)) {
                 showMessage("请先输入批次");
                 return;
@@ -141,7 +141,7 @@ public class QingHaiUbSto351LCollectFragment extends BaseMSCollectFragment {
         }
 
         //批次
-        if (mIsOpenBatchManager && !isBatchValidate) {
+        if (isOpenBatchManager && !isBatchValidate) {
             showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
             return false;
         }

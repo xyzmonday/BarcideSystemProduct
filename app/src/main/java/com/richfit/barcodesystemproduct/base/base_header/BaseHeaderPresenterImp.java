@@ -8,7 +8,11 @@ import com.richfit.common_lib.rxutils.TransformerHelper;
 import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.Global;
 import com.richfit.common_lib.utils.L;
+import com.richfit.domain.bean.RefDetailEntity;
+import com.richfit.domain.bean.ReferenceEntity;
 import com.richfit.domain.bean.ResultEntity;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -25,6 +29,7 @@ public class BaseHeaderPresenterImp<V extends IBaseHeaderView> extends BasePrese
     public BaseHeaderPresenterImp(@ContextLife("Activity") Context context) {
         super(context);
     }
+
 
     @Override
     protected void onStart() {
@@ -89,4 +94,6 @@ public class BaseHeaderPresenterImp<V extends IBaseHeaderView> extends BasePrese
                     }
                 });
     }
+
+
 }

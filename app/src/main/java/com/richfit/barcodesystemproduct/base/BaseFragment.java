@@ -31,7 +31,6 @@ import com.richfit.common_lib.dialog.NetConnectErrorDialogFragment;
 import com.richfit.common_lib.dialog.ShowErrorMessageDialog;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.UiUtil;
 import com.richfit.domain.bean.BottomMenuEntity;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -71,30 +70,21 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     public static final int COLLECT_FRAGMENT_INDEX = 0x2;
 
     protected FragmentComponent mFragmentComponent;
-
     private boolean isActivityCreated;
-
     private Disposable mDisposable;
-
     protected View mView;
-
     @Inject
     protected P mPresenter;
-
     protected Activity mActivity;
-
     private Unbinder mUnbinder;
-
     protected NetConnectErrorDialogFragment mNetConnectErrorDialogFragment;
 
     /*抬头界面，数据明细界面，数据采集界面共享的单据数据，注意我们需要将单据数据和缓存数据隔离*/
     protected static ReferenceEntity mRefData;
     /*对于委外入库，组件界面的明细界面和数据采集界面共享的数据明细*/
     protected static List<RefDetailEntity> mRefDetail;
-
     /*额外控件缓存*/
     protected Map<String, View> mExtraViews;
-
     protected String mCompanyCode;
     protected String mModuleCode;
     protected String mBizType;
@@ -102,8 +92,8 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     protected int mFragmentType;
     /*该页签名称*/
     protected String mTabTitle;
-    protected boolean mIsOpenBatchManager = Global.BATCH_FLAG;
-
+    /*批次管理，默认是打开的*/
+    protected boolean isOpenBatchManager;
 
     public static BaseFragment findFragment(FragmentManager fm, String tag, String companyCode, String moduleCode,
                                             String bizType, String refType, int fragmentType, String title, Class clazz) {
@@ -345,7 +335,7 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         ArrayList<String> lineNums = new ArrayList<>();
         List<RefDetailEntity> list = mRefData.billDetailList;
         for (RefDetailEntity entity : list) {
-            if (mIsOpenBatchManager) {
+            if (isOpenBatchManager) {
                 final String lineNum = entity.lineNum;
                 //如果打开了批次，那么在看明细中是否有批次
                 if (!TextUtils.isEmpty(entity.batchFlag) && !TextUtils.isEmpty(batchFlag)) {
@@ -671,8 +661,23 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         if(!TextUtils.isEmpty(recordUnit) && unitRate != 0) {
             q  /= unitRate;
         }
-        L.e("q = " + q);
         DecimalFormat df = new DecimalFormat("#.###");
         return df.format(q);
+    }
+
+    /**
+     * 管理批次
+     * @param batchFlagView:接收批次信息输入的控件
+     * @param batchManagerStatus:当前物料的批次管理状态
+     */
+    protected void mangageBatchFlagStatus(TextView batchFlagView,boolean batchManagerStatus) {
+        //如果该业务打开了批次管理，那么检查该物料是否打开了批次管理
+        isOpenBatchManager = batchManagerStatus;
+        if(!isOpenBatchManager) {
+            //如果没有打开那么，禁止输入。这里由于系统会针对其他的入库业务设置
+            //enable的属性，所以在打开批次管理的情况下页不能随意修改enable属性
+            batchFlagView.setEnabled(false);
+            batchFlagView.setText("");
+        }
     }
 }

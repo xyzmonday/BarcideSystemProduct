@@ -15,6 +15,7 @@ import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ResultEntity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -79,7 +80,7 @@ public class ASCollectPresenterImp extends BasePresenter<IASCollectView>
         }
 
         ResourceSubscriber<String> subscriber =
-                mRepository.getLocationInfo(queryType, workId, invId,"", location)
+                mRepository.getLocationInfo(queryType, workId, invId, "", location)
                         .compose(TransformerHelper.io2main())
                         .subscribeWith(new ResourceSubscriber<String>() {
                             @Override
@@ -99,6 +100,43 @@ public class ASCollectPresenterImp extends BasePresenter<IASCollectView>
                                 if (mView != null) {
                                     mView.checkLocationSuccess(batchFlag, location);
                                 }
+                            }
+                        });
+        addSubscriber(subscriber);
+    }
+
+    @Override
+    public void getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag,
+                                boolean isDropDown) {
+        mView = getView();
+
+        if (TextUtils.isEmpty(workCode) && TextUtils.isEmpty(workId)) {
+            mView.getLocationListFail("获取到工厂信息");
+            return;
+        }
+
+        ResourceSubscriber<List<String>> subscriber =
+                mRepository.getLocationList(workId, workCode, invId, invCode, keyWord, defaultItemNum, flag)
+                        .filter(list -> list != null && list.size() > 0)
+                        .compose(TransformerHelper.io2main())
+                        .subscribeWith(new ResourceSubscriber<List<String>>() {
+                            @Override
+                            public void onNext(List<String> list) {
+                                if (mView != null) {
+                                    mView.getLocationListSuccess(list,isDropDown);
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable t) {
+                                if (mView != null) {
+                                    mView.getLocationListFail(t.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onComplete() {
+
                             }
                         });
         addSubscriber(subscriber);

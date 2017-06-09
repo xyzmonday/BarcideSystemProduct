@@ -2,7 +2,7 @@ package com.richfit.common_lib.multisp;
 
 
 /**
- * Created by l4656_000 on 2015/11/30.
+ * Created by monday on 2015/11/30.
  */
 public class ConstantUtil {
     // normal constants

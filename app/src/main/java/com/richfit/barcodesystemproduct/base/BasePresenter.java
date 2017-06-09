@@ -339,4 +339,35 @@ public class BasePresenter<T extends BaseView> implements IPresenter<T> {
         }
         return strs;
     }
+
+    /**
+     * 为单据行增加批次信息。在登陆的时候，已经拿到了batch_flag标识，该标识表示
+     * #Y:全部物料启用批次管理
+     * #N:全部物料不启用批次管理
+     * #T:根据SAP的MARC表判断物料是否启用批次管理
+     *
+     * @param refData
+     * @return
+     */
+    protected ReferenceEntity addBatchManagerStatus(ReferenceEntity refData) {
+        if ("Y".equalsIgnoreCase(Global.BATCHMANAGERSTATUS)) {
+            addBatchManagerStatus(refData.billDetailList, true);
+        } else if ("N".equalsIgnoreCase(Global.BATCHMANAGERSTATUS)) {
+            addBatchManagerStatus(refData.billDetailList, false);
+        } else if ("T".equalsIgnoreCase(Global.BATCHMANAGERSTATUS)) {
+            List<RefDetailEntity> list = refData.billDetailList;
+            for (RefDetailEntity data : list) {
+                String batchManagerStatus = mRepository.getBatchManagerStatus(data.workId, data.materialId);
+                //如果是X那么表示打开了批次管理
+                data.batchManagerStatus = "X".equalsIgnoreCase(batchManagerStatus);
+            }
+        }
+        return refData;
+    }
+
+    private void addBatchManagerStatus(List<RefDetailEntity> list, boolean isOpenBatchManager) {
+        for (RefDetailEntity item : list) {
+            item.batchManagerStatus = isOpenBatchManager;
+        }
+    }
 }

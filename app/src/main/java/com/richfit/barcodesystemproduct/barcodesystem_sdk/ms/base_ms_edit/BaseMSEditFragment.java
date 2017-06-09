@@ -246,7 +246,7 @@ public abstract class BaseMSEditFragment extends BaseEditFragment<MSEditPresente
             tvLocQuantity.setText("0");
             //匹配每一个缓存
             for (LocationInfoEntity info : locationInfos) {
-                if (mIsOpenBatchManager ? location.equalsIgnoreCase(info.locationCombine) &&
+                if (isOpenBatchManager ? location.equalsIgnoreCase(info.locationCombine) &&
                         batchFlag.equalsIgnoreCase(info.batchFlag) : location.equalsIgnoreCase(info.locationCombine)) {
                     tvLocQuantity.setText(info.quantity);
                     break;

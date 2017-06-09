@@ -1,3 +1,4 @@
+
 package com.richfit.barcodesystemproduct.module_local.upload.imp;
 
 import android.content.Context;
@@ -12,7 +13,6 @@ import com.richfit.common_lib.scope.ContextLife;
 import com.richfit.common_lib.utils.CommonUtil;
 import com.richfit.common_lib.utils.FileUtil;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ImageEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 import com.richfit.domain.bean.ReferenceEntity;
@@ -50,6 +50,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
     protected static final String REFTYPE_DESC_KEY = "refTypeDesc";
     protected static final String TRANSTOSAPFLAG_KEY = "transTosapFlag";
 
+    /*注意这里是从-1开始*/
     protected int mTaskNum = -1;
     UploadContract.View mView;
     List<ReferenceEntity> mRefDatas;
@@ -161,7 +162,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                                 if (mView != null && info != null) {
                                     info.transNum = transNum;
                                     mView.uploadCollectDataSuccess(info);
-                                    L.e("onNext mTaskNum = " + mTaskNum + ";info = " + info);
+//                                    L.e("onNext mTaskNum = " + mTaskNum + ";info = " + info);
                                 }
                             }
 
@@ -178,7 +179,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                                 if (mView != null && info != null) {
                                     info.errorMsg = message;
                                     info.isEror = true;
-                                    L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
+//                                    L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
                                     mView.uploadCollectDataFail(mMessageArray.get(mTaskNum));
                                 }
                             }
@@ -189,14 +190,14 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
                                 if (mView != null && info != null) {
                                     info.errorMsg = message;
                                     info.isEror = true;
-                                    L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
+//                                    L.e("onError mTaskNum = " + mTaskNum + ";info = " + info);
                                     mView.uploadCollectDataFail(mMessageArray.get(mTaskNum));
                                 }
                             }
 
                             @Override
                             public void _onComplete() {
-                                L.e("onComplete");
+//                                L.e("onComplete");
                                 if (mView != null) {
                                     mView.uploadCollectDataComplete();
                                 }
@@ -220,7 +221,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
      * @param list
      * @return
      */
-    private List<ReferenceEntity> calcTotalNum(List<ReferenceEntity> list) {
+    protected List<ReferenceEntity> calcTotalNum(List<ReferenceEntity> list) {
         int size = list.size();
         for (ReferenceEntity referenceEntity : list) {
             referenceEntity.totalCount = size;
@@ -260,40 +261,44 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
         mMessageArray.get(mTaskNum).materialDoc = materialDoc;
 
         //如果是验收，那么此时需要上传照片
-        if ("00".equals(bizType) || "01".equals(bizType)) {
-            if (!TextUtils.isEmpty(refNum) && !TextUtils.isEmpty(refCodeId)) {
-                //第一步是读取图片
-                return Flowable.just(refNum)
-                        .flatMap(num -> {
-                            ArrayList<ImageEntity> images = mRepository.readImagesByRefNum(num, true);
-                            if (images == null || images.size() == 0) {
-                                return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"));
-                            }
-                            return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"))
-                                    .zipWith(uploadInspectedImages(images, refCodeId, transId, userId, "01"), (s, s2) -> s2)
-                                    .zipWith(uploadInspectedImages(images, refCodeId, transId, userId, "02")
-                                            , (s, s2) -> s + s2)
-                                    .doOnComplete(() -> mRepository.deleteInspectionImages(refNum, refCodeId, true))
-                                    .doOnComplete(() -> FileUtil.deleteDir(FileUtil.getImageCacheDir(mContext.getApplicationContext(), refNum, true)));
-                        });
-            } else {
-                return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"));
-            }
+        if (("00".equals(bizType) || "01".equals(bizType)) && !TextUtils.isEmpty(refNum) && !TextUtils.isEmpty(refCodeId)) {
+            return Flowable.just(refNum)
+                    .flatMap(num -> {
+                        ArrayList<ImageEntity> images = mRepository.readImagesByRefNum(num, true);
+                        if (images == null || images.size() == 0) {
+                            //如果没有图片
+                            return transferCollectionData(bizType, transId, refType, userId, voucherDate, transToSapFlag);
+                        }
+                        return uploadInspectedImages(images, refCodeId, transId, userId, "01")
+                                .zipWith(uploadInspectedImages(images, refCodeId, transId, userId, "02"), (s1, s2) -> s2)
+                                .doOnNext(a -> {
+                                    if ("02".equals(a)) {
+                                        mRepository.deleteInspectionImages(refNum, refCodeId, true);
+                                        FileUtil.deleteDir(FileUtil.getImageCacheDir(mContext.getApplicationContext(), refNum, false));
+                                    }
+                                });
+                    }).flatMap(s -> transferCollectionData(bizType, transId, refType, userId, voucherDate, transToSapFlag));
         }
 
         if (TextUtils.isEmpty(transToSapFlag)) {
             //表示该业务不需要转储
             return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"));
         }
-        //01/05
+
+        return transferCollectionData(bizType, transId, refType, userId, voucherDate, transToSapFlag);
+    }
+
+    private Flowable<String> transferCollectionData(String bizType, String transId, String refType,
+                                                    String userId, String voucherDate, String transToSapFlag) {
+
         return mRepository.setTransFlag(bizType, transId, "3").flatMap(a -> Flowable.just("完成!"))
                 .zipWith(mRepository.transferCollectionData(transId, bizType, refType,
                         userId, voucherDate, transToSapFlag, mExtraTransMap)
                         .onErrorResumeNext(new Function<Throwable, Publisher<? extends String>>() {
                             @Override
-                            public Publisher<? extends String> apply(Throwable e) throws Exception {
+                            public Publisher<? extends String> apply(Throwable throwable) throws Exception {
                                 return mRepository.setTransFlag(bizType, transId, "2")
-                                        .flatMap(s -> Flowable.error(e));
+                                        .flatMap(s -> Flowable.error(throwable));
                             }
                         }), (s, s2) -> s2);
     }
@@ -480,7 +485,7 @@ public class UploadPresenterImp extends BaseDetailPresenterImp<UploadContract.Vi
         switch (businessType) {
             case "C01":
                 businessTypeDesc = "明盘-无参考";
-                transToSapFlag = "";
+                transToSapFlag = "05";
                 break;
             case "C02":
                 businessTypeDesc = "盲盘-无参考";

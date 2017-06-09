@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
-//apply plugin: 'com.tencent.tinker.patch'
 apply plugin: 'com.antfortune.freeline'
 //获取产品的名字
 def getProductName() {
@@ -22,22 +21,30 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-        manifestPlaceholders = [CHANNEL: "qinghai"]
+
+        manifestPlaceholders = [CHANNEL: "xngd"]
     }
 
     signingConfigs {
-        //签名1
+        //庆阳
         sign_qingyang {
             keyAlias 'xyzmonday'
             keyPassword 'yff3445683'
             storeFile file('E:\\2017-04\\barcodesystem_keystore\\bcs_qingyang_key.jks')//签名文件路径
             storePassword 'yff3445683'
         }
-        //签名2
+        //青海
         sign_qinghai {
             keyAlias 'xyzmonday'
             keyPassword 'yff3445683'
             storeFile file('E:\\2017-04\\barcodesystem_keystore\\bcs_qinghai_key.jks')//签名文件路径
+            storePassword 'yff3445683'
+        }
+        //西南管道
+        sign_xinangd {
+            keyAlias 'xyzmonday'
+            keyPassword 'yff3445683'
+            storeFile file('E:\\2017-04\\barcodesystem_keystore\\bcs_xinangd_key.jks')//签名文件路径
             storePassword 'yff3445683'
         }
     }
@@ -56,8 +63,9 @@ android {
                     def oldFile = output.outputFile
                     if (variant.buildType.name.equals('release')) {
                         def releaseApkName = getProductName() + "_v${defaultConfig.versionName}_${releaseTime()}_" + variant.productFlavors[0].name + '_release.apk'
-                        output.outputFile = new File(oldFile.parent, releaseApkName)
+                        output.outputFile = new File(oldFile.parent,releaseApkName)
                     }
+
                 }
             }
         }
@@ -75,21 +83,34 @@ android {
         qingyang {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8092/lhbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingYang.json"'
-            buildConfigField "String","APP_NAME",'"qingyang"'
-            buildConfigField "boolean","ISSERVICEDL",'false'
+            buildConfigField "String", "APP_NAME", '"qysh"'
+            buildConfigField "boolean", "ISSERVICEDL", 'false'
             versionCode 2
             versionName "1.1"
             signingConfig signingConfigs.sign_qingyang
+
         }
 
         qinghai {
             buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8087/ktbk_middleware/MobileProcess/"'
             buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_QingHai.json"'
-            buildConfigField "String","APP_NAME",'"qinghai"'
-            buildConfigField "boolean","ISSERVICEDL",'false'
+            buildConfigField "String", "APP_NAME", '"qhyt"'
+            buildConfigField "boolean", "ISSERVICEDL", 'false'
             versionCode 1
             versionName "1.0"
             signingConfig signingConfigs.sign_qinghai
+
+        }
+
+        xngd {
+            buildConfigField "String", "SERVER_URL", '"http://11.11.47.29:8085/gdbk_middleware/MobileProcess/"'
+            buildConfigField "String", "CONFIG_FILE_NAME", '"bizConfig_XiNanGD.json"'
+            buildConfigField "String", "APP_NAME", '"xngd"'
+            buildConfigField "boolean", "ISSERVICEDL", 'true'
+            versionCode 1
+            versionName "1.0"
+            signingConfig signingConfigs.sign_xinangd
+
         }
     }
 
@@ -129,26 +150,14 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.3.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    //    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
-    //    provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
     compile 'com.android.support:multidex:1.0.1'
-    compile 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'com.google.dagger:dagger:2.5'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.5'
-    //    compile 'com.umeng.analytics:analytics:latest.integration'
+    compile 'com.jakewharton:butterknife:8.6.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     compile project(':data')
-    //use to test multiDex
-    //    compile group: 'com.google.guava', name: 'guava', version: '19.0'
-    //    compile "org.scala-lang:scala-library:2.11.7"
-    //use for local maven test
-    //    compile("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
-    //    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
-    //    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
-    //    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
 
 }
 tasks.whenTaskAdded { task ->
@@ -156,54 +165,3 @@ tasks.whenTaskAdded { task ->
         task.enabled = false
     }
 }
-//
-//public class BuildTimeListener implements TaskExecutionListener, BuildListener {
-//
-//    private Clock mClock;
-//    private mTimes = [];
-//
-//    @Override
-//    void buildStarted(Gradle gradle) {
-//
-//    }
-//
-//    @Override
-//    void settingsEvaluated(Settings settings) {
-//
-//    }
-//
-//    @Override
-//    void projectsLoaded(Gradle gradle) {
-//
-//    }
-//
-//    @Override
-//    void projectsEvaluated(Gradle gradle) {
-//
-//    }
-//
-//    @Override
-//    void buildFinished(BuildResult result) {
-//        println "Task spend time"
-//        mTimes.each { time ->
-//            if (time[0] >= 50) {
-//                printf "%7sms  %s\n", time
-//            }
-//        }
-//    }
-//
-//    @Override
-//    void beforeExecute(Task task) {
-//        //初始化时钟
-//        mClock = new Clock();
-//    }
-//
-//    @Override
-//    void afterExecute(Task task, TaskState state) {
-//        def time = mClock.timeInMs;
-//        mTimes.add([time, task.path])
-//    }
-//}
-//
-//
-//project.gradle.addListener(new BuildTimeListener())

@@ -43,6 +43,7 @@ public class CheckUploadPresenterImp extends UploadPresenterImp {
         mTotalUploadDataNum = 0;
         addSubscriber(mRepository.readTransferedData(2)
                 .filter(list -> list != null && list.size() > 0)
+                .map(list -> calcTotalNum(list))
                 .flatMap(list -> Flowable.fromIterable(list))
                 .filter(refData -> refData != null && refData.checkList != null && refData.checkList.size() > 0)
                 .map(refData -> wrapper2Results(refData, true))
@@ -179,7 +180,7 @@ public class CheckUploadPresenterImp extends UploadPresenterImp {
         final String checkId = refData.checkId;
         final String bizType = refData.bizType;
         mMessageArray.get(mTaskNum).materialDoc = materialDoc;
-        return mRepository.setTransFlag(bizType, checkId,"3").flatMap(a -> Flowable.just("完成!"));
+        return mRepository.setTransFlag(bizType, checkId, "3").flatMap(a -> Flowable.just("完成!"));
     }
 
 
@@ -209,8 +210,8 @@ public class CheckUploadPresenterImp extends UploadPresenterImp {
             info.invCode = refData.invCode;
             info.bizTypeDesc = map.get(BIZTYPE_DESC_KEY);
             info.refTypeDesc = map.get(REFTYPE_DESC_KEY);
-            mMessageArray.put(mTotalUploadDataNum++, info);
-            info.totalTaskNum = mTotalUploadDataNum;
+            info.totalTaskNum = refData.totalCount;
+            mMessageArray.put( mTotalUploadDataNum++, info);
         }
 
         ArrayList<ResultEntity> results = new ArrayList<>();

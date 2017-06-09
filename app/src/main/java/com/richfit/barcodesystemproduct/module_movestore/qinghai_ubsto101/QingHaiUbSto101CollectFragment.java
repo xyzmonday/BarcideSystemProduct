@@ -25,7 +25,7 @@ public class QingHaiUbSto101CollectFragment extends BaseASCollectFragment<ASColl
     @Override
     public void initEvent() {
         super.initEvent();
-        etLocation.setOnRichEditTouchListener((view, location) -> {
+        etLocation.setOnRichAutoEditTouchListener((view, location) -> {
             hideKeyboard(view);
             getTransferSingle(getString(etBatchFlag), location);
         });
@@ -95,11 +95,11 @@ public class QingHaiUbSto101CollectFragment extends BaseASCollectFragment<ASColl
         }
 
         //这里不检查是否输入了批次，但是需要检查批次必须一致
-        if (mIsOpenBatchManager && !isQmFlag && !isBatchValidate) {
+        if (isOpenBatchManager && !isQmFlag && !isBatchValidate) {
             showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
             return false;
         }
-        if (mIsOpenBatchManager && !etBatchFlag.isEnabled() && !isBatchValidate) {
+        if (isOpenBatchManager && !etBatchFlag.isEnabled() && !isBatchValidate) {
             showMessage("批次输入有误，请检查批次是否与缓存批次输入一致");
             return false;
         }

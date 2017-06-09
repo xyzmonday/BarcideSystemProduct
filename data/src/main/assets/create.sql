@@ -40,13 +40,27 @@ create table IF not exists T_TRANSACTION_EXTRA_CW
    config_type      TEXT
 );
 
-
+create table BASE_MATERIAL_BATCH
+(
+  id               VARCHAR2(32) PRIMARY KEY not null,
+  material_id      VARCHAR2(32),
+  work_id          VARCHAR2(32),
+  batch_flag       VARCHAR2(32),
+  status           VARCHAR2(10),
+  created_by       VARCHAR2(32),
+  creation_date    DATE,
+  last_updated_by  VARCHAR2(32),
+  last_update_date DATE
+);
 
 create table MTL_IMAGES
 (
   id            VARCHAR2(32) PRIMARY KEY NOT NULL,
   ref_num       TEXT,
+  ref_code_id   VARCHAR2(32),
   ref_line_id   VARCHAR2(32),
+  ins_id        VARCHAR2(32),
+  ins_line_id   VARCHAR2(32),
   image_dir     TEXT,
   image_name    TEXT,
   created_by    TEXT,

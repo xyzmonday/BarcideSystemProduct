@@ -81,7 +81,7 @@ public class QingHaiDSWWCollectFragment extends BaseDSCollectFragment<DSCollectP
         List<RefDetailEntity> list = mRefData.billDetailList;
 
         for (RefDetailEntity entity : list) {
-            if (mIsOpenBatchManager) {
+            if (isOpenBatchManager) {
                 final String refLineId = entity.refLineId;
                 //如果打开了批次，那么在看明细中是否有批次
                 if (!TextUtils.isEmpty(entity.batchFlag) && !TextUtils.isEmpty(batchFlag)) {

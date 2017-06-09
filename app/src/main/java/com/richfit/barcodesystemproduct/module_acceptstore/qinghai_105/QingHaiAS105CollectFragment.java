@@ -63,8 +63,8 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
 
     @Override
     public void initDataLazily() {
-        //注意由于initDataLazily方法中对批次的enable进行了设置
         super.initDataLazily();
+        //这里让系统不能让用户手动输入批次，必须通过扫码的方式获取批次
         etBatchFlag.setEnabled(false);
     }
 
@@ -99,7 +99,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
         ArrayList<String> insLosts = new ArrayList<>();
         List<RefDetailEntity> list = mRefData.billDetailList;
         for (RefDetailEntity entity : list) {
-            if (mIsOpenBatchManager) {
+            if (isOpenBatchManager) {
                 final String insLot = entity.insLot;
                 //如果打开了批次，那么在看明细中是否有批次
                 if (!TextUtils.isEmpty(entity.batchFlag) && !TextUtils.isEmpty(batchFlag)) {
@@ -156,7 +156,7 @@ public class QingHaiAS105CollectFragment extends BaseASCollectFragment<ASCollect
     @Override
     public void initEvent() {
         super.initEvent();
-        etLocation.setOnRichEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
+        etLocation.setOnRichAutoEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
     }
 
     @Override

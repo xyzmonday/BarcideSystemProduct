@@ -216,4 +216,13 @@
         android:text="@string/inspection_result" />
 
     <View style="@style/ItemSeperatorLayout"/>
+
+    //备注
+    <TextView
+        android:id="@+id/remark"
+        style="@style/TableHeaderStyle"
+        android:layout_width="120dp"
+        android:text="@string/remark" />
+
+    <View style="@style/ItemSeperatorLayout"/>
 </LinearLayout>

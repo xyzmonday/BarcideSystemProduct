@@ -20,6 +20,7 @@ public class UserEntity {
     public String companyId;
     public String companyCode;
     public String batchFlag;
+    public String wmFlag;
     public List<MobileMenuEntity> listMenu;
 
     @Override
@@ -34,6 +35,7 @@ public class UserEntity {
                 ", companyId='" + companyId + '\'' +
                 ", companyCode='" + companyCode + '\'' +
                 ", batchFlag='" + batchFlag + '\'' +
+                ", wmFlag='" + wmFlag + '\'' +
                 ", listMenu=" + listMenu +
                 '}';
     }

@@ -203,13 +203,13 @@ public class QingYangMSN301CollectFragment extends BaseMSNCollectFragment<MSNCol
             return false;
         }
         //检查发出批次
-        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etSendBatchFlag))) {
             showMessage("发出批次为空");
             return false;
         }
 
         //检查接收批次
-        if (mIsOpenBatchManager && TextUtils.isEmpty(getString(etRecBatchFlag))) {
+        if (isOpenBatchManager && TextUtils.isEmpty(getString(etRecBatchFlag))) {
             showMessage("请输入接收批次");
             return false;
         }

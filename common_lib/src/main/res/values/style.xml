@@ -145,6 +145,7 @@
         <item name="android:textSize">15sp</item>
         <item name="android:padding">2dp</item>
     </style>
+
     <style name="RightTextViewItemStyle2">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -194,6 +195,18 @@
         <item name="android:textColor">@color/black</item>
     </style>
 
+    <style name="RightRichAutoItemStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">2</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:padding">2dp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:drawableRight">@mipmap/icon_find</item>
+        <item name="android:background">@drawable/edit_selector</item>
+    </style>
+
     <style name="SwitchButtonStyle">
         <item name="android:paddingLeft">10dp</item>
         <item name="android:paddingRight">10dp</item>
@@ -227,15 +240,19 @@
     </declare-styleable>
 
     <style name="mystyle" parent="android:Animation">
-        <item name="@android:windowEnterAnimation">@anim/dialog_enter</item>  //进入时的动画
-        <item name="@android:windowExitAnimation">@anim/dialog_exit</item>    //退出时的动画
+        <item name="@android:windowEnterAnimation">@anim/dialog_enter</item>
+        //进入时的动画
+        <item name="@android:windowExitAnimation">@anim/dialog_exit</item>
+        //退出时的动画
     </style>
 
     <style name="dialog_center" parent="android:Animation">
-        <item name="@android:windowEnterAnimation">@anim/dialog_enter_center</item>  //进入时的动画
+        <item name="@android:windowEnterAnimation">@anim/dialog_enter_center</item>
+        //进入时的动画
         <!--  <item name="@android:windowExitAnimation">@anim/dialog_exit_center</item>    //退出时的动画-->
     </style>
-    <style name="notitle" >
+
+    <style name="notitle">
         <item name="android:windowNoTitle">true</item>
     </style>
 

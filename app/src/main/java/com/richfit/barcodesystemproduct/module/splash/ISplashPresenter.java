@@ -11,17 +11,6 @@ import java.util.ArrayList;
 
 public interface ISplashPresenter extends IPresenter<ISplashView> {
 
-
-    /**
-     * 同步服务器时间
-     */
-    void syncDate();
-
-    /**
-     * 用户注册
-     */
-    void register();
-
     /**
      * 下载基础数据
      * @param requestParam
@@ -32,4 +21,7 @@ public interface ISplashPresenter extends IPresenter<ISplashView> {
      * 下载基础数据库,仅仅在app第一次启动的时候同步
      */
     void downloadInitialDB();
+
+    void getConnectionStatus();
+
 }

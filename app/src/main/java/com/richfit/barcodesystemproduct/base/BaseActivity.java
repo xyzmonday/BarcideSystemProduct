@@ -22,6 +22,7 @@ import com.richfit.barcodesystemproduct.di.module.ActivityModule;
 import com.richfit.common_lib.IInterface.IPresenter;
 import com.richfit.common_lib.dialog.NetConnectErrorDialogFragment;
 import com.richfit.common_lib.utils.Global;
+import com.richfit.common_lib.utils.L;
 import com.richfit.common_lib.utils.StatusBarCompat;
 
 import java.util.Arrays;
@@ -70,6 +71,7 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         //恢复全局的数据
         if (savedInstanceState != null) {
+            L.e("onSaveInstanceState 不为空");
             Global.USER_ID = savedInstanceState.getString("user_id_key");
             Global.LOGIN_ID = savedInstanceState.getString("login_id_key");
             Global.USER_NAME = savedInstanceState.getString("user_name_key");
@@ -77,7 +79,9 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
             Global.COMPANY_CODE = savedInstanceState.getString("company_code_key");
             Global.MAC_ADDRESS = savedInstanceState.getString("mac_address_key");
             Global.AUTH_ORG = savedInstanceState.getString("auth_org_key");
-            Global.BATCH_FLAG = savedInstanceState.getBoolean("batch_flag_key");
+            Global.BATCHMANAGERSTATUS = savedInstanceState.getString("batch_flag_key");
+            Global.DBSOURCE = savedInstanceState.getString("db_source_key");
+            Global.WMFLAG = savedInstanceState.getString("wm_flag_key");
         }
         Observable.just("start")
                 .map(areaName -> {
@@ -136,6 +140,7 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        L.e("onSaveInstanceState");
         outState.putString("user_id_key", Global.USER_ID);
         outState.putString("login_id_key", Global.LOGIN_ID);
         outState.putString("user_name_key", Global.USER_NAME);
@@ -143,11 +148,14 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
         outState.putString("company_code_key", Global.COMPANY_CODE);
         outState.putString("mac_address_key", Global.MAC_ADDRESS);
         outState.putString("auth_org_key", Global.AUTH_ORG);
-        outState.putBoolean("batch_flag_key", Global.BATCH_FLAG);
+        outState.putString("batch_flag_key", Global.BATCHMANAGERSTATUS);
+        outState.putString("db_source_key", Global.DBSOURCE);
+        outState.putString("wm_flag_key", Global.WMFLAG);
         outState.putBoolean("is_local_flag", mPresenter != null ? mPresenter.isLocal() : false);
         super.onSaveInstanceState(outState);
 
     }
+
 
     @Override
     protected void onDestroy() {
@@ -240,6 +248,7 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
             finish();
         }
     }
+
 
     /**
      * 显示网络错误重试对话框

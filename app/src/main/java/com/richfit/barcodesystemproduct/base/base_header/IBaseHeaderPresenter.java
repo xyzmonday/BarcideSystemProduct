@@ -9,6 +9,7 @@ import com.richfit.domain.bean.ResultEntity;
  */
 
 public interface IBaseHeaderPresenter <V extends IBaseHeaderView> extends IPresenter<V> {
+
     /**
      * 保存离线的抬头数据
      */

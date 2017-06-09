@@ -9,6 +9,9 @@ import com.richfit.domain.bean.ResultEntity;
  */
 
 public interface IASNCollectPresenter extends IPresenter<IASNCollectView> {
+
+    void getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag,
+                         boolean isDropDown);
     /**
      * 获取库存地点列表
      *

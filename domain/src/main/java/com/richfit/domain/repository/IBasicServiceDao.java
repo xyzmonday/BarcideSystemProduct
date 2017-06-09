@@ -211,4 +211,8 @@ public interface IBasicServiceDao {
     boolean getLocationInfo(String queryType, String workId, String invId, String storageNum, String location);
 
     MaterialEntity getMaterialInfo(String queryType, String materialNum);
+
+    List<String> getLocationList(String workId, String workCode, String invId, String invCode, String keyWord, int defaultItemNum, int flag);
+
+    String getBatchManagerStatus(String workId,String materialId);
 }

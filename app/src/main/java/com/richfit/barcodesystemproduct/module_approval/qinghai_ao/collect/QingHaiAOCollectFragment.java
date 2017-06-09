@@ -114,6 +114,8 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
     TextView tvBadTotalQuantity;
     @BindView(R.id.tv_other_total_quantity)
     TextView tvOtherTotalQuantity;
+    @BindView(R.id.et_remark)
+    EditText etRemark;
 
     /*/匹配的检验批行明细*/
     List<String> mRefLines;
@@ -319,25 +321,18 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             //制造商名称
             etManufacturer.setText(mCachedRefDetailData.manufacturer);
             //实收数量
-//            etQuantity.setText(TextUtils.isEmpty(mCachedRefDetailData.totalQuantity) ? lineData.actQuantity : mCachedRefDetailData.totalQuantity);
             tvTotalQuantity.setText(mCachedRefDetailData.totalQuantity);
             //抽检数量
-//            etSampleQuantity.setText(TextUtils.isEmpty(mCachedRefDetailData.randomQuantity) ? lineData.actQuantity : mCachedRefDetailData.randomQuantity);
             tvSampleTotalQuantity.setText(mCachedRefDetailData.randomQuantity);
             //完好数量
-//            etQualifiedQuantity.setText(TextUtils.isEmpty(mCachedRefDetailData.qualifiedQuantity) ? lineData.actQuantity : mCachedRefDetailData.qualifiedQuantity);
             tvQualifiedTotalQuantity.setText(mCachedRefDetailData.qualifiedQuantity);
             //锈蚀数量
-//            etCorrosion.setText(mCachedRefDetailData.rustQuantity);
             tvCorrosionTotalQuantity.setText(mCachedRefDetailData.rustQuantity);
             //损坏
-//            etDamage.setText(mCachedRefDetailData.damagedQuantity);
             tvDamageTotalQuantity.setText(mCachedRefDetailData.damagedQuantity);
             //变质
-//            etBad.setText(mCachedRefDetailData.badQuantity);
             tvBadTotalQuantity.setText(mCachedRefDetailData.badQuantity);
             //其他
-//            etOtherQuantity.setText(mCachedRefDetailData.otherQuantity);
             tvOtherTotalQuantity.setText(mCachedRefDetailData.otherQuantity);
             //包装情况
             setSelectionForSp(getStringArray(R.array.package_conditions), mCachedRefDetailData.sapPackage, spPackageCondition);
@@ -355,6 +350,7 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             cbCertificate.setSelected(DEFUALT_CHOOSED_FLAG.equalsIgnoreCase(mCachedRefDetailData.certificate));
             //质检证书
             cbQmCertificate.setSelected(DEFUALT_CHOOSED_FLAG.equals(mCachedRefDetailData.qmCertificate));
+            etRemark.setText(mCachedRefDetailData.remark);
         }
         //获取库存地点
         mPresenter.getInvsByWorkId(lineData.workId, 0);
@@ -590,6 +586,8 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
             //检验结果
             result.inspectionResult = spInspectionResult.getSelectedItemPosition() == 0 ? "01" : "02";
             result.modifyFlag = "N";
+            //备注
+            result.remark = getString(etRemark);
             emitter.onNext(result);
             emitter.onComplete();
         }, BackpressureStrategy.BUFFER).compose(TransformerHelper.io2main())
@@ -697,9 +695,9 @@ public class QingHaiAOCollectFragment extends BaseFragment<QingHaiAOCollectPrese
                 etManufacturer, etCorrosion, etDamage, etBad,
                 etQmNum, etInspectQuantity, etQualifiedQuantity, etOtherQuantity,
                 etQuantity, etQueryClaimNum, etSampleQuantity, cbCertificate,
-                cbInstructions, cbCertificate, cbQmCertificate,tvTotalQuantity,
-                tvBadTotalQuantity,tvCorrosionTotalQuantity,tvDamageTotalQuantity,
-                tvOtherTotalQuantity,tvQualifiedTotalQuantity,tvSampleTotalQuantity);
+                cbInstructions, cbCertificate, cbQmCertificate, tvTotalQuantity,
+                tvBadTotalQuantity, tvCorrosionTotalQuantity, tvDamageTotalQuantity,
+                tvOtherTotalQuantity, tvQualifiedTotalQuantity, tvSampleTotalQuantity,etRemark);
 
         //库存地点
         if (spInv.getAdapter() != null) {

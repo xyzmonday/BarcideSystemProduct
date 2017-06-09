@@ -258,4 +258,24 @@ public interface ILocalRepository extends IRepository {
      */
     Flowable<String> uploadEditedHeadData(ResultEntity resultEntity);
 
+    /**
+     * 获取上架仓位雷暴
+     * @param workId
+     * @param workCode
+     * @param invId
+     * @param invCode
+     * @param keyWord
+     * @param defaultItemNum
+     * @param flag
+     * @return
+     */
+    Flowable<List<String>> getLocationList(String workId, String workCode, String invId, String invCode,String  keyWord,int defaultItemNum,int flag);
+
+    /**
+     * 获取该物料是否打开了批次管理
+     * @param workId
+     * @param materialId
+     * @return
+     */
+    String getBatchManagerStatus(String workId,String materialId);
 }

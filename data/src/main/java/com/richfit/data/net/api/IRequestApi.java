@@ -42,7 +42,7 @@ public interface IRequestApi {
     @GET("getLoginInfo")
     Flowable<Response<UserEntity>> login(@Query("requestParam") String requestParam);
 
-    @GET
+    @GET("getConnectionStatus")
     Flowable<Map<String,Object>> getConnectionStatus();
 
     @GET("getMenuTreeInfo")
@@ -95,6 +95,12 @@ public interface IRequestApi {
     @Multipart
     @POST("uploadSingleFile")
     Flowable<Map<String, Object>> uploadMultiFiles(@PartMap Map<String, RequestBody> files, @Part("requestParam") RequestBody des);
+
+
+    @Multipart
+    @POST("uploadSingleFileOffline")
+    Flowable<Map<String, Object>> uploadMultiFilesOffline(@PartMap Map<String, RequestBody> files, @Part("requestParam") RequestBody des);
+
 
     /*获取盘点头信息*/
     @GET("getCheckInfo")

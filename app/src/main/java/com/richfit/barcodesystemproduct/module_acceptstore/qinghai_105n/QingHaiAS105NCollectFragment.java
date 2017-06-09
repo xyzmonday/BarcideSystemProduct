@@ -2,6 +2,7 @@ package com.richfit.barcodesystemproduct.module_acceptstore.qinghai_105n;
 
 import android.text.TextUtils;
 
+import com.richfit.barcodesystemproduct.R;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.BaseASCollectFragment;
 import com.richfit.barcodesystemproduct.barcodesystem_sdk.as.base_as_collect.imp.ASCollectPresenterImp;
 import com.richfit.domain.bean.RefDetailEntity;
@@ -25,15 +26,15 @@ public class QingHaiAS105NCollectFragment extends BaseASCollectFragment<ASCollec
 
     @Override
     public void initDataLazily() {
-        //注意由于initDataLazily方法中对批次的enable进行了设置
         super.initDataLazily();
+        //这里让系统不能让用户手动输入批次，必须通过扫码的方式获取批次
         etBatchFlag.setEnabled(false);
     }
 
     @Override
     public void initEvent() {
         super.initEvent();
-        etLocation.setOnRichEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
+        etLocation.setOnRichAutoEditTouchListener((view, location) -> getTransferSingle(getString(etBatchFlag), location));
     }
 
     /**
@@ -76,7 +77,7 @@ public class QingHaiAS105NCollectFragment extends BaseASCollectFragment<ASCollec
 
     @Override
     protected int getOrgFlag() {
-        return 0;
+        return getInteger(R.integer.orgNorm);
     }
 
 
@@ -96,7 +97,7 @@ public class QingHaiAS105NCollectFragment extends BaseASCollectFragment<ASCollec
         ArrayList<String> lineNums = new ArrayList<>();
         List<RefDetailEntity> list = mRefData.billDetailList;
         for (RefDetailEntity entity : list) {
-            if (mIsOpenBatchManager) {
+            if (isOpenBatchManager) {
                 final String lineNum105 = entity.lineNum105;
                 //如果打开了批次，那么在看明细中是否有批次
                 if (!TextUtils.isEmpty(entity.batchFlag) && !TextUtils.isEmpty(batchFlag)) {

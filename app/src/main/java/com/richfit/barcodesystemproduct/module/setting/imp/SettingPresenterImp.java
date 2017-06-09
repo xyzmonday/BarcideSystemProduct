@@ -188,8 +188,20 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
             return;
         }
 
+        //2017年06月修改下载的url，获取到服务器的下载url后需要动态的将其ip修改系统设置的url
+        //获取http://后面第一次出现/字符的位置
+        int indexOf = url.indexOf("/", 7);
+        String currentUrl = BarcodeSystemApplication.baseUrl;
+        int pos = currentUrl.indexOf("/",7);
+        if(indexOf < 0 || pos < 0) {
+            mView.loadLatestAppFail("服务器地址有误!");
+            return;
+        }
+        StringBuffer sb = new StringBuffer();
+        sb.append(currentUrl.substring(0,pos))
+                .append( url.substring(indexOf));
 
-        mUpdateDisposable = mRxDownload.download(url, saveName, savePath)
+        mUpdateDisposable = mRxDownload.download(sb.toString(), saveName, savePath)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new ResourceObserver<DownloadStatus>() {
@@ -241,9 +253,6 @@ public class SettingPresenterImp extends BasePresenter<ISettingView>
                     SPrefUtil.saveData("base_url", baseUrl);
                     SPrefUtil.saveData(Global.IS_APP_FIRST_KEY, true);
                     SPrefUtil.saveData(Global.IS_INITED_FRAGMENT_CONFIG_KEY, false);
-                    //注意这里如果更改服务器地址，用户需要重新注册该手持，所以这里必须情况缓存
-                    //但是用户更新版本不需要将改换成清除
-                    SPrefUtil.saveData(Global.DBSOURCE_KEY,"");
                     return appComponent;
                 })
                 .compose(TransformerHelper.io2main())

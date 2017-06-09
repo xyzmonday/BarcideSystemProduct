@@ -174,7 +174,7 @@ public class QingHaiLMSN311CollectFragment extends BaseMSNCollectFragment<MSNCol
      */
     private void loadLocationQuantity(String batchFlag, String sendLocation, String locationCombine) {
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("请输入发出批次");
             return;
         }
@@ -196,7 +196,7 @@ public class QingHaiLMSN311CollectFragment extends BaseMSNCollectFragment<MSNCol
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
 
-                    final boolean isMatched = mIsOpenBatchManager ?
+                    final boolean isMatched = isOpenBatchManager ?
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                                     && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);

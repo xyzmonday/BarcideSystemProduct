@@ -234,8 +234,6 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     public void initDataLazily() {
         //检查抬头界面的数据
         etMaterialNum.setEnabled(false);
-        etSendBatchFlag.setEnabled(mIsOpenBatchManager);
-        etRecBatchFlag.setEnabled(mIsOpenBatchManager);
         if (mRefData == null) {
             showMessage("请现在抬头界面输入必要的数据");
             return;
@@ -256,6 +254,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             return;
         }
         etMaterialNum.setEnabled(true);
+        isOpenBatchManager = true;
     }
 
     protected void loadMaterialInfo(String materialNum, String batchFlag) {
@@ -273,6 +272,8 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
     @Override
     public void onBindCommonUI(ReferenceEntity refData, String batchFlag) {
         RefDetailEntity data = refData.billDetailList.get(0);
+        isOpenBatchManager = true;
+        mangageBatchFlagStatus(etSendBatchFlag, data.batchManagerStatus);
         //刷新UI
         etMaterialNum.setTag(data.materialId);
         tvMaterialDesc.setText(data.materialDesc);
@@ -521,7 +522,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
         final String invQuantity = mInventoryDatas.get(position).invQuantity;
         final String batchFlag = getString(etSendBatchFlag);
 
-        if (mIsOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
+        if (isOpenBatchManager && TextUtils.isEmpty(batchFlag)) {
             showMessage("请输入发出批次");
             resetSendLocation();
             return;
@@ -546,7 +547,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
             List<LocationInfoEntity> locationList = detail.locationList;
             if (locationList != null && locationList.size() > 0) {
                 for (LocationInfoEntity locationInfo : locationList) {
-                    final boolean isMatched = mIsOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
+                    final boolean isMatched = isOpenBatchManager ? locationCombine.equalsIgnoreCase(locationInfo.locationCombine)
                             && batchFlag.equalsIgnoreCase(locationInfo.batchFlag) :
                             locationCombine.equalsIgnoreCase(locationInfo.locationCombine);
                     if (isMatched) {
@@ -775,7 +776,7 @@ public abstract class BaseMSNCollectFragment<P extends IMSNCollectPresenter> ext
      */
     protected void resetCommonUIPartly() {
         //如果没有打开批次，那么用户不能输入批次，这里再次拦截
-        if (!mIsOpenBatchManager)
+        if (!isOpenBatchManager)
             return;
         //库存地点
         if (spSendInv.getAdapter() != null) {

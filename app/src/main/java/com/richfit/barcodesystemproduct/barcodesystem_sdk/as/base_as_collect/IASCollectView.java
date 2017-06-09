@@ -7,6 +7,7 @@ import com.richfit.domain.bean.InvEntity;
 import com.richfit.domain.bean.RefDetailEntity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by monday on 2016/11/15.
@@ -40,6 +41,14 @@ public interface IASCollectView extends BaseView {
      * @param list
      */
     void showInvs(ArrayList<InvEntity> list);
+
+    /**
+     * 加载上架仓位
+     */
+    void loadLocationList(String keyWord,boolean isDropDown);
+
+    void getLocationListFail(String message);
+    void getLocationListSuccess(List<String> list,boolean isDropDown);
 
     void checkLocationFail(String message);
     void checkLocationSuccess(String batchFlag, String location);

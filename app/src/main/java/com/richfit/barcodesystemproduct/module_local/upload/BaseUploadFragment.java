@@ -17,7 +17,6 @@ import com.richfit.common_lib.adapter.animation.Animation.animators.FadeInDownAn
 import com.richfit.common_lib.adapter.animation.StickyDividerDecoration;
 import com.richfit.common_lib.dialog.UploadFragmentDialog;
 import com.richfit.common_lib.utils.Global;
-import com.richfit.common_lib.utils.L;
 import com.richfit.domain.bean.ResultEntity;
 import com.richfit.domain.bean.UploadMsgEntity;
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration;
@@ -88,8 +87,6 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
         mPresenter.readUploadData();
     }
 
-
-
     /**
      * 读取数据之前，必须情况所有的历史明细数据
      */
@@ -109,7 +106,7 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
             return;
         //注意這裡是每一單回調一次
         mDatas.addAll(results);
-        mShowUploadDataAdapter.notifyDataSetChanged();
+        mShowUploadDataAdapter.notifyItemInserted(mDatas.size());
     }
 
     /**
@@ -209,7 +206,6 @@ public abstract class BaseUploadFragment<P extends UploadContract.Presenter> ext
 
     @Override
     public void onItemClick(UploadMsgEntity info) {
-        L.e("点击的数据 = " + info);
         if (info == null || TextUtils.isEmpty(info.bizType)) {
             return;
         }

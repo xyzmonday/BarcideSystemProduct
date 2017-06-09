@@ -111,10 +111,14 @@ public class MainActivity extends BaseBarScannerActivity<MainPresenterImp> imple
     private void setupMainContent(Bundle savedInstanceState) {
         int currentPageIndex = savedInstanceState == null ? -1 :
                 savedInstanceState.getInt(CURRENT_PAGE_INDEX_KEY, -1);
-        final Bundle bundle = getIntent().getExtras();
-        if (bundle == null) {
-            showMessage("未获取到业务类型");
-            return;
+        Intent intent = getIntent();
+        Bundle bundle = null;
+        if (intent != null) {
+            bundle = intent.getExtras();
+            if (bundle == null) {
+                showMessage("未获取到业务类型");
+                return;
+            }
         }
         mPresenter.setLocal(mode == Global.ONLINE_MODE ? false : true);
         mPresenter.setupMainContent(getSupportFragmentManager(), bundle, currentPageIndex, mode);
@@ -169,7 +173,7 @@ public class MainActivity extends BaseBarScannerActivity<MainPresenterImp> imple
      */
     public BaseFragment getFragmentByPosition(final int position) {
 
-        if(mViewPager != null) {
+        if (mViewPager != null) {
             PagerAdapter adapter = mViewPager.getAdapter();
             if (adapter != null && MainPagerViewAdapter.class.isInstance(adapter)) {
                 MainPagerViewAdapter mainPagerViewAdapter = (MainPagerViewAdapter) adapter;

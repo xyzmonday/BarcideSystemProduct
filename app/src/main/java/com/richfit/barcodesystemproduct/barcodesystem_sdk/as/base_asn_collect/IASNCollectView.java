@@ -21,6 +21,14 @@ public interface IASNCollectView extends BaseView {
     void loadInvsFail(String message);
 
     /**
+     * 加载上架仓位
+     */
+    void loadLocationList(String keyWord,boolean isDropDown);
+
+    void getLocationListFail(String message);
+    void getLocationListSuccess(List<String> list,boolean isDropDown);
+
+    /**
      * 输入物料获取缓存后，刷新界面
      * @param refData
      * @param batchFlag
